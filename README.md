@@ -1,4 +1,4 @@
-# My Machine Learning Notebook
+# Machine Learning Notebook
 
 This Repo documented 10+ machine learning and deep learning algorithms and general ML concepts with detailed explanations of underlying mathematical principles, theoretical insights, and implementation techniques, offering a clear understanding of their mechanisms, use cases, and performance optimization strategies. It servers as my personal study notes, and also an educational resource for those who wish to deepen their knowledge in the field
 
