@@ -14,7 +14,8 @@ This Repo documented 10+ machine learning and deep learning algorithms and gener
 9. Anomaly detection
 10. Reinforcement learning
 11. Convolutional neural network (CNN)
-12. Recurrent Neural network (RNN)
-13. Generative adverserial networks (GAN) and other geneartive models 
-14. Diffusion model
-15. Concepts & Guilds: includes evalution methods and ML best practices
+12. NLP
+13. Generative adverserial networks (GAN)
+14. VAEs
+15. Diffusion model
+16. Concepts & Guilds: includes evalution methods and ML best practices
