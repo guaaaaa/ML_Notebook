@@ -2,7 +2,7 @@ name: Build and Deploy Notebooks
 
 on:
   push:
-    branches: [master]
+    branches: [main]
 
 jobs:
   build:
@@ -28,8 +28,9 @@ jobs:
           jupyter nbconvert "$notebook" --to html --output "site/$name.html"
         done
 
-    - name: Copy index.html
-      run: cp index.html site/index.html
+    - name: Copy static index.html to site/
+      run: |
+        cp index.html site/index.html
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
