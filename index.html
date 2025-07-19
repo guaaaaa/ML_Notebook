@@ -1,52 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>My Notebook Showcase</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      background: radial-gradient(circle at top left, #1e3a8a, #0f172a);
-    }
-  </style>
-</head>
-<body class="text-white font-sans px-6 py-8">
-  <div class="max-w-5xl mx-auto">
-    <h1 class="text-4xl font-bold mb-8 text-center">📚 My Notebooks</h1>
-    <div id="notebook-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Cards inserted here -->
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Notebook Showcase</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background: radial-gradient(circle at top left, #1e3a8a, #0f172a);
+      }
+    </style>
+  </head>
+  <body class="text-white font-sans px-6 py-8">
+    <div class="max-w-5xl mx-auto">
+      <h1 class="text-4xl font-bold mb-8 text-center">📚 My Notebooks</h1>
+      <div
+        id="notebook-grid"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        <!-- Cards inserted here -->
+      </div>
     </div>
-  </div>
 
-  <script>
-    const notebooks = [
-      { name: "Anomaly detection", link: "Anomaly%20detection.html" },
-      { name: "Classifications", link: "Classifications.html" },
-      { name: "Clustering", link: "Clustering.html" },
-      { name: "CNN", link: "CNN.html" },
-      { name: "Diffusion", link: "Diffusion.html" },
-      { name: "Reinforcement learning", link: "Reinforcement%20learning.html" },
-      { name: "RNN", link: "RNN.html" },
-      { name: "Transformers", link: "Transformers.html" },
-      { name: "Unsupervised learning", link: "Unsupervised%20learning.html" },
-      { name: "Supervised learning", link: "Supervised%20learning.html" },
-      { name: "Generative models", link: "Generative%20models.html" },
-      { name: "Neural networks", link: "Neural%20networks.html" }
-    ];
+    <script>
+      const notebooks = [
+        { name: "Linear Regression", link: "Linear%20regression.html" },
+        { name: "Anomaly Detection", link: "Anomaly%20detection.html" },
+        { name: "Classifications", link: "Classifications.html" },
+        { name: "Clustering", link: "Clustering.html" },
+        { name: "CNN", link: "CNN.html" },
+        { name: "Diffusion", link: "Diffusion.html" },
+        { name: "Decision Tree", link: "Decision%20tree.html" },
+        {
+          name: "Reinforcement Learning",
+          link: "Reinforcement%20learning.html",
+        },
+        { name: "Natural Language Processing", link: "NLP.html" },
+        { name: "Naive Bayes", link: "Naive%20bayes.html" },
+        {
+          name: "Principal Component Analysis",
+          link: "Principal%20component%20analysis.html",
+        },
+        { name: "Recommender Systems", link: "Recommender%20system.html" },
+        { name: "Variational Autoencoders", link: "VAEs.html" },
+        { name: "GANs", link: "GANs.html" },
+        { name: "Neural network", link: "Neural%20network.html" },
+        { name: "Concepts & Guilds", link: "Concepts%20&%20Guilds.html" },
+      ];
 
-    const grid = document.getElementById('notebook-grid');
+      const grid = document.getElementById("notebook-grid");
 
-    notebooks.forEach(nb => {
-      const card = document.createElement('a');
-      card.href = nb.link;
-      card.className = "block bg-white/10 hover:bg-white/20 p-6 rounded-2xl shadow-lg transition backdrop-blur";
-      card.innerHTML = `
+      notebooks.forEach((nb) => {
+        const card = document.createElement("a");
+        card.href = nb.link;
+        card.className =
+          "block bg-white/10 hover:bg-white/20 p-6 rounded-2xl shadow-lg transition backdrop-blur";
+        card.innerHTML = `
         <h2 class="text-xl font-semibold mb-2">${nb.name}</h2>
         <p class="text-sm text-slate-300">View the full rendered notebook.</p>
       `;
-      grid.appendChild(card);
-    });
-  </script>
-</body>
+        grid.appendChild(card);
+      });
+    </script>
+  </body>
 </html>
