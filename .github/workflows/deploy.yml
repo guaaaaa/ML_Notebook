@@ -25,8 +25,9 @@ jobs:
         mkdir -p site
         for notebook in notebooks/*.ipynb; do
           name=$(basename "$notebook" .ipynb)
-          jupyter nbconvert "$notebook" --to html --output "site/$name.html"
+          jupyter nbconvert "$notebook" --to html --output "$name" --output-dir site --log-level=DEBUG
         done
+
 
     - name: Copy static index.html to site/
       run: |
