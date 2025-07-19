@@ -1,13 +1,14 @@
 from pathlib import Path
+import re
 
-# Tailwind CDN + Font Awesome + Google Fonts
+# Head injections with dependencies
 head_injections = """
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 """
 
-# Main theme styling based on your index.html
+# Main theme styling with fixes
 custom_style = """
 <style>
   :root {
@@ -68,20 +69,61 @@ custom_style = """
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    border-radius: 1.5rem; /* rounded-3xl */
+    border-radius: 1.5rem;
     padding: 2rem;
     margin: 2rem auto;
     max-width: 90%;
   }
 
-  /* Adjust the width for larger screens */
-  @media (min-width: 1024px) {
-    .glass-container {
-      max-width: 80%;
-    }
+  /* Fix for JupyterLab theme line */
+  body > .jp-Notebook {
+    display: none !important;
   }
 
-  /* Override notebook elements to use light text */
+  /* Center all images */
+  img {
+    display: block;
+    margin: 1.5rem auto;
+    max-width: 90%;
+  }
+
+  /* Dark theme for code cells */
+  .input_area,
+  .highlight,
+  .highlight pre,
+  .highlight .c1,
+  .highlight .cm,
+  .highlight .kd,
+  .highlight .kn,
+  .highlight .o,
+  .highlight .p,
+  .highlight .nb,
+  .highlight .k,
+  .highlight .mf,
+  .highlight .mi,
+  .highlight .s,
+  .highlight .s1,
+  .highlight .s2,
+  .highlight .se,
+  .highlight .si,
+  .highlight .nt {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    color: #f8fafc !important;
+    border-radius: 0.5rem;
+  }
+
+  /* Output styling */
+  .output_wrapper,
+  .output,
+  .output_subarea,
+  .output_text {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    color: #f8fafc !important;
+    border-radius: 0.5rem;
+    padding: 1rem;
+  }
+
+  /* Text styling */
   .glass-container,
   .glass-container h1,
   .glass-container h2,
@@ -94,40 +136,50 @@ custom_style = """
     color: #f8fafc;
   }
 
-  /* Style for code cells and outputs */
-  .glass-container .input_area pre,
-  .glass-container .output_wrapper,
-  .glass-container .output {
-    background: rgba(0, 0, 0, 0.2) !important;
-    border-radius: 0.5rem;
-    padding: 1rem;
-  }
-
-  /* Adjust the prompt (input code) */
-  .glass-container .input_area {
-    background: rgba(0, 0, 0, 0.2) !important;
-    border-radius: 0.5rem;
-  }
-
-  /* Style for tables */
+  /* Tables */
   .glass-container table {
-    background: rgba(0, 0, 0, 0.2) !important;
+    background: rgba(0, 0, 0, 0.3) !important;
     color: white;
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
   }
 
-  /* Add some spacing between cells */
-  .glass-container .cell {
-    margin-bottom: 1.5rem;
+  .glass-container th, .glass-container td {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem;
+    text-align: left;
   }
 
-  /* Override links */
+  /* Links */
   .glass-container a {
-    color: #93c5fd; /* light blue for links */
+    color: #93c5fd;
+    text-decoration: none;
   }
 
   .glass-container a:hover {
-    color: #bfdbfe; /* lighter blue on hover */
+    color: #bfdbfe;
     text-decoration: underline;
+  }
+
+  /* Code blocks */
+  .highlight {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    overflow: auto;
+  }
+
+  /* Remove white backgrounds */
+  .jp-RenderedHTMLCommon,
+  .jp-InputArea,
+  .jp-Cell-inputWrapper,
+  .jp-Cell-outputWrapper {
+    background: transparent !important;
+  }
+
+  /* Fix spacing */
+  .cell {
+    margin-bottom: 2rem;
   }
 </style>
 """
@@ -139,6 +191,13 @@ for html_file in site_dir.glob("*.html"):
         continue  # skip main page
         
     content = html_file.read_text(encoding="utf-8")
+    
+    # Remove the JupyterLab theme line
+    content = re.sub(
+        r'class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">',
+        "",
+        content
+    )
     
     # Inject head content
     if "<head>" in content:
