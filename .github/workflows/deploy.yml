@@ -2,37 +2,37 @@ name: Build and Deploy Notebooks
 
 on:
   push:
-    branches: [main]
+    branches: [master]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
 
-    - name: Convert notebooks to HTML
-      run: |
-        mkdir -p site
-        for notebook in notebooks/*.ipynb; do
-          name=$(basename "$notebook" .ipynb)
-          jupyter nbconvert "$notebook" --to html --output "site/$name.html"
-        done
+      - name: Convert notebooks to HTML
+        run: |
+          mkdir -p site
+          for notebook in notebooks/*.ipynb; do
+            name=$(basename "$notebook" .ipynb)
+            jupyter nbconvert "$notebook" --to html --output "site/$name.html"
+          done
 
-    - name: Copy index.html
-      run: cp site/index.html site/index.html  # no-op, just to make sure it's included
+      - name: Copy index.html
+        run: cp site/index.html site/index.html # no-op, just to make sure it's included
 
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./site
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
