@@ -9,29 +9,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repo
+      uses: actions/checkout@v3
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
 
-    - name: Install dependencies
-      run: |
-        pip install nbconvert
+    - name: Install nbconvert
+      run: pip install nbconvert
 
     - name: Convert notebooks to HTML
       run: |
         mkdir -p site
         for notebook in notebooks/*.ipynb; do
           name=$(basename "$notebook" .ipynb)
-          jupyter nbconvert "$notebook" --to html --output "$name" --output-dir site --log-level=DEBUG
+          jupyter nbconvert "$notebook" --to html --output "$name" --output-dir site
         done
 
-
-    - name: Copy static index.html to site/
+    - name: Inject custom styling
       run: |
-        cp index.html site/index.html
+        python inject_style.py
+
+    - name: Copy main page
+      run: cp index.html site/index.html
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
