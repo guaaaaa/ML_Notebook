@@ -788,63 +788,6 @@
       // Add search functionality
       searchInput.addEventListener("input", filterNotebooks);
 
-      // Create floating particles
-      function createParticles() {
-        const colors = ["#6366f1", "#8b5cf6", "#ec4899", "#3b82f6", "#10b981"];
-
-        for (let i = 0; i < 30; i++) {
-          const particle = document.createElement("div");
-          particle.classList.add("particle");
-
-          // Random properties
-          const size = Math.random() * 10 + 2;
-          const posX = Math.random() * 100;
-          const posY = Math.random() * 100;
-          const color = colors[Math.floor(Math.random() * colors.length)];
-          const animationDuration = Math.random() * 20 + 10;
-          const animationDelay = Math.random() * 5;
-
-          particle.style.width = `${size}px`;
-          particle.style.height = `${size}px`;
-          particle.style.backgroundColor = color;
-          particle.style.left = `${posX}%`;
-          particle.style.top = `${posY}%`;
-          particle.style.animation = `float ${animationDuration}s ease-in-out ${animationDelay}s infinite`;
-
-          document.body.appendChild(particle);
-        }
-      }
-
-      createParticles();
-
-      // Add cursor effect
-      document.addEventListener("mousemove", (e) => {
-        const cursorGlow = document.createElement("div");
-        cursorGlow.classList.add("cursor-glow");
-        cursorGlow.style.position = "fixed";
-        cursorGlow.style.left = `${e.clientX}px`;
-        cursorGlow.style.top = `${e.clientY}px`;
-        cursorGlow.style.width = "20px";
-        cursorGlow.style.height = "20px";
-        cursorGlow.style.borderRadius = "50%";
-        cursorGlow.style.background =
-          "radial-gradient(circle, rgba(99, 102, 241, 0.8), transparent 70%)";
-        cursorGlow.style.pointerEvents = "none";
-        cursorGlow.style.zIndex = "9999";
-        cursorGlow.style.transform = "translate(-50%, -50%)";
-
-        document.body.appendChild(cursorGlow);
-
-        // Remove after animation
-        setTimeout(() => {
-          cursorGlow.style.opacity = "0";
-          cursorGlow.style.transition = "opacity 0.3s";
-          setTimeout(() => {
-            cursorGlow.remove();
-          }, 300);
-        }, 100);
-      });
-
       // Add scroll animation to cards
       const observer = new IntersectionObserver(
         (entries) => {
