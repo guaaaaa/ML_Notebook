@@ -83,12 +83,23 @@ custom_style = """
   /* Center all images */
   img {
     display: block;
-    margin: 1.5rem auto;
-    max-width: 90%;
+    margin: 1.5rem auto !important;
+    max-width: 90% !important;
   }
 
+  /* Force center images inside outputs */
+  .output img {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* CODE CELL FIXES - SPECIFIC OVERRIDES */
   /* Dark theme for code cells */
-  .input_area,
+  .jp-Cell-inputWrapper,
+  .jp-InputArea,
+  .jp-InputArea-editor,
+  .jp-CodeMirrorEditor,
   .highlight,
   .highlight pre,
   .highlight .c1,
@@ -106,21 +117,42 @@ custom_style = """
   .highlight .s2,
   .highlight .se,
   .highlight .si,
-  .highlight .nt {
+  .highlight .nt,
+  .CodeMirror,
+  .CodeMirror-code,
+  .CodeMirror-lines,
+  .cm-s-jupyter {
     background-color: rgba(0, 0, 0, 0.3) !important;
     color: #f8fafc !important;
-    border-radius: 0.5rem;
+    border-radius: 0.5rem !important;
+  }
+
+  /* Input prompt styling */
+  .jp-InputPrompt {
+    color: #93c5fd !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-radius: 0.5rem 0 0 0.5rem !important;
+    padding: 0.5rem 1rem !important;
+    min-width: 4rem !important;
+    text-align: center !important;
   }
 
   /* Output styling */
+  .jp-Cell-outputWrapper,
+  .jp-OutputArea,
+  .jp-OutputArea-output,
   .output_wrapper,
   .output,
   .output_subarea,
-  .output_text {
+  .output_text,
+  .output_stream,
+  .output_stdout,
+  .jp-RenderedText {
     background-color: rgba(0, 0, 0, 0.3) !important;
     color: #f8fafc !important;
-    border-radius: 0.5rem;
-    padding: 1rem;
+    border-radius: 0.5rem !important;
+    padding: 1rem !important;
+    margin-top: 0.5rem !important;
   }
 
   /* Text styling */
@@ -132,55 +164,77 @@ custom_style = """
   .glass-container h5,
   .glass-container h6,
   .glass-container p,
-  .glass-container div {
-    color: #f8fafc;
+  .glass-container div,
+  .jp-RenderedHTMLCommon,
+  .jp-RenderedMarkdown {
+    color: #f8fafc !important;
   }
 
   /* Tables */
   .glass-container table {
     background: rgba(0, 0, 0, 0.3) !important;
-    color: white;
-    border-collapse: collapse;
-    width: 100%;
-    margin: 1rem 0;
+    color: white !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 1rem 0 !important;
   }
 
   .glass-container th, .glass-container td {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0.5rem;
-    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 0.5rem !important;
+    text-align: left !important;
   }
 
   /* Links */
   .glass-container a {
-    color: #93c5fd;
-    text-decoration: none;
+    color: #93c5fd !important;
+    text-decoration: none !important;
   }
 
   .glass-container a:hover {
-    color: #bfdbfe;
-    text-decoration: underline;
+    color: #bfdbfe !important;
+    text-decoration: underline !important;
   }
 
   /* Code blocks */
   .highlight {
-    margin: 1.5rem 0;
-    padding: 1rem;
-    overflow: auto;
+    margin: 1.5rem 0 !important;
+    padding: 1rem !important;
+    overflow: auto !important;
   }
 
-  /* Remove white backgrounds */
-  .jp-RenderedHTMLCommon,
-  .jp-InputArea,
+  /* Remove all white backgrounds */
+  body,
+  .jp-Notebook,
+  .jp-Cell,
   .jp-Cell-inputWrapper,
-  .jp-Cell-outputWrapper {
+  .jp-Cell-outputWrapper,
+  .jp-InputArea,
+  .jp-OutputArea,
+  .jp-RenderedHTMLCommon,
+  .jp-RenderedMarkdown,
+  .jp-mod-presentationMode,
+  .jp-InputArea-editor,
+  .jp-CodeMirrorEditor {
     background: transparent !important;
+    color: #f8fafc !important;
   }
 
   /* Fix spacing */
-  .cell {
-    margin-bottom: 2rem;
+  .jp-Cell {
+    margin-bottom: 2rem !important;
+    padding: 1rem !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-radius: 0.5rem !important;
   }
+
+  /* Force dark theme syntax highlighting */
+  .cm-s-jupyter span.cm-keyword { color: #f92672 !important; }
+  .cm-s-jupyter span.cm-number { color: #ae81ff !important; }
+  .cm-s-jupyter span.cm-string { color: #a6e22e !important; }
+  .cm-s-jupyter span.cm-comment { color: #75715e !important; }
+  .cm-s-jupyter span.cm-builtin { color: #66d9ef !important; }
+  .cm-s-jupyter span.cm-variable { color: #f8f8f2 !important; }
 </style>
 """
 
@@ -214,6 +268,20 @@ for html_file in site_dir.glob("*.html"):
     elif "<body " in content:  # Handle body with attributes
         content = content.replace("<body ", '<body><div class="glass-container">', 1)
         content = content.replace("</body>", "</div></body>", 1)
+    
+    # Force center all images with more specific selectors
+    content = re.sub(
+        r'<img([^>]*)>',
+        r'<img\1 style="display: block; margin: 1.5rem auto; max-width: 90%;">',
+        content
+    )
+    
+    # Remove any inline styles that might override our centering
+    content = re.sub(
+        r'<img([^>]*)style="[^"]*"([^>]*)>',
+        r'<img\1\2 style="display: block; margin: 1.5rem auto; max-width: 90%;">',
+        content
+    )
     
     html_file.write_text(content, encoding="utf-8")
     print(f"✅ Styled: {html_file.name}")
