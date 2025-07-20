@@ -15,6 +15,7 @@
     --accent: #ec4899;
     --dark: #0f172a;
     --light: #f8fafc;
+    --code-bg: rgba(15, 23, 42, 0.7); /* Dark blue background for code */
   }
 
   body {
@@ -81,79 +82,46 @@
   /* Center all images */
   img {
     display: block;
-    margin: 1.5rem auto !important;
-    max-width: 90% !important;
+    margin: 1.5rem auto;
+    max-width: 90%;
+    border-radius: 0.5rem;
   }
 
-  /* Force center images inside outputs */
-  .output img {
-    display: block !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
-  /* CODE CELL FIXES - SPECIFIC OVERRIDES */
-  /* Dark theme for code cells */
-  .jp-Cell-inputWrapper,
-  .jp-InputArea,
-  .jp-InputArea-editor,
-  .jp-CodeMirrorEditor,
+  /* SIMPLIFIED CODE CELL STYLING */
+  /* Target only code input areas */
+  .input_area, 
   .highlight,
-  .highlight pre,
-  .highlight .c1,
-  .highlight .cm,
-  .highlight .kd,
-  .highlight .kn,
-  .highlight .o,
-  .highlight .p,
-  .highlight .nb,
-  .highlight .k,
-  .highlight .mf,
-  .highlight .mi,
-  .highlight .s,
-  .highlight .s1,
-  .highlight .s2,
-  .highlight .se,
-  .highlight .si,
-  .highlight .nt,
-  .CodeMirror,
-  .CodeMirror-code,
-  .CodeMirror-lines,
-  .cm-s-jupyter {
-    background-color: rgba(0, 0, 0, 0.3) !important;
-    color: #f8fafc !important;
-    border-radius: 0.5rem !important;
+  .jp-CodeMirrorEditor,
+  .CodeMirror {
+    background: var(--code-bg) !important;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1rem 0;
+    border: 1px solid rgba(99, 102, 241, 0.3);
   }
 
-  /* Input prompt styling */
-  .jp-InputPrompt {
-    color: #93c5fd !important;
-    background: rgba(0, 0, 0, 0.2) !important;
-    border-radius: 0.5rem 0 0 0.5rem !important;
-    padding: 0.5rem 1rem !important;
-    min-width: 4rem !important;
-    text-align: center !important;
+  /* Style code text */
+  .input_area pre, 
+  .CodeMirror-code,
+  .highlight pre {
+    color: #f8fafc !important;
+    background: transparent !important;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.95rem;
+    line-height: 1.5;
   }
 
   /* Output styling */
-  .jp-Cell-outputWrapper,
-  .jp-OutputArea,
-  .jp-OutputArea-output,
   .output_wrapper,
-  .output,
-  .output_subarea,
-  .output_text,
-  .output_stream,
-  .output_stdout,
-  .jp-RenderedText {
-    background-color: rgba(0, 0, 0, 0.3) !important;
-    color: #f8fafc !important;
-    border-radius: 0.5rem !important;
-    padding: 1rem !important;
-    margin-top: 0.5rem !important;
+  .output {
+    background: var(--code-bg) !important;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1rem 0;
+    border: 1px solid rgba(99, 102, 241, 0.3);
   }
 
-  /* Text styling */
+  /* General text styling */
   .glass-container,
   .glass-container h1,
   .glass-container h2,
@@ -162,77 +130,41 @@
   .glass-container h5,
   .glass-container h6,
   .glass-container p,
-  .glass-container div,
-  .jp-RenderedHTMLCommon,
-  .jp-RenderedMarkdown {
-    color: #f8fafc !important;
-  }
-
-  /* Tables */
-  .glass-container table {
-    background: rgba(0, 0, 0, 0.3) !important;
-    color: white !important;
-    border-collapse: collapse !important;
-    width: 100% !important;
-    margin: 1rem 0 !important;
-  }
-
-  .glass-container th, .glass-container td {
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    padding: 0.5rem !important;
-    text-align: left !important;
+  .glass-container div {
+    color: #f8fafc;
   }
 
   /* Links */
   .glass-container a {
-    color: #93c5fd !important;
-    text-decoration: none !important;
+    color: #93c5fd;
+    text-decoration: none;
   }
 
   .glass-container a:hover {
-    color: #bfdbfe !important;
-    text-decoration: underline !important;
-  }
-
-  /* Code blocks */
-  .highlight {
-    margin: 1.5rem 0 !important;
-    padding: 1rem !important;
-    overflow: auto !important;
+    color: #bfdbfe;
+    text-decoration: underline;
   }
 
   /* Remove all white backgrounds */
-  body,
-  .jp-Notebook,
-  .jp-Cell,
-  .jp-Cell-inputWrapper,
-  .jp-Cell-outputWrapper,
-  .jp-InputArea,
-  .jp-OutputArea,
   .jp-RenderedHTMLCommon,
-  .jp-RenderedMarkdown,
-  .jp-mod-presentationMode,
-  .jp-InputArea-editor,
-  .jp-CodeMirrorEditor {
+  .jp-InputArea,
+  .jp-Cell-inputWrapper,
+  .jp-Cell-outputWrapper {
     background: transparent !important;
-    color: #f8fafc !important;
   }
 
-  /* Fix spacing */
+  /* Cell spacing */
   .jp-Cell {
-    margin-bottom: 2rem !important;
-    padding: 1rem !important;
-    background: rgba(0, 0, 0, 0.2) !important;
-    border-radius: 0.5rem !important;
+    margin-bottom: 2rem;
+    background: transparent !important;
   }
 
-  /* Force dark theme syntax highlighting */
-  .cm-s-jupyter span.cm-keyword { color: #f92672 !important; }
-  .cm-s-jupyter span.cm-number { color: #ae81ff !important; }
-  .cm-s-jupyter span.cm-string { color: #a6e22e !important; }
-  .cm-s-jupyter span.cm-comment { color: #75715e !important; }
-  .cm-s-jupyter span.cm-builtin { color: #66d9ef !important; }
-  .cm-s-jupyter span.cm-variable { color: #f8f8f2 !important; }
+  /* Input prompt styling */
+  .jp-InputPrompt {
+    color: #93c5fd !important;
+    background: transparent !important;
+    padding-right: 1rem;
+  }
 </style>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -7757,14 +7689,14 @@ a.anchor-link {
 <p>GANs consists two neural network, the generator and the discriminator. They are trained simultaneously through adversarial training. The geneator takes random noise as input and try to produce realistic data (eg. images), while the discriminator takes in both real data and the data produced by the generator and trying to distinguish which one is real</p>
 <p>During training, the generator tries to produce data that the discriminator can’t distinguish from real data, while the discriminator tries to get better at differentiating real data from fake data. The two networks are in essence competing in a game, so both networks improves at the same time</p>
 <p>At the end, the generator will be able to produce realistic images that the discriminator cannot distingish from real data</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*20eOTTCwC-jGXpbAoc9yVg.png" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*20eOTTCwC-jGXpbAoc9yVg.png" width="700"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h2 id="Discriminator">Discriminator<a class="anchor-link" href="#Discriminator">¶</a></h2><p>The discriminator is a binary classsifier that trys to predict the probability of an input data being real or fake, where</p>
 <p>$$output = P(Y|X)$$</p>
 <p>$P(Y|X)$: the probability (between 0 and 1) of an input being real/fake. An probability of 0 indicates that the input data is 100% fake and 1 indicates that the input data is 100% real</p>
 <p>$X$: the input data, can be real images or generated images by the generator</p>
 <p>$Y$: the class categories (real or fake in this case)</p>
 <p>In general, the architecture of the discriminator is the same as the traditional CNN with the following layers: convolutional layers, batch norm layers, pooling layers, activations functions, fully connected layers, and the output layer</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*e0Dnwo9V92Tjkv_PAJj5fQ.png" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*e0Dnwo9V92Tjkv_PAJj5fQ.png" width="700"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h3 id="Binary-cross-entropy-loss-(BCE)">Binary cross entropy loss (BCE)<a class="anchor-link" href="#Binary-cross-entropy-loss-(BCE)">¶</a></h3><p>The discriminator is a binary classificer since it only predicts whether the given input is real or fake, so the loss funtion is the traditional BCE loss function, given by</p>
 <p>$$ J(\theta) = -\frac{1}{m} \sum_{i=0}^{m-1} \left[ (y^{(i)}) \log\left(\hat {y^{(i)}}) \right) + \left( 1 - y^{(i)}\right) \log \left( 1 - \hat {y^{(i)}}) \right) \right]$$</p>
 <p>$J(\theta)$: the average loss over all training examples within a batch</p>
@@ -7814,7 +7746,7 @@ a.anchor-link {
 <p>Detailed implemetation of batch norm: <a href="https://github.com/guaaaaa/My_ML_Notebook/blob/master/Neural%20network.ipynb">https://github.com/guaaaaa/My_ML_Notebook/blob/master/Neural%20network.ipynb</a></p>
 <h1 id="Transpose-convolution">Transpose convolution<a class="anchor-link" href="#Transpose-convolution">¶</a></h1><p>Transpose convolution is used to upsample the feature maps by using a filter. The parameters of the filter can be learned during training.</p>
 <p>One issue with transpose convolution is that some pixels will be the sum from multiple filters, which can result in a checkerboard pattern.</p>
-<img alt="No description has been provided for this image" src="https://www.jeremyjordan.me/content/images/2018/05/Screen-Shot-2018-05-19-at-3.12.51-PM.png" width="800"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://www.jeremyjordan.me/content/images/2018/05/Screen-Shot-2018-05-19-at-3.12.51-PM.png" width="800"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 </div>
 </div>
 </div>
@@ -7827,12 +7759,12 @@ a.anchor-link {
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="Mode-collapse">Mode collapse<a class="anchor-link" href="#Mode-collapse">¶</a></h1><p>In GANs, mode collapse happens when the generator focuses on only producing limited set of data that can decieves the discriminator but does not captures the full diversity of the data distribution</p>
 <p>For example, in a GAN that can generate hand written digits (from 0 to 9). The feature space should have 10 local minima with each minima represents the peak distribution of each digit; this is called a mode</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*XVzW4smMmN6WZpBTrCMldA.png" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*XVzW4smMmN6WZpBTrCMldA.png" width="700"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <p>However, as the training progresses, the generator may find the generated digit 1 can fool the discriminator more easily than any other generated digits, so the generator will only generator 1 but not other characters, which means the generator converges to a single local minimum, and it gets stuck producing other mode of data</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*iYSy1UlFtGcpWRFquJiqPA.png" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*iYSy1UlFtGcpWRFquJiqPA.png" width="700"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h1 id="Issue-with-BCE-loss-function">Issue with BCE loss function<a class="anchor-link" href="#Issue-with-BCE-loss-function">¶</a></h1><p>Mode collape is primarily caused by the BCE loss function. The goal of the generator is to model a similar distribution as the real data. However, during the training process, the discriminator's job is easier than the generator's job and will learn faster, so as the training progresses, the discriminator will likely to output a value very close to 0 or 1. This results in vanishing gradient problem, so the generator does not know how to improve and get stuck at a single local minimum</p>
 <h1 id="Wasserstein-loss">Wasserstein loss<a class="anchor-link" href="#Wasserstein-loss">¶</a></h1><p>The W-loss function calculate the loss by using Wasserstein distance. The W-distance is the minimum cost of converting the generated distribution, $g$, into the real distribution, $r$.</p>
-<img alt="No description has been provided for this image" src="https://www.researchgate.net/publication/349704621/figure/fig1/AS:996752224161799@1614655657970/Schematic-of-the-L-2-Wasserstein-distance-We-here-consider-optimal-transport-from-the.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://www.researchgate.net/publication/349704621/figure/fig1/AS:996752224161799@1614655657970/Schematic-of-the-L-2-Wasserstein-distance-We-here-consider-optimal-transport-from-the.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <p>W-loss function</p>
 <p>$$loss = \mathbb{E}(c(X)) - \mathbb{E}(c(\hat X))$$</p>
 <p>$\mathbb{E}$: the expected value (average)</p>
@@ -7944,7 +7876,7 @@ a.anchor-link {
 <li><p>Vector space entanglement: one entry in the noise vector can impact multiple features, even those features may not have actual correlations. This is because the dimension of the noise vector is too small comparing to the number of features we want to control, so the noise vector cannot have a one to one correlation with the features. For exmample, if we want to control 100 features using a vector of size 5, it's impossible to have individual control on every single feature</p>
 </li>
 </ol>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:601/1*JcdGoZU6hFSnK4JghcJRxw.png"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:601/1*JcdGoZU6hFSnK4JghcJRxw.png"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h1 id="Classifier-gradient">Classifier gradient<a class="anchor-link" href="#Classifier-gradient">¶</a></h1><p>To find a specific vector in the Z space that can control a specific feature, we feed some noise to the generator to get some outputs. Then, we feed the outputs to into a pre-trained classifier to detect whether the generated outputs have the features we wanted. Based on the prediction, we update the noise vector until the generator can generate the feature we wanted</p>
 <p>Note: the process is done after training the generator, so the weights in the generator should not be modified</p>
 <h1 id="Disentanglement">Disentanglement<a class="anchor-link" href="#Disentanglement">¶</a></h1><p>With a disentangled Z space, we can change on feature in the output without changing other features. In general, a disentangled Z space requires more entries in the noise vector than the number of features we want to control</p>
@@ -7972,7 +7904,7 @@ a.anchor-link {
 <h2 id="Frechet-inception-distance-(FID)">Frechet inception distance (FID)<a class="anchor-link" href="#Frechet-inception-distance-(FID)">¶</a></h2><p>FID is a metric that calculates the feature distance between the real and generated images by comparing their feature distributions using a pre-trained network. Lower scores indicate the two groups of images are more similar, a 0 score indicates the two images are identical</p>
 <h3 id="Covariant-matrix">Covariant matrix<a class="anchor-link" href="#Covariant-matrix">¶</a></h3><p>Covariance is a measure of the joint variability of two random variables; it indicates how the two variables vary together</p>
 <p>A Convariant matrix represents the covariance values of each pair of variables in multivariate data; along the diagonal, the value represents the variance of each variable. If a non-diagonal entry is 0, it means that the two variables are independent from each other. In our case, each variable represents a feature, so the covariant matrix, $\Sigma$, measures the distribution of each feature within a set (eg. a group of real/fake images), and how each feature is related to another feature</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*J6z7xcleH9wxHGGCLvDptg.jpeg" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*J6z7xcleH9wxHGGCLvDptg.jpeg" width="700"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h3 id="FID-formula">FID formula<a class="anchor-link" href="#FID-formula">¶</a></h3><p>Given two images / two groups of images, $X, Y$, and their covariant matrices, $\Sigma_X, \Sigma_Y$, the FID is calculated by</p>
 <p>$$FID = ||\mu_X - \mu_Y||^2 + Tr(\Sigma_X + \Sigma_Y - 2\sqrt{\Sigma_X\Sigma_Y})$$</p>
 <p>$\mu_X, \mu_Y$: the mean of $X$ and $Y$; in multivariable case, both $X$ and $Y$ are vectors with each entry representing the mean of a single feature</p>
@@ -7995,7 +7927,7 @@ a.anchor-link {
 </li>
 </ul>
 <p>Thus, idealy, a good GAN should be model the distribution with the number of peaks equals the number of total number of classes (high diversity) with each peak being high and defined (high fidelity)</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*xLq69Oj6_4NRZoWleg9K_Q.png"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*xLq69Oj6_4NRZoWleg9K_Q.png"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h3 id="KL-divergence">KL divergence<a class="anchor-link" href="#KL-divergence">¶</a></h3><p>KL divergence measures how different two given distributions are. KL divergence is high when our distributions are dissimilar. That is, it is high when each generated image has a distinct label and the overall set of generated images has a diverse range of labels. Ideally, the label distribution and the margin distribution should be vastly different</p>
 <p>KL divergence is calculated by</p>
 <p>$$D_{KL}(p(y|x)||p(y)) = p(y|x) \log(\frac{p(y|x)}{p(y)})$$</p>
@@ -8022,7 +7954,7 @@ $$Precision = \frac{P_r \bigcup P_g}{P_g}$$</li>
 $$Recall = \frac{P_r \bigcup P_g}{P_r}$$</li>
 </ul>
 <p>Recall represents the percentage of the real distribution that is covered by the generated distribution. Higher recall indicates higher diveristy, meaning the generated distribution can capture more real distribution. However, a 100% recall may occur when $P_g$ is a superset of $P_r$. This means the generator can generate all real distribution, but also things that does not look real  (The truncation trick can help to resolve this issue)</p>
-<img alt="No description has been provided for this image" src="https://www.researchgate.net/publication/350132222/figure/fig9/AS:1002549385629711@1616037808862/a-Illustration-of-precision-recall-for-distribution-of-real-images-Pr-blue-and-the.ppm"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://www.researchgate.net/publication/350132222/figure/fig9/AS:1002549385629711@1616037808862/a-Illustration-of-precision-recall-for-distribution-of-real-images-Pr-blue-and-the.ppm"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h1 id="Disadvantage-of-GANs">Disadvantage of GANs<a class="anchor-link" href="#Disadvantage-of-GANs">¶</a></h1><ol>
 <li>Lack of instrinsic evaluation metrics (require inspections on many generate samples)</li>
 <li>Unstable and slow training process</li>
@@ -8054,9 +7986,9 @@ $$Recall = \frac{P_r \bigcup P_g}{P_r}$$</li>
 </ol>
 <h2 id="Progressive-growing">Progressive growing<a class="anchor-link" href="#Progressive-growing">¶</a></h2><p>A common issue of traditional GANs is the output image size are often very small to ensures training stability (eg. 64x64). Generating high resolution images is challenging because the generator must learn how to output both large structure and fine details at the same time; having wrong details can make the generated images to be easily classified as fake. Also, training for generating high resolution images require significantly more memory and time</p>
 <p>Progressive growing is a solution that helps the generator to have stable training when generating high resolution images. It involves starting with a very small image and incrementally adding blocks of layers that increase the output size of the generator model and the input size of the discriminator model to increase resolution. This incremental nature allows the training to first discover large-scale structure of the image distribution and then shift attention to increasingly finer scale detail, instead of having to learn all scales simultaneously.</p>
-<img alt="No description has been provided for this image" src="https://www.researchgate.net/publication/334404121/figure/fig2/AS:779799152844802@1562930014736/Details-of-the-architecture-of-the-progressive-growing-network-According-to-the-training.png" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://www.researchgate.net/publication/334404121/figure/fig2/AS:779799152844802@1562930014736/Details-of-the-architecture-of-the-progressive-growing-network-According-to-the-training.png" width="700"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <p>Instead of suddenly insert new layers to the networks, we fade them in gradually using a blending factor $\alpha$ to prevent sudden shocks to the already well-trained, smaller-resolution layers. Also, all layers remain trainable during the training process, including existing layers when new layers are added</p>
-<img alt="No description has been provided for this image" src="https://i0.wp.com/theailearner.com/wp-content/uploads/2019/11/transition-prog-gan.jpg?resize=625%2C326&amp;ssl=1" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://i0.wp.com/theailearner.com/wp-content/uploads/2019/11/transition-prog-gan.jpg?resize=625%2C326&amp;ssl=1" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h3 id="Growing-the-Generator">Growing the Generator<a class="anchor-link" href="#Growing-the-Generator">¶</a></h3><p>When inserting a new layer to the generator, we need 2 layers in parallel, an upsampling layer, which simply upsamples the image size by 2 without any learnable parameters, and an normal convolutional block that doubles the output image size, which contains both conv and activations layer inside. Essentially, both layers will have the same output dimension, which doubles the image sizes from the previous layer</p>
 <p>The output from the upsampling layer and convolutional block is combined using a <strong>blending factor</strong> $\alpha$, which transitions smoothly from 0 to 1 over time. This blending process ensures a gradual shift in the generator's behavior, preventing destabilization during training.</p>
 <p>The output from these layers is combined using a blending factor, $\alpha$, which gradually increases from 0 to 1 over time. This blending process is defined as:</p>
@@ -8083,7 +8015,7 @@ $$</p>
 <li>A single feature in the generated image is influenced by multiple entries in z.</li>
 </ul>
 <p>As a result, the latent space z becomes non-interpretable and difficult to manipulate. For example, changing a single entry in z may alter multiple unrelated features in the output, making it hard to control individual features of the generated image.</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*bKV6_5B4BY89IM3PHnsvrQ.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*bKV6_5B4BY89IM3PHnsvrQ.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <p>The noise mapping network is used to address this issue. The network is a series of fully connected layers that learns to map the noise z from the Z space to an intermediate noise vector w in W space to give more control on the generated outputs. The networks learns a non-linear mapping from z to w, making the W space less entangled, meaning</p>
 <ul>
 <li>Each entry in w can control specific, independent features in the generated image.</li>
@@ -8098,7 +8030,7 @@ $$</p>
 <li>Fine textures in later layers.</li>
 </ul>
 <p>The separation of the constant input and w based modulation improves disentanglement and provides more precise control over the generated image.</p>
-<img alt="No description has been provided for this image" src="https://blog.paperspace.com/content/images/2022/09/Untitled-Diagram.drawio--3-.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://blog.paperspace.com/content/images/2022/09/Untitled-Diagram.drawio--3-.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h2 id="Adaptive-instance-normalization-(AdalN)">Adaptive instance normalization (AdalN)<a class="anchor-link" href="#Adaptive-instance-normalization-(AdalN)">¶</a></h2><h3 id="Instance-Normalization">Instance Normalization<a class="anchor-link" href="#Instance-Normalization">¶</a></h3><p>Instance normalization is a technique that normalizes each individual sample based on its own mean and standard deviation for each channel. The formula for instance normalization is:</p>
 <p>$$y = \frac{x_i - \mu(x_i)}{\sqrt{\sigma(x_i)^2 + \epsilon}}$$</p>
 <p>Where:</p>
@@ -8108,7 +8040,7 @@ $$</p>
 <li>$\sigma(x_i)^2$: Variance of the feature map for each channel of the individual sample.</li>
 <li>$\epsilon$: A small constant added to prevent division by zero.</li>
 </ul>
-<img alt="No description has been provided for this image" src="https://velog.velcdn.com/images/harms/post/3d2d1c19-2d67-4012-8238-02527cd5666d/image.png" width="600"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://velog.velcdn.com/images/harms/post/3d2d1c19-2d67-4012-8238-02527cd5666d/image.png" width="600"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <p>In comparison to Batch Normalization:</p>
 <ul>
 <li>Instance normalization computes the mean and standard deviation for each channel of each individual sample. For a batch of size N and C channels, instance normalization performs this calculation $C \times N$ times.</li>
@@ -8116,7 +8048,7 @@ $$</p>
 </ul>
 <p>In practice, there batch norm and instance norm are not used in combination because introducing in-batch dependencies whether improve or hurt the performance depending on the model architecture</p>
 <h3 id="Apply-adaptive-style">Apply adaptive style<a class="anchor-link" href="#Apply-adaptive-style">¶</a></h3><p>To inject the style information (controlled by w) into the generator, we use the AdalN layer between convultion layer. An AdalN layer will normalize the output from the previous convolutional layer using instance normalization, then scale and shift it to match the distribution of the desired style based on w. Essentially, the style of the generated image is controlled by shifting and scaling the distribution</p>
-<img alt="No description has been provided for this image" src="https://www.researchgate.net/publication/343021405/figure/fig3/AS:915394470625280@1595258457162/Generator-architecture-of-the-StyleGAN-neural-network-1.png" width="400"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://www.researchgate.net/publication/343021405/figure/fig3/AS:915394470625280@1595258457162/Generator-architecture-of-the-StyleGAN-neural-network-1.png" width="400"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <p>To add the desired style into the AdalN layer, we convert the style vector, w, into two parameter, $y_s$ and $y_b$, using a small neural network, where $y_s$ is the scaling factor and $y_b$ is the bias factor. Thus, the AdalN layer is described as</p>
 <p>$$\text{AdalN(x, y)} = y_s (\frac{x - \mu(x)}{\sigma(x)}) + y_b$$</p>
 <p>$AdalN(x, y)$: the output by the AdalN layer</p>
@@ -8130,7 +8062,7 @@ $$</p>
 <li><strong>Mid layers</strong> refine <strong>intermediate features</strong>, such as facial features and hairstyle.</li>
 <li><strong>Late layers</strong> (fine-level control) determine <strong>small details</strong>, such as textures, wrinkles, and color variations.</li>
 </ul>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*Q4WR9OXN20wami7h0VYrqw.gif" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*Q4WR9OXN20wami7h0VYrqw.gif" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <p>By controlling which layers receive $w_1$ and which receive $w_2$, we can blend different aspects of each style in a controllable manner, enabling <strong>hybrid-style image generation</strong>. This hierarchical application of style enables <strong>disentangled and controllable</strong> feature synthesis in StyleGAN.</p>
 <h2 id="Stochastic-Variation">Stochastic Variation<a class="anchor-link" href="#Stochastic-Variation">¶</a></h2><p>To introduce <strong>randomness</strong> and enhance fine details in the generated images, StyleGAN injects <strong>random Gaussian noise</strong> into the feature maps <strong>before each AdaIN layer</strong>. This noise is controlled by a <strong>learned scaling parameter</strong> $\lambda$, which determines the amount of noise added at each layer.</p>
 <ul>

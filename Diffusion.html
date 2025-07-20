@@ -15,6 +15,7 @@
     --accent: #ec4899;
     --dark: #0f172a;
     --light: #f8fafc;
+    --code-bg: rgba(15, 23, 42, 0.7); /* Dark blue background for code */
   }
 
   body {
@@ -81,79 +82,46 @@
   /* Center all images */
   img {
     display: block;
-    margin: 1.5rem auto !important;
-    max-width: 90% !important;
+    margin: 1.5rem auto;
+    max-width: 90%;
+    border-radius: 0.5rem;
   }
 
-  /* Force center images inside outputs */
-  .output img {
-    display: block !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
-  /* CODE CELL FIXES - SPECIFIC OVERRIDES */
-  /* Dark theme for code cells */
-  .jp-Cell-inputWrapper,
-  .jp-InputArea,
-  .jp-InputArea-editor,
-  .jp-CodeMirrorEditor,
+  /* SIMPLIFIED CODE CELL STYLING */
+  /* Target only code input areas */
+  .input_area, 
   .highlight,
-  .highlight pre,
-  .highlight .c1,
-  .highlight .cm,
-  .highlight .kd,
-  .highlight .kn,
-  .highlight .o,
-  .highlight .p,
-  .highlight .nb,
-  .highlight .k,
-  .highlight .mf,
-  .highlight .mi,
-  .highlight .s,
-  .highlight .s1,
-  .highlight .s2,
-  .highlight .se,
-  .highlight .si,
-  .highlight .nt,
-  .CodeMirror,
-  .CodeMirror-code,
-  .CodeMirror-lines,
-  .cm-s-jupyter {
-    background-color: rgba(0, 0, 0, 0.3) !important;
-    color: #f8fafc !important;
-    border-radius: 0.5rem !important;
+  .jp-CodeMirrorEditor,
+  .CodeMirror {
+    background: var(--code-bg) !important;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1rem 0;
+    border: 1px solid rgba(99, 102, 241, 0.3);
   }
 
-  /* Input prompt styling */
-  .jp-InputPrompt {
-    color: #93c5fd !important;
-    background: rgba(0, 0, 0, 0.2) !important;
-    border-radius: 0.5rem 0 0 0.5rem !important;
-    padding: 0.5rem 1rem !important;
-    min-width: 4rem !important;
-    text-align: center !important;
+  /* Style code text */
+  .input_area pre, 
+  .CodeMirror-code,
+  .highlight pre {
+    color: #f8fafc !important;
+    background: transparent !important;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.95rem;
+    line-height: 1.5;
   }
 
   /* Output styling */
-  .jp-Cell-outputWrapper,
-  .jp-OutputArea,
-  .jp-OutputArea-output,
   .output_wrapper,
-  .output,
-  .output_subarea,
-  .output_text,
-  .output_stream,
-  .output_stdout,
-  .jp-RenderedText {
-    background-color: rgba(0, 0, 0, 0.3) !important;
-    color: #f8fafc !important;
-    border-radius: 0.5rem !important;
-    padding: 1rem !important;
-    margin-top: 0.5rem !important;
+  .output {
+    background: var(--code-bg) !important;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1rem 0;
+    border: 1px solid rgba(99, 102, 241, 0.3);
   }
 
-  /* Text styling */
+  /* General text styling */
   .glass-container,
   .glass-container h1,
   .glass-container h2,
@@ -162,77 +130,41 @@
   .glass-container h5,
   .glass-container h6,
   .glass-container p,
-  .glass-container div,
-  .jp-RenderedHTMLCommon,
-  .jp-RenderedMarkdown {
-    color: #f8fafc !important;
-  }
-
-  /* Tables */
-  .glass-container table {
-    background: rgba(0, 0, 0, 0.3) !important;
-    color: white !important;
-    border-collapse: collapse !important;
-    width: 100% !important;
-    margin: 1rem 0 !important;
-  }
-
-  .glass-container th, .glass-container td {
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    padding: 0.5rem !important;
-    text-align: left !important;
+  .glass-container div {
+    color: #f8fafc;
   }
 
   /* Links */
   .glass-container a {
-    color: #93c5fd !important;
-    text-decoration: none !important;
+    color: #93c5fd;
+    text-decoration: none;
   }
 
   .glass-container a:hover {
-    color: #bfdbfe !important;
-    text-decoration: underline !important;
-  }
-
-  /* Code blocks */
-  .highlight {
-    margin: 1.5rem 0 !important;
-    padding: 1rem !important;
-    overflow: auto !important;
+    color: #bfdbfe;
+    text-decoration: underline;
   }
 
   /* Remove all white backgrounds */
-  body,
-  .jp-Notebook,
-  .jp-Cell,
-  .jp-Cell-inputWrapper,
-  .jp-Cell-outputWrapper,
-  .jp-InputArea,
-  .jp-OutputArea,
   .jp-RenderedHTMLCommon,
-  .jp-RenderedMarkdown,
-  .jp-mod-presentationMode,
-  .jp-InputArea-editor,
-  .jp-CodeMirrorEditor {
+  .jp-InputArea,
+  .jp-Cell-inputWrapper,
+  .jp-Cell-outputWrapper {
     background: transparent !important;
-    color: #f8fafc !important;
   }
 
-  /* Fix spacing */
+  /* Cell spacing */
   .jp-Cell {
-    margin-bottom: 2rem !important;
-    padding: 1rem !important;
-    background: rgba(0, 0, 0, 0.2) !important;
-    border-radius: 0.5rem !important;
+    margin-bottom: 2rem;
+    background: transparent !important;
   }
 
-  /* Force dark theme syntax highlighting */
-  .cm-s-jupyter span.cm-keyword { color: #f92672 !important; }
-  .cm-s-jupyter span.cm-number { color: #ae81ff !important; }
-  .cm-s-jupyter span.cm-string { color: #a6e22e !important; }
-  .cm-s-jupyter span.cm-comment { color: #75715e !important; }
-  .cm-s-jupyter span.cm-builtin { color: #66d9ef !important; }
-  .cm-s-jupyter span.cm-variable { color: #f8f8f2 !important; }
+  /* Input prompt styling */
+  .jp-InputPrompt {
+    color: #93c5fd !important;
+    background: transparent !important;
+    padding-right: 1rem;
+  }
 </style>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -7761,7 +7693,7 @@ $$x_t = \alpha_t x_{t-1} + \sigma_t \epsilon$$</p>
 <p>$\epsilon$: a noise vector sampled from Gaussian distribution (typically $\mathcal{N}(0, I)$)</p>
 <p>Note: $x_0$ represents the original input image and $x_T$ represents the completely noisy signal</p>
 <p>This represents one step in the forward diffusion process, which combines a portion of the signal from the previous timestep and a portion of newly sampled noise</p>
-<img alt="No description has been provided for this image" src="https://www.assemblyai.com/blog/content/images/2022/05/image.png"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://www.assemblyai.com/blog/content/images/2022/05/image.png"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <p>In general, we at each timestep, we only want to add a very small portion of noise. This helps preserving the original signal and stablize the training for the reverse diffusion process. If we add all the noise at once, it's impossible for the model to learn predicting what the original image looks like</p>
 <p>Rewrite of the forward process</p>
 <p>$$x_t = \sqrt{\bar{\alpha_t}} x_0 + \sqrt{(1 - \bar{\alpha_t})} \epsilon$$</p>
@@ -7777,7 +7709,7 @@ $$x_t = \alpha_t x_{t-1} + \sigma_t \epsilon$$</p>
 </ul>
 <p>This equation represents the cumulative result of gradual noise addition, and we can compute $x_t$ at any time step $t$ directly in one step using the equation for efficiency. However, this is not the same as adding all the noise at once because we can still retrive the signal $x_t$ at any time steps</p>
 <h2 id="Reverse-diffusion-process">Reverse diffusion process<a class="anchor-link" href="#Reverse-diffusion-process">¶</a></h2><p>The reverse diffusion proccess, $p$, will repeatedly remove noise to recover the original image; this is called the sampling or denoising process.</p>
-<img alt="No description has been provided for this image" src="https://www.assemblyai.com/blog/content/images/2022/05/image-1.png"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://www.assemblyai.com/blog/content/images/2022/05/image-1.png"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <p>The process starts with $p(x_T) \sim \mathcal{N}(x_T,0,I)$ - a completely noisy sample at the final timestep, $T$, and we want to know how the noise was added, $q(x_{t-1}|x_t)$. However, this is not tractable because</p>
 <p>$$q(x_{t-1} | x_t) = \frac{q(x_t | x_{t-1}) q(x_{t-1})}{q(x_t)}$$</p>
 <p>This requires</p>
@@ -7834,7 +7766,7 @@ $$x_{t-1} = \frac{1}{\sqrt{\alpha_t}}(x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha
 <li><p>Quadratic and Other Non-Linear Schedules: variations that adjust the rate of noise addition in non-linear ways to optimize performance</p>
 </li>
 </ul>
-<img alt="No description has been provided for this image" src="https://media.springernature.com/lw685/springer-static/image/art%3A10.1007%2Fs10462-023-10504-5/MediaObjects/10462_2023_10504_Fig6_HTML.png"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://media.springernature.com/lw685/springer-static/image/art%3A10.1007%2Fs10462-023-10504-5/MediaObjects/10462_2023_10504_Fig6_HTML.png"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 </div>
 </div>
 </div>
@@ -7846,7 +7778,7 @@ $$x_{t-1} = \frac{1}{\sqrt{\alpha_t}}(x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="Model-architecture">Model architecture<a class="anchor-link" href="#Model-architecture">¶</a></h2><p>The model used to predict noise. The neural network takes in the noisy data, $x_t$ and the time step $t$ and output the predicted noise $\epsilon_\theta$. The input and output have the exact same size</p>
-<img alt="No description has been provided for this image" src="https://learnopencv.com/wp-content/uploads/2023/02/denoising-diffusion-probabilistic-models_UNet_model_architecture.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://learnopencv.com/wp-content/uploads/2023/02/denoising-diffusion-probabilistic-models_UNet_model_architecture.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <ul>
 <li><p>Time embedding: during the sampling process, we need to add the time embedding into the network by encoding the current timestep $t$ into a high-dimensional representation. This tells the model how much noise has been added to the data to help it making appropriate denoising predictions. At a particular timestep, $x_t$ is different from $x_t$ at other timestep due to cumulative noise introduced $1 - \bar{\alpha_t}$, so the time embedding is necessary to give the model context on how far along the reverse process it is and how much noise remains to be removed. Without this time context, the model will treats all inputs at different time context the same, which makes it impossible to reconstruct $x_0$. Common time embeddings includes sinusoidal, learned, or hybrid embeddings</p>
 </li>
@@ -7891,7 +7823,7 @@ $$x_{t-1} = \frac{1}{\sqrt{\alpha_t}}(x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha
 <h2 id="Controllable-generation">Controllable generation<a class="anchor-link" href="#Controllable-generation">¶</a></h2><p>To make the process controllable, an additional input signal is introduced to guide the model during generation. This signal is the context and it can have the form of class label or text embedding to give model additional context for the denoising process</p>
 <p>Therefore, the model will take in a noise, the timestep, and the context (label or text) when sampling. Then, it will convert the context into context embeddings (this can be done by using a few linear layers or more complex architecture like attention) and inject the context embedding to the signal at different layers with cross-attention or FiLM to produce signal that contains the context</p>
 <p>The training process is the same as the normal training process except the need to input the context to the model. The model still learns to predict the noise added but with both the timestep and the context as input. Similarily, the sampling process remains the same with additional context input. If the model is well-trained, it will make generations based on a given context</p>
-<img alt="No description has been provided for this image" src="https://arxiv.org/html/2403.01108v2/extracted/5629454/fig/pipeline/IP-adapter.png" width="600"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://arxiv.org/html/2403.01108v2/extracted/5629454/fig/pipeline/IP-adapter.png" width="600"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 </div>
 </div>
 </div>
@@ -7904,7 +7836,7 @@ $$x_{t-1} = \frac{1}{\sqrt{\alpha_t}}(x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="DDIM">DDIM<a class="anchor-link" href="#DDIM">¶</a></h2><p>DDPM is slow because its sampling method involves many timesteps and markov chain, so the every next signal $x_{t-1}$ depends on the previous one $x_t$ in the reverse diffusion process. Alternatively, DDIM (Denoising Diffusion Implicit Model) modifies the reverse process to be non-Markovian and deterministic, so it requires less timestep for the reverse process</p>
 <p>While both sharing the forward diffusion process, compared to DDPM, DDIM enables (10-100 times) faster sampling, but the generations will have slightly lower diversity and quality as trade-off. The common practice is that we can use DDPM to train the model (because they share the forward process, and training does not require sampling), since it's easier to implement, but after training, we can load the model and sample using DDIM for faster generations</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/0*gSM9LfAuZA6f914Y.png"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/0*gSM9LfAuZA6f914Y.png"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h3 id="Stochastic-DDIM">Stochastic DDIM<a class="anchor-link" href="#Stochastic-DDIM">¶</a></h3><p>The key for faster sampling process in DDIM is its non-markovian nature, which allows it to skip timesteps and not requiring all the past states. The reverse process for stochastic DDIM is discribed by</p>
 <p>$$x_{t-1} = \sqrt{\bar{\alpha}_{t-1}} \cdot \frac{x_t - \sqrt{1 - \bar{\alpha}_t} \cdot \epsilon^{(t)}_\theta(x_t)}{\sqrt{\bar{\alpha}_t}} + \sqrt{1 - \bar{\alpha}_{t-1} - \sigma_t^2} \cdot \epsilon^{(t)}_\theta(x_t) + \sigma_t \epsilon_t$$</p>
 <p>$x_{t-1}$: the signal at timestep $t-1$</p>
@@ -7997,7 +7929,7 @@ $$x_{t-1} = \frac{1}{\sqrt{\alpha_t}}(x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha
 <p>This noise does not contain any conditional information. Next, the input the sample $x_t$ and timestep $t$ into the classifier and computes the gradient of the log-likelihood of the desired class $y$ with respect to the noisy sample $x_t$, which is</p>
 <p>$$\nabla_{x_t} \log {p(y | x_t, t)}$$</p>
 <p>Because maximizing the log-likelihood means making $x_t$ more likely to belong to class $y$, its gradient points in the direction where the log-likelihood increases most rapidly. Essentially, this gradient encodes the changes needed to make $x_t$ closer to $y$</p>
-<img alt="No description has been provided for this image" src="https://ffighting.net/wp-content/uploads/2023/08/image-2.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://ffighting.net/wp-content/uploads/2023/08/image-2.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 </div>
 </div>
 </div>

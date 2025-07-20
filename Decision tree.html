@@ -15,6 +15,7 @@
     --accent: #ec4899;
     --dark: #0f172a;
     --light: #f8fafc;
+    --code-bg: rgba(15, 23, 42, 0.7); /* Dark blue background for code */
   }
 
   body {
@@ -81,79 +82,46 @@
   /* Center all images */
   img {
     display: block;
-    margin: 1.5rem auto !important;
-    max-width: 90% !important;
+    margin: 1.5rem auto;
+    max-width: 90%;
+    border-radius: 0.5rem;
   }
 
-  /* Force center images inside outputs */
-  .output img {
-    display: block !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
-  /* CODE CELL FIXES - SPECIFIC OVERRIDES */
-  /* Dark theme for code cells */
-  .jp-Cell-inputWrapper,
-  .jp-InputArea,
-  .jp-InputArea-editor,
-  .jp-CodeMirrorEditor,
+  /* SIMPLIFIED CODE CELL STYLING */
+  /* Target only code input areas */
+  .input_area, 
   .highlight,
-  .highlight pre,
-  .highlight .c1,
-  .highlight .cm,
-  .highlight .kd,
-  .highlight .kn,
-  .highlight .o,
-  .highlight .p,
-  .highlight .nb,
-  .highlight .k,
-  .highlight .mf,
-  .highlight .mi,
-  .highlight .s,
-  .highlight .s1,
-  .highlight .s2,
-  .highlight .se,
-  .highlight .si,
-  .highlight .nt,
-  .CodeMirror,
-  .CodeMirror-code,
-  .CodeMirror-lines,
-  .cm-s-jupyter {
-    background-color: rgba(0, 0, 0, 0.3) !important;
-    color: #f8fafc !important;
-    border-radius: 0.5rem !important;
+  .jp-CodeMirrorEditor,
+  .CodeMirror {
+    background: var(--code-bg) !important;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1rem 0;
+    border: 1px solid rgba(99, 102, 241, 0.3);
   }
 
-  /* Input prompt styling */
-  .jp-InputPrompt {
-    color: #93c5fd !important;
-    background: rgba(0, 0, 0, 0.2) !important;
-    border-radius: 0.5rem 0 0 0.5rem !important;
-    padding: 0.5rem 1rem !important;
-    min-width: 4rem !important;
-    text-align: center !important;
+  /* Style code text */
+  .input_area pre, 
+  .CodeMirror-code,
+  .highlight pre {
+    color: #f8fafc !important;
+    background: transparent !important;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.95rem;
+    line-height: 1.5;
   }
 
   /* Output styling */
-  .jp-Cell-outputWrapper,
-  .jp-OutputArea,
-  .jp-OutputArea-output,
   .output_wrapper,
-  .output,
-  .output_subarea,
-  .output_text,
-  .output_stream,
-  .output_stdout,
-  .jp-RenderedText {
-    background-color: rgba(0, 0, 0, 0.3) !important;
-    color: #f8fafc !important;
-    border-radius: 0.5rem !important;
-    padding: 1rem !important;
-    margin-top: 0.5rem !important;
+  .output {
+    background: var(--code-bg) !important;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1rem 0;
+    border: 1px solid rgba(99, 102, 241, 0.3);
   }
 
-  /* Text styling */
+  /* General text styling */
   .glass-container,
   .glass-container h1,
   .glass-container h2,
@@ -162,77 +130,41 @@
   .glass-container h5,
   .glass-container h6,
   .glass-container p,
-  .glass-container div,
-  .jp-RenderedHTMLCommon,
-  .jp-RenderedMarkdown {
-    color: #f8fafc !important;
-  }
-
-  /* Tables */
-  .glass-container table {
-    background: rgba(0, 0, 0, 0.3) !important;
-    color: white !important;
-    border-collapse: collapse !important;
-    width: 100% !important;
-    margin: 1rem 0 !important;
-  }
-
-  .glass-container th, .glass-container td {
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    padding: 0.5rem !important;
-    text-align: left !important;
+  .glass-container div {
+    color: #f8fafc;
   }
 
   /* Links */
   .glass-container a {
-    color: #93c5fd !important;
-    text-decoration: none !important;
+    color: #93c5fd;
+    text-decoration: none;
   }
 
   .glass-container a:hover {
-    color: #bfdbfe !important;
-    text-decoration: underline !important;
-  }
-
-  /* Code blocks */
-  .highlight {
-    margin: 1.5rem 0 !important;
-    padding: 1rem !important;
-    overflow: auto !important;
+    color: #bfdbfe;
+    text-decoration: underline;
   }
 
   /* Remove all white backgrounds */
-  body,
-  .jp-Notebook,
-  .jp-Cell,
-  .jp-Cell-inputWrapper,
-  .jp-Cell-outputWrapper,
-  .jp-InputArea,
-  .jp-OutputArea,
   .jp-RenderedHTMLCommon,
-  .jp-RenderedMarkdown,
-  .jp-mod-presentationMode,
-  .jp-InputArea-editor,
-  .jp-CodeMirrorEditor {
+  .jp-InputArea,
+  .jp-Cell-inputWrapper,
+  .jp-Cell-outputWrapper {
     background: transparent !important;
-    color: #f8fafc !important;
   }
 
-  /* Fix spacing */
+  /* Cell spacing */
   .jp-Cell {
-    margin-bottom: 2rem !important;
-    padding: 1rem !important;
-    background: rgba(0, 0, 0, 0.2) !important;
-    border-radius: 0.5rem !important;
+    margin-bottom: 2rem;
+    background: transparent !important;
   }
 
-  /* Force dark theme syntax highlighting */
-  .cm-s-jupyter span.cm-keyword { color: #f92672 !important; }
-  .cm-s-jupyter span.cm-number { color: #ae81ff !important; }
-  .cm-s-jupyter span.cm-string { color: #a6e22e !important; }
-  .cm-s-jupyter span.cm-comment { color: #75715e !important; }
-  .cm-s-jupyter span.cm-builtin { color: #66d9ef !important; }
-  .cm-s-jupyter span.cm-variable { color: #f8f8f2 !important; }
+  /* Input prompt styling */
+  .jp-InputPrompt {
+    color: #93c5fd !important;
+    background: transparent !important;
+    padding-right: 1rem;
+  }
 </style>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -7753,14 +7685,14 @@ a.anchor-link {
 <h1 id="Decision-tree">Decision tree<a class="anchor-link" href="#Decision-tree">¶</a></h1><p>A decision tree is a hierarchical, tree structure, which consists of a root node, branches, internal nodes and leaf nodes that is used to make predictions.</p>
 <p>Decision nodes: evaluates and split the the data based on features</p>
 <p>Leaf nodes: represents all the possible the outputs of the model</p>
-<img alt="No description has been provided for this image" src="https://i0.wp.com/why-change.com/wp-content/uploads/2021/11/Decision-Tree-elements-2.png?resize=715%2C450&amp;ssl=1"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://i0.wp.com/why-change.com/wp-content/uploads/2021/11/Decision-Tree-elements-2.png?resize=715%2C450&amp;ssl=1"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h2 id="Measuring-purity">Measuring purity<a class="anchor-link" href="#Measuring-purity">¶</a></h2><p>Entropy ($H(p)$): a value between 0 and 1 that measures the impurity of a set of data. A high entropy means the data set less homogenous</p>
 <p>$p_n$: the ratio of $n$th class in a set of data</p>
 <p>For binary classification
 $$H(p) = -p_0log_2(p_0)-p_1log_2(p_1)$$
 where,
 $$p_0 = 1 - p_1$$</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*pLl6EiI4KRyf3ClAgFrqHA.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*pLl6EiI4KRyf3ClAgFrqHA.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 Note: $0log(0) = 0$ for simplicity
 
 <h2 id="Training">Training<a class="anchor-link" href="#Training">¶</a></h2><p>Decision:</p>
