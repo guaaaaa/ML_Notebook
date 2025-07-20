@@ -81,12 +81,23 @@
   /* Center all images */
   img {
     display: block;
-    margin: 1.5rem auto;
-    max-width: 90%;
+    margin: 1.5rem auto !important;
+    max-width: 90% !important;
   }
 
+  /* Force center images inside outputs */
+  .output img {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* CODE CELL FIXES - SPECIFIC OVERRIDES */
   /* Dark theme for code cells */
-  .input_area,
+  .jp-Cell-inputWrapper,
+  .jp-InputArea,
+  .jp-InputArea-editor,
+  .jp-CodeMirrorEditor,
   .highlight,
   .highlight pre,
   .highlight .c1,
@@ -104,21 +115,42 @@
   .highlight .s2,
   .highlight .se,
   .highlight .si,
-  .highlight .nt {
+  .highlight .nt,
+  .CodeMirror,
+  .CodeMirror-code,
+  .CodeMirror-lines,
+  .cm-s-jupyter {
     background-color: rgba(0, 0, 0, 0.3) !important;
     color: #f8fafc !important;
-    border-radius: 0.5rem;
+    border-radius: 0.5rem !important;
+  }
+
+  /* Input prompt styling */
+  .jp-InputPrompt {
+    color: #93c5fd !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-radius: 0.5rem 0 0 0.5rem !important;
+    padding: 0.5rem 1rem !important;
+    min-width: 4rem !important;
+    text-align: center !important;
   }
 
   /* Output styling */
+  .jp-Cell-outputWrapper,
+  .jp-OutputArea,
+  .jp-OutputArea-output,
   .output_wrapper,
   .output,
   .output_subarea,
-  .output_text {
+  .output_text,
+  .output_stream,
+  .output_stdout,
+  .jp-RenderedText {
     background-color: rgba(0, 0, 0, 0.3) !important;
     color: #f8fafc !important;
-    border-radius: 0.5rem;
-    padding: 1rem;
+    border-radius: 0.5rem !important;
+    padding: 1rem !important;
+    margin-top: 0.5rem !important;
   }
 
   /* Text styling */
@@ -130,55 +162,77 @@
   .glass-container h5,
   .glass-container h6,
   .glass-container p,
-  .glass-container div {
-    color: #f8fafc;
+  .glass-container div,
+  .jp-RenderedHTMLCommon,
+  .jp-RenderedMarkdown {
+    color: #f8fafc !important;
   }
 
   /* Tables */
   .glass-container table {
     background: rgba(0, 0, 0, 0.3) !important;
-    color: white;
-    border-collapse: collapse;
-    width: 100%;
-    margin: 1rem 0;
+    color: white !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 1rem 0 !important;
   }
 
   .glass-container th, .glass-container td {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0.5rem;
-    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 0.5rem !important;
+    text-align: left !important;
   }
 
   /* Links */
   .glass-container a {
-    color: #93c5fd;
-    text-decoration: none;
+    color: #93c5fd !important;
+    text-decoration: none !important;
   }
 
   .glass-container a:hover {
-    color: #bfdbfe;
-    text-decoration: underline;
+    color: #bfdbfe !important;
+    text-decoration: underline !important;
   }
 
   /* Code blocks */
   .highlight {
-    margin: 1.5rem 0;
-    padding: 1rem;
-    overflow: auto;
+    margin: 1.5rem 0 !important;
+    padding: 1rem !important;
+    overflow: auto !important;
   }
 
-  /* Remove white backgrounds */
-  .jp-RenderedHTMLCommon,
-  .jp-InputArea,
+  /* Remove all white backgrounds */
+  body,
+  .jp-Notebook,
+  .jp-Cell,
   .jp-Cell-inputWrapper,
-  .jp-Cell-outputWrapper {
+  .jp-Cell-outputWrapper,
+  .jp-InputArea,
+  .jp-OutputArea,
+  .jp-RenderedHTMLCommon,
+  .jp-RenderedMarkdown,
+  .jp-mod-presentationMode,
+  .jp-InputArea-editor,
+  .jp-CodeMirrorEditor {
     background: transparent !important;
+    color: #f8fafc !important;
   }
 
   /* Fix spacing */
-  .cell {
-    margin-bottom: 2rem;
+  .jp-Cell {
+    margin-bottom: 2rem !important;
+    padding: 1rem !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-radius: 0.5rem !important;
   }
+
+  /* Force dark theme syntax highlighting */
+  .cm-s-jupyter span.cm-keyword { color: #f92672 !important; }
+  .cm-s-jupyter span.cm-number { color: #ae81ff !important; }
+  .cm-s-jupyter span.cm-string { color: #a6e22e !important; }
+  .cm-s-jupyter span.cm-comment { color: #75715e !important; }
+  .cm-s-jupyter span.cm-builtin { color: #66d9ef !important; }
+  .cm-s-jupyter span.cm-variable { color: #f8f8f2 !important; }
 </style>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -7699,10 +7753,10 @@ a.anchor-link {
 <h1 id="Variational-Autoencoder-(VAE)">Variational Autoencoder (VAE)<a class="anchor-link" href="#Variational-Autoencoder-(VAE)">¶</a></h1><p>VAE is a type of generative neural network architecture that consists a encoder and a decoder</p>
 <ul>
 <li><p>Traditional autoencoder
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1234/format:webp/1*qVx8wDUpqIqpEWy6-fW3Cg.png" width="400"/></p>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1234/format:webp/1*qVx8wDUpqIqpEWy6-fW3Cg.png" width="400"/  style="display: block; margin: 1.5rem auto; max-width: 90%;"></p>
 </li>
 <li><p>VAE
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*kXiln_TbF15oVg7AjcUEkQ.png" width="400"/></p>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*kXiln_TbF15oVg7AjcUEkQ.png" width="400"/  style="display: block; margin: 1.5rem auto; max-width: 90%;"></p>
 </li>
 <li><p>Encoder: the encoder takes an input and compress it into a latent representation. Traditional autoencoder outputs a single point (vector) in the latent space. A VAE output a probability distribution over the latent space</p>
 </li>
@@ -7711,28 +7765,28 @@ a.anchor-link {
 </ul>
 <p>After training, we will remove the encoder and randomly sample from the distribution in the latent space to produce output</p>
 <h3 id="Issue-with-traditional-autoencoder-and-advantages-of-VAE">Issue with traditional autoencoder and advantages of VAE<a class="anchor-link" href="#Issue-with-traditional-autoencoder-and-advantages-of-VAE">¶</a></h3><p>Traditional autoencoder will convert input data into points in the latent space, which are discrete. However, during generation, we can only sample from those discrete points, meaning we're essentially replicating the same set of images. If we use a data point that's not in this discontinuous latent space, the decoder output will be unrealistics since it has never been trained on those inputs.</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*-i8cp3ry4XS-05OWPAJLPg.png" width="300"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*-i8cp3ry4XS-05OWPAJLPg.png" width="300"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>Compare to traditional autoencoder, VAE has the advantage of:</p>
 <ol>
 <li>VAE learns the distribution of the input data and can generate sample similar to original input</li>
 <li>Since the VAE encoder outputs a distribution, its latent space is smooth and continuous, meaning we can interpolate between 2 points and generate outputs with smooth transition
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*96ho7qSyW0nKrLvSoZHOtA.png"/></li>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*96ho7qSyW0nKrLvSoZHOtA.png"/  style="display: block; margin: 1.5rem auto; max-width: 90%;"></li>
 </ol>
 <h3 id="Encoder">Encoder<a class="anchor-link" href="#Encoder">¶</a></h3><p>In order to output a distribution, the encoder outputs will output 2 vectors, one for the means, $\mu$, and one for the standard deviations, $\sigma$, where each pair of $\mu$ and $\sigma$ represents the distribution of 1 feature in the embedding of the input. With these 2 vectors, we can randomly sample each feature to form an encoding and pass it on to the decoder</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1314/format:webp/1*CiVcrrPmpcB1YGMkTF7hzA.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1314/format:webp/1*CiVcrrPmpcB1YGMkTF7hzA.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>VAEs has density estimation, invertiable, and has more stable training compared to GANs, but it also generates lower quality results</p>
 <h2 id="Loss-function">Loss function<a class="anchor-link" href="#Loss-function">¶</a></h2><h3 id="Loss-for-traditional-autoencoder">Loss for traditional autoencoder<a class="anchor-link" href="#Loss-for-traditional-autoencoder">¶</a></h3><p>The loss function for a traditional autoencoder is simply the binary cross entropy loss or MSE loss. This loss function tells the model how different is the generated image and the input image. This loss is called the reconstruction loss</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/0*zLOeTMUQ67OrqjLp.png" width="600"/>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:808/1*-e1QGatrODWpJkEwqP4Jyg.png" width="300"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/0*zLOeTMUQ67OrqjLp.png" width="600"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:808/1*-e1QGatrODWpJkEwqP4Jyg.png" width="300"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>$y_i$: the given input image/its feature map</p>
 <p>$\hat{y_i}$: the generated image by the decoder/its feature map</p>
 <p>$N$: number of pixels in the image/number of element in the extracted feature map</p>
 <p>The reconsturction loss can either be calculated on based on the pixel distance between the input and generated images or the distance of their feature map. The feature map of the image can be obtained by passing it into a pre-trained network and extract the activation from a middle layer. In general, the feature map is more realiable than the pixel distance</p>
 <h3 id="KL-divergence-term">KL divergence term<a class="anchor-link" href="#KL-divergence-term">¶</a></h3><p>One issue the encoder may experience using reconstruction loss is that the range of $\mu$ and $\sigma$ for each class can be very different, which means there will be discontinuity between in between the distributions. However, we want to make the mean of each class somewhat close to each other so the model will be able to generate output in between classes</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*xCjoga9IPyNUSiz9E7ao7A.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*xCjoga9IPyNUSiz9E7ao7A.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>To resolve this problem, we need to introduce a KL divergence term to the loss function. This term measures the difference between the learned probability distribution over the latent space and a predefined prior distribution (usually a standard normal distribution). Minimizing this term will ensure that the learned distribution over the latent space is close to the prior distribution, which means the mean and standard deviation of each class will have very similar value.</p>
 <p>Note: the predefined prior distribution is arbitrary; it only tells the model where we want all the distribution to be centered at</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1040/format:webp/1*uEAxCmyVKxzZOJG6afkCCg.png" width="300"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1040/format:webp/1*uEAxCmyVKxzZOJG6afkCCg.png" width="300"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>$n$: number of elements in the $\mu$ or $\sigma$ vector (they have the same size)</p>
 <p>$\mu_i$: the $i$th element in the $\mu$ vector</p>
 <p>$\sigma_i$: the $i$th element in the $\sigma$ vector</p>
@@ -7740,14 +7794,14 @@ a.anchor-link {
 <p>However, if we only use the KL divergence loss without the reconstruction loss, the distribution for all classes are densely placed and the decoder cannot decode any valuable information from it, so the reconstruction term and the KL divergence term should be used together to make up the loss function</p>
 <ul>
 <li><p>Distribution by only using KL divergence term as loss function (results in posterior collapse issue)
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1294/format:webp/1*XdSPoB3rcb7LymviDJBJUg.png" width="350"/></p>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1294/format:webp/1*XdSPoB3rcb7LymviDJBJUg.png" width="350"/  style="display: block; margin: 1.5rem auto; max-width: 90%;"></p>
 </li>
 <li><p>Distribution by using both reconstruction cost and KL divergence term as loss function (results in dense, but distinguishable distribution)
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1286/format:webp/1*BIDBG8MQ9-Kc-knUUrkT3A.png" width="350"/></p>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1286/format:webp/1*BIDBG8MQ9-Kc-knUUrkT3A.png" width="350"/  style="display: block; margin: 1.5rem auto; max-width: 90%;"></p>
 </li>
 </ul>
 <h3 id="Full-VAE-loss-function">Full VAE loss function<a class="anchor-link" href="#Full-VAE-loss-function">¶</a></h3><p>The loss function used for VAE is reconstruction loss and KL divergence term; we want to minimize both term at the same time</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*DJeT99qHwbF7iewk.png" width="700"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*DJeT99qHwbF7iewk.png" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>$L$: ELBO (Expectation Lower BOund), which is essentially the total loss that we try to minimize</p>
 <p>$x^{(i)}$: the input image</p>
 <p>$\theta, \phi$: parameters of the decoder and the encoder respectively</p>

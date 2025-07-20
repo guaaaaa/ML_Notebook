@@ -81,12 +81,23 @@
   /* Center all images */
   img {
     display: block;
-    margin: 1.5rem auto;
-    max-width: 90%;
+    margin: 1.5rem auto !important;
+    max-width: 90% !important;
   }
 
+  /* Force center images inside outputs */
+  .output img {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* CODE CELL FIXES - SPECIFIC OVERRIDES */
   /* Dark theme for code cells */
-  .input_area,
+  .jp-Cell-inputWrapper,
+  .jp-InputArea,
+  .jp-InputArea-editor,
+  .jp-CodeMirrorEditor,
   .highlight,
   .highlight pre,
   .highlight .c1,
@@ -104,21 +115,42 @@
   .highlight .s2,
   .highlight .se,
   .highlight .si,
-  .highlight .nt {
+  .highlight .nt,
+  .CodeMirror,
+  .CodeMirror-code,
+  .CodeMirror-lines,
+  .cm-s-jupyter {
     background-color: rgba(0, 0, 0, 0.3) !important;
     color: #f8fafc !important;
-    border-radius: 0.5rem;
+    border-radius: 0.5rem !important;
+  }
+
+  /* Input prompt styling */
+  .jp-InputPrompt {
+    color: #93c5fd !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-radius: 0.5rem 0 0 0.5rem !important;
+    padding: 0.5rem 1rem !important;
+    min-width: 4rem !important;
+    text-align: center !important;
   }
 
   /* Output styling */
+  .jp-Cell-outputWrapper,
+  .jp-OutputArea,
+  .jp-OutputArea-output,
   .output_wrapper,
   .output,
   .output_subarea,
-  .output_text {
+  .output_text,
+  .output_stream,
+  .output_stdout,
+  .jp-RenderedText {
     background-color: rgba(0, 0, 0, 0.3) !important;
     color: #f8fafc !important;
-    border-radius: 0.5rem;
-    padding: 1rem;
+    border-radius: 0.5rem !important;
+    padding: 1rem !important;
+    margin-top: 0.5rem !important;
   }
 
   /* Text styling */
@@ -130,55 +162,77 @@
   .glass-container h5,
   .glass-container h6,
   .glass-container p,
-  .glass-container div {
-    color: #f8fafc;
+  .glass-container div,
+  .jp-RenderedHTMLCommon,
+  .jp-RenderedMarkdown {
+    color: #f8fafc !important;
   }
 
   /* Tables */
   .glass-container table {
     background: rgba(0, 0, 0, 0.3) !important;
-    color: white;
-    border-collapse: collapse;
-    width: 100%;
-    margin: 1rem 0;
+    color: white !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 1rem 0 !important;
   }
 
   .glass-container th, .glass-container td {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0.5rem;
-    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 0.5rem !important;
+    text-align: left !important;
   }
 
   /* Links */
   .glass-container a {
-    color: #93c5fd;
-    text-decoration: none;
+    color: #93c5fd !important;
+    text-decoration: none !important;
   }
 
   .glass-container a:hover {
-    color: #bfdbfe;
-    text-decoration: underline;
+    color: #bfdbfe !important;
+    text-decoration: underline !important;
   }
 
   /* Code blocks */
   .highlight {
-    margin: 1.5rem 0;
-    padding: 1rem;
-    overflow: auto;
+    margin: 1.5rem 0 !important;
+    padding: 1rem !important;
+    overflow: auto !important;
   }
 
-  /* Remove white backgrounds */
-  .jp-RenderedHTMLCommon,
-  .jp-InputArea,
+  /* Remove all white backgrounds */
+  body,
+  .jp-Notebook,
+  .jp-Cell,
   .jp-Cell-inputWrapper,
-  .jp-Cell-outputWrapper {
+  .jp-Cell-outputWrapper,
+  .jp-InputArea,
+  .jp-OutputArea,
+  .jp-RenderedHTMLCommon,
+  .jp-RenderedMarkdown,
+  .jp-mod-presentationMode,
+  .jp-InputArea-editor,
+  .jp-CodeMirrorEditor {
     background: transparent !important;
+    color: #f8fafc !important;
   }
 
   /* Fix spacing */
-  .cell {
-    margin-bottom: 2rem;
+  .jp-Cell {
+    margin-bottom: 2rem !important;
+    padding: 1rem !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-radius: 0.5rem !important;
   }
+
+  /* Force dark theme syntax highlighting */
+  .cm-s-jupyter span.cm-keyword { color: #f92672 !important; }
+  .cm-s-jupyter span.cm-number { color: #ae81ff !important; }
+  .cm-s-jupyter span.cm-string { color: #a6e22e !important; }
+  .cm-s-jupyter span.cm-comment { color: #75715e !important; }
+  .cm-s-jupyter span.cm-builtin { color: #66d9ef !important; }
+  .cm-s-jupyter span.cm-variable { color: #f8f8f2 !important; }
 </style>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -7723,7 +7777,7 @@ where $r_{t+1}$ represents the reward after $t$th action is taken followed by $n
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="General-RL-workflow">General RL workflow<a class="anchor-link" href="#General-RL-workflow">¶</a></h2><p>For a general RL workflow, the agent observes the current state of the environment and selects an action based on a policy at each time step. The environment then responds by transitioning to a new state and providing a reward that reflects the quality of the action taken. The agent uses this reward, along with the new state, to update its understanding of the environment and improve its policy</p>
 <p>This cycle of observing, acting, receiving rewards, and learning continues over many episodes (trial and error), allowing the agent to gradually learn a policy that maximizes long-term cumulative reward. Key components of this process include exploration (trying new actions to gather information) and exploitation (choosing the best-known action to maximize reward). Over time, the agent aims to find a balance between the two and converge toward an optimal behavior</p>
-<img alt="No description has been provided for this image" src="https://www.scribbr.com/wp-content/uploads/2023/08/the-general-framework-of-reinforcement-learning.webp" width="500"/>
+<img alt="No description has been provided for this image" src="https://www.scribbr.com/wp-content/uploads/2023/08/the-general-framework-of-reinforcement-learning.webp" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 </div>
 </div>
 </div>
@@ -7735,7 +7789,7 @@ where $r_{t+1}$ represents the reward after $t$th action is taken followed by $n
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="Multi-armed-bandit">Multi-armed bandit<a class="anchor-link" href="#Multi-armed-bandit">¶</a></h1><p>Multi-armed bandit is the simplest reinforcement learning problem. An agent will choose between $k$ different actions at each timestep, and recieves a reward based on the action chosen, but the reward distributions are unknown and different for each action. The goal of the agent is to maximize the cumulative rewards in the given amount of steps</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:894/1*ZS_craAiKCJzFj9dQ9RaYQ.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:894/1*ZS_craAiKCJzFj9dQ9RaYQ.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h2 id="Action-Value">Action-Value<a class="anchor-link" href="#Action-Value">¶</a></h2><p>The value of an action, $q(a)$, is the expected reward received when action $a$ is taken:</p>
 <p>$$q(a) = \mathbb{E}[R \mid A = a]$$</p>
 <ul>
@@ -7800,7 +7854,7 @@ $$</p>
 <p>In this formula, $\hat{q}_t(a)$ is the exploitation term, which indicates the agent's current estimate of how good action $a$ is. The term $c \sqrt{\frac{\ln t}{N_t(a)}}$ is the exploration bonus, which is large when action $a$ has been selected only a few times (low $N_t(a)$), encouraging the agent to explore it.</p>
 <p>The logarithmic (unbounded) growth in $\ln t$ ensures that all actions will eventually be explored, but actions with lower estimated value or that have already been selected many times will be chosen less frequently over time. This way, UCB systematically prioritizes actions with high upper confidence bounds</p>
 <p>Note: UCB is an deterministic algorithm</p>
-<img alt="No description has been provided for this image" src="https://media.geeksforgeeks.org/wp-content/uploads/20200126023259/Screenshot-2020-01-26-at-2.32.38-AM.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://media.geeksforgeeks.org/wp-content/uploads/20200126023259/Screenshot-2020-01-26-at-2.32.38-AM.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 </div>
 </div>
 </div>
@@ -7814,7 +7868,7 @@ $$</p>
 <h1 id="Markov-Decision-Process-(MDP)">Markov Decision Process (MDP)<a class="anchor-link" href="#Markov-Decision-Process-(MDP)">¶</a></h1><p>In the bandit problem, the agent selects actions in the same static environment, where each action yields a reward independent of past actions or time. However, in many real-world problems, the environment is dynamic, and the agent must select different actions depending on the current situation. Markov Decision Processes (MDPs) provide a classical formalization for sequential decision making tasks, where each action affects not only the immediate reward but also the next state and all future actions and rewards as well.</p>
 <p>All MDPs are Markovian, meaning the future state and reward depend only on the current state and action, not on the full history. Therefore, knowing the current state is sufficient for optimal decision making, and remembering earlier states does not improve predictions about the future.</p>
 <h2 id="The-Agent-Environment-Interface">The Agent-Environment Interface<a class="anchor-link" href="#The-Agent-Environment-Interface">¶</a></h2><p>In MDPs, the agent and environment interact continuously in either discrete or continuous time. At each timestep $t$, the agent selects an action $A_t$ based on the current state of the environment $S_t$. As the result of its action, the agent will recieve a reward $r_t$ from the envirnment at the next timestep $t+1$, and the environment will transition into a new state $S_{t+1}$. Then, the agent selection its next action $A_{t+1}$ based on the new states. The sequence of states, actions, rewards is called a trajectory</p>
-<img alt="No description has been provided for this image" src="https://www.researchgate.net/publication/340694475/figure/fig2/AS:938161513455616@1600686543282/The-agent-environment-interaction-in-reinforcement-learning.jpg" width="500"/>
+<img alt="No description has been provided for this image" src="https://www.researchgate.net/publication/340694475/figure/fig2/AS:938161513455616@1600686543282/The-agent-environment-interaction-in-reinforcement-learning.jpg" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h2 id="Dynamics-of-MDPs">Dynamics of MDPs<a class="anchor-link" href="#Dynamics-of-MDPs">¶</a></h2><p>In finite MDPs, where the sets of states, actions, and rewards are all finite, the dynamics of the environment are defined by the transition probability function:</p>
 <p>$$p(s', r \mid s, a)$$</p>
 <p>This represents the joint probability of transitioning to state $s'$ and receiving reward $r$, given that the agent is in state $s$ and takes action $a$. In other words, it defines:</p>
@@ -7830,7 +7884,7 @@ based on the current state–action pair $(s, a)$.</li>
 <h2 id="Episodic-and-Continuing-Tasks">Episodic and Continuing Tasks<a class="anchor-link" href="#Episodic-and-Continuing-Tasks">¶</a></h2><p>In reinforcement learning, tasks are generally classified into two types: episodic and continuing.</p>
 <p>A task is episodic when the agent–environment interaction is naturally divided into distinct episodes. Each episode begins in a standard starting state (or sampled from a starting state distribution), proceeds through a sequence of interactions, and eventually reaches a terminal state. After an episode ends, the environment resets, and the next episode begins independently of how the previous one ended.</p>
 <p>A task is continuing when there is no natural endpoint, where the agent–environment interaction continues indefinitely without reaching a terminal state. This setting is common in real-world systems that operate continuously, such as online recommendation engines or stock trading agents.</p>
-<img alt="No description has been provided for this image" src="https://av.tib.eu/thumbnail/63100" width="500"/>
+<img alt="No description has been provided for this image" src="https://av.tib.eu/thumbnail/63100" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h2 id="Goal-of-Reinforcement-Learning">Goal of Reinforcement Learning<a class="anchor-link" href="#Goal-of-Reinforcement-Learning">¶</a></h2><p>The goal of reinforcement learning at any time step $t$ is to maximize the expected return, denoted $G_t$, which represents the cumulative reward the agent can expect to receive starting from that time step.</p>
 <p>In episodic tasks, each episode has a fixed or variable length and terminates at some final time step $T$.<br/>
 Since the episode ends, the return is always finite:</p>
@@ -7893,7 +7947,7 @@ $$v_\pi(s) = \mathbb{E}_\pi \left[ G_t \mid s_t = s \right] = \sum_{a} \pi(a \mi
 <li>Compute the weighted sum all of these to compute $v_\pi(s)$.</li>
 </ol>
 <p>Note: $\pi(a \mid s)$ is the probability of taking action $a$ in state $s$ under policy $\pi$ and $p(s', r \mid s, a)$ is the probability of transitioning to next state $s'$ and receiving reward $r$, given current state $s$ and action $a$. In the equation, we are summing over all possible immediate outcomes, which are the actions the agent might take, the rewards it might receive, and the next states it might reach. This allows the equation to "look ahead" one step into the future and compute the expected value of that step, using $\pi(a \mid s)$ to weigh each action and $p(s', r \mid s, a)$ to weigh each possible outcome of that action. This can be visualized with the Backup Diagram.</p>
-<img alt="No description has been provided for this image" src="https://goodboychan.github.io/images/backup_diagram_for_v.png" width="300"/>
+<img alt="No description has been provided for this image" src="https://goodboychan.github.io/images/backup_diagram_for_v.png" width="300"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>The result is a weighted average of the immediate reward plus the discounted value of future states. This recursive structure can be thought of as expanding a search tree, where each branch corresponds to a possible action and outcome.</p>
 <h4 id="Notational-Notes">Notational Notes<a class="anchor-link" href="#Notational-Notes">¶</a></h4><ul>
 <li>We omit the time index $t$ in $v_\pi(s)$ because under the Markov property, the value of a state depends only on the current state, not on the specific time step.</li>
@@ -8011,7 +8065,7 @@ $$\pi_{\text{new}}(s) = \arg\max_a \sum_{s'} \sum_r p(s', r \mid s, a) \left[ r 
 </ul>
 </li>
 </ol>
-<img alt="No description has been provided for this image" src="https://plusreinforcement.com/wp-content/uploads/2018/07/screen-shot-2018-07-04-at-7-37-40-pm.png" width="350"/>
+<img alt="No description has been provided for this image" src="https://plusreinforcement.com/wp-content/uploads/2018/07/screen-shot-2018-07-04-at-7-37-40-pm.png" width="350"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h1 id="Generalized-Policy-Iteration">Generalized Policy Iteration<a class="anchor-link" href="#Generalized-Policy-Iteration">¶</a></h1><p>Generalized Policy Iteration  refers to the framework in reinforcement learning where policy evaluation and policy improvement are interact repeatedly and approximately to gradually refine a policy toward optimality. The key idea is that evaluation and improvement do not need to fully complete before the next begins. As long as policy evaluation moves the value function closer to accurate estimates under the current policy, and policy improvement makes the policy greedier with respect to those estimates, the process will converge over time. If both the value function and the policy eventually stabilize, meaning no further updates occur, then the policy must be optimal, and the value function must be the optimal value function.</p>
 <h2 id="Value-Iteration">Value Iteration<a class="anchor-link" href="#Value-Iteration">¶</a></h2><p>Value iteration is a form of generalized policy iteration that streamlines the process of finding the optimal policy. It addresses the inefficiency in traditional policy iteration, where the policy evaluation step requires multiple sweeps over all states until the value function converges. Instead of fully evaluating the current policy before improving it, value iteration performs a single update to each state's value in each iteration and greedy policy improvement. This reduces computational cost while still ensuring convergence to the optimal policy.</p>
 <p>The core update rule is:
@@ -8130,7 +8184,7 @@ $$\pi_{\text{new}}(s) = \arg\max_a q_\pi(s, a)$$</li>
 <li>Return to Step 2 and continue until the policy converges, or for a fixed number of iterations.</li>
 </ul>
 <p>Note: Using one or few episode per iteration is analogous to stochastic gradient descent, where each update may be noisy, but the overall trend improves the policy over time. The use of exploring starts ensures that all state-action pairs have a non-zero chance of being updated, which is critical for convergence guarantees.</p>
-<img alt="No description has been provided for this image" src="https://i0.wp.com/roboticseabass.com/wp-content/uploads/2020/08/rl_intro_banner-1.png?fit=1200,448&amp;ssl=1"/>
+<img alt="No description has been provided for this image" src="https://i0.wp.com/roboticseabass.com/wp-content/uploads/2020/08/rl_intro_banner-1.png?fit=1200,448&amp;ssl=1"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 </div>
 </div>
 </div>
@@ -8181,7 +8235,7 @@ Calculate $Q(y = R(s) + \gamma max_{a'} (s',a')$ by using the guessed function g
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Deep-Reinforcement-Learning">Deep Reinforcement Learning<a class="anchor-link" href="#Deep-Reinforcement-Learning">¶</a></h1><img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:2000/format:webp/0*P8RnG_xRY8sThfyp.png" width="500"/>
+<h1 id="Deep-Reinforcement-Learning">Deep Reinforcement Learning<a class="anchor-link" href="#Deep-Reinforcement-Learning">¶</a></h1><img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:2000/format:webp/0*P8RnG_xRY8sThfyp.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 </div>
 </div>
 </div>

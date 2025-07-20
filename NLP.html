@@ -81,12 +81,23 @@
   /* Center all images */
   img {
     display: block;
-    margin: 1.5rem auto;
-    max-width: 90%;
+    margin: 1.5rem auto !important;
+    max-width: 90% !important;
   }
 
+  /* Force center images inside outputs */
+  .output img {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* CODE CELL FIXES - SPECIFIC OVERRIDES */
   /* Dark theme for code cells */
-  .input_area,
+  .jp-Cell-inputWrapper,
+  .jp-InputArea,
+  .jp-InputArea-editor,
+  .jp-CodeMirrorEditor,
   .highlight,
   .highlight pre,
   .highlight .c1,
@@ -104,21 +115,42 @@
   .highlight .s2,
   .highlight .se,
   .highlight .si,
-  .highlight .nt {
+  .highlight .nt,
+  .CodeMirror,
+  .CodeMirror-code,
+  .CodeMirror-lines,
+  .cm-s-jupyter {
     background-color: rgba(0, 0, 0, 0.3) !important;
     color: #f8fafc !important;
-    border-radius: 0.5rem;
+    border-radius: 0.5rem !important;
+  }
+
+  /* Input prompt styling */
+  .jp-InputPrompt {
+    color: #93c5fd !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-radius: 0.5rem 0 0 0.5rem !important;
+    padding: 0.5rem 1rem !important;
+    min-width: 4rem !important;
+    text-align: center !important;
   }
 
   /* Output styling */
+  .jp-Cell-outputWrapper,
+  .jp-OutputArea,
+  .jp-OutputArea-output,
   .output_wrapper,
   .output,
   .output_subarea,
-  .output_text {
+  .output_text,
+  .output_stream,
+  .output_stdout,
+  .jp-RenderedText {
     background-color: rgba(0, 0, 0, 0.3) !important;
     color: #f8fafc !important;
-    border-radius: 0.5rem;
-    padding: 1rem;
+    border-radius: 0.5rem !important;
+    padding: 1rem !important;
+    margin-top: 0.5rem !important;
   }
 
   /* Text styling */
@@ -130,55 +162,77 @@
   .glass-container h5,
   .glass-container h6,
   .glass-container p,
-  .glass-container div {
-    color: #f8fafc;
+  .glass-container div,
+  .jp-RenderedHTMLCommon,
+  .jp-RenderedMarkdown {
+    color: #f8fafc !important;
   }
 
   /* Tables */
   .glass-container table {
     background: rgba(0, 0, 0, 0.3) !important;
-    color: white;
-    border-collapse: collapse;
-    width: 100%;
-    margin: 1rem 0;
+    color: white !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 1rem 0 !important;
   }
 
   .glass-container th, .glass-container td {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0.5rem;
-    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 0.5rem !important;
+    text-align: left !important;
   }
 
   /* Links */
   .glass-container a {
-    color: #93c5fd;
-    text-decoration: none;
+    color: #93c5fd !important;
+    text-decoration: none !important;
   }
 
   .glass-container a:hover {
-    color: #bfdbfe;
-    text-decoration: underline;
+    color: #bfdbfe !important;
+    text-decoration: underline !important;
   }
 
   /* Code blocks */
   .highlight {
-    margin: 1.5rem 0;
-    padding: 1rem;
-    overflow: auto;
+    margin: 1.5rem 0 !important;
+    padding: 1rem !important;
+    overflow: auto !important;
   }
 
-  /* Remove white backgrounds */
-  .jp-RenderedHTMLCommon,
-  .jp-InputArea,
+  /* Remove all white backgrounds */
+  body,
+  .jp-Notebook,
+  .jp-Cell,
   .jp-Cell-inputWrapper,
-  .jp-Cell-outputWrapper {
+  .jp-Cell-outputWrapper,
+  .jp-InputArea,
+  .jp-OutputArea,
+  .jp-RenderedHTMLCommon,
+  .jp-RenderedMarkdown,
+  .jp-mod-presentationMode,
+  .jp-InputArea-editor,
+  .jp-CodeMirrorEditor {
     background: transparent !important;
+    color: #f8fafc !important;
   }
 
   /* Fix spacing */
-  .cell {
-    margin-bottom: 2rem;
+  .jp-Cell {
+    margin-bottom: 2rem !important;
+    padding: 1rem !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-radius: 0.5rem !important;
   }
+
+  /* Force dark theme syntax highlighting */
+  .cm-s-jupyter span.cm-keyword { color: #f92672 !important; }
+  .cm-s-jupyter span.cm-number { color: #ae81ff !important; }
+  .cm-s-jupyter span.cm-string { color: #a6e22e !important; }
+  .cm-s-jupyter span.cm-comment { color: #75715e !important; }
+  .cm-s-jupyter span.cm-builtin { color: #66d9ef !important; }
+  .cm-s-jupyter span.cm-variable { color: #f8f8f2 !important; }
 </style>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -7720,7 +7774,7 @@ Converting text into a standardized form to ensure consistency and improve model
 Assigning grammatical categories (e.g., nouns, verbs, adjectives) to each word in a sentence. While not strictly a preprocessing step, POS tagging can support other tasks like lemmatization or dependency parsing by providing grammatical structure and improving semantic understanding.</p>
 </li>
 </ol>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1024/1*pzjECYWP8WOWhwfCjebZVw.png" width="700"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1024/1*pzjECYWP8WOWhwfCjebZVw.png" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p><strong>Note</strong>: These techniques are often combined to tailor preprocessing to the specific requirements of the NLP task. Each technique has its own strengths and trade-offs, which should be carefully considered for optimal results.</p>
 </div>
 </div>
@@ -7736,7 +7790,7 @@ Assigning grammatical categories (e.g., nouns, verbs, adjectives) to each word i
 <h2 id="Common-Feature-Extraction-Techniques">Common Feature Extraction Techniques<a class="anchor-link" href="#Common-Feature-Extraction-Techniques">¶</a></h2><ol>
 <li><p><strong>Bag of Words (BoW)</strong><br/>
 Bag of Words represents text as a collection of its words, ignoring grammar and word order but retaining word frequency. It is simple and quick to compute, but the lack of contextual understanding and high-dimensional sparsity can limit its effectiveness. Additionally, non-informative terms (e.g., stop words) may appear frequently and dominate the representation.</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*sK9pIrYSFfqlsDbC.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*sK9pIrYSFfqlsDbC.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 </li>
 <li><p><strong>Term Frequency-Inverse Document Frequency (TF-IDF)</strong><br/>
 TF-IDF evaluates the importance of a term in a document relative to a collection of documents. It balances local importance (frequency within a document) and global rarity (occurrence across all documents).</p>
@@ -7749,11 +7803,11 @@ TF-IDF evaluates the importance of a term in a document relative to a collection
 $$TF(t,d)=\frac{\text{Number of times term t appears in document d}}{\text{Total number of terms in document d}}$$</p>
 <p>$$IDF(t, D) = \log{\frac{\text{Total number of documents in D}}{\text{Number of documents term t appears} + 1}}$$</p>
 <p>$$TF-IDF(t, d, D) = TF(t,d) * IDF(t, D)$$</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*bK8wXF-TtjQpCiVo.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*bK8wXF-TtjQpCiVo.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 </li>
 <li><p><strong>N-Grams</strong><br/>
 N-grams are contiguous sequences of <code>n</code> items (e.g., characters, words, or tokens) extracted from text. They capture small amounts of context depending on the value of <code>n</code>, with larger <code>n</code> representing longer sequences and more context. However, increasing <code>n</code> can lead to sparsity and computational challenges. N-grams are commonly used in text representation, feature extraction, and language modeling.</p>
-<img alt="No description has been provided for this image" src="https://cdn.botpenguin.com/assets/website/N_Gram_feb7947286.png" width="300"/>
+<img alt="No description has been provided for this image" src="https://cdn.botpenguin.com/assets/website/N_Gram_feb7947286.png" width="300"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 </li>
 <li><p><strong>Word Embeddings</strong><br/>
 Word embeddings are powerful feature extraction techniques that represent words as dense, continuous vectors in a high-dimensional space. These vectors capture semantic meaning, syntactic properties, and relationships between words. Unlike sparse representations (e.g., BoW, TF-IDF), embeddings leverage distributional semantics to model words based on their context. Popular embedding methods include Word2Vec, GloVe, and contextual embeddings like BERT, which capture word meanings in different contexts.</p>
@@ -7770,7 +7824,7 @@ Word embeddings are powerful feature extraction techniques that represent words 
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="One-hot-encoding">One-hot encoding<a class="anchor-link" href="#One-hot-encoding">¶</a></h1><p>Each word in the vocabulary is represented as a unique vector, with all entries set to 0 except one</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*GsKLFAlzoNeIKo-1gz1h_Q.png"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*GsKLFAlzoNeIKo-1gz1h_Q.png"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>Issues:</p>
 <ol>
 <li>In one-hot representation, words are treated as individuals with no relations to other words</li>
@@ -7778,7 +7832,7 @@ Word embeddings are powerful feature extraction techniques that represent words 
 <li>Inefficient computation (many entries being 0)</li>
 </ol>
 <h1 id="Word-embeddings">Word embeddings<a class="anchor-link" href="#Word-embeddings">¶</a></h1><p>Word embeddings are essentially a way to convert words into numerical representations (vectors) in a continuous, dense, low dimensional vector space. The goal is to capture the semantic meaning of words such that the distance and direction between vectors reflect the similarity and relationships among the corresponding words. Word embeddings are used as inputs to the models</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1056/1*GkJpulpSAIm6GTeC1dVR_w.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1056/1*GkJpulpSAIm6GTeC1dVR_w.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>Some common features of good word embeddings are</p>
 <ol>
 <li>Dense vectors: the word vectors are dense and continuous with mainly non-zero elements</li>
@@ -7789,11 +7843,11 @@ Word embeddings are powerful feature extraction techniques that represent words 
 <p>Given two word embeddings $e_1$, $e_2$, the similarity between the two is calculated as</p>
 <p>$$\text{Similarity} = \frac{e_1 \cdot e_2}{||e_1|| ||e_2||}$$</p>
 <p>The similarity value is between 1 and -1, where 1 represents 100% similary, -1 represents 100% opposite, and 0 represents no relationship</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*sXNXYfAqfLUeiDXPCo130w.png" width="600"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*sXNXYfAqfLUeiDXPCo130w.png" width="600"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h2 id="Embedding-matrix">Embedding matrix<a class="anchor-link" href="#Embedding-matrix">¶</a></h2><p>For a given word $w$ and its one-hot encoding vector $o_w$, the embedding matrix $E$ is a matrix that maps its 1-hot representation $o_w$ to its embedding $e_w$ as follows:</p>
 <p>$$e_w = Eo_w$$</p>
 <p>$E$: the embedding matrix with number of rows equals to number of features for the embedding and number of columns equals to the number of vocabulary in the one-hot encoding dictionary</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*Bq6lIOdjCK172I1V04RwLA.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*Bq6lIOdjCK172I1V04RwLA.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h2 id="Apply-word-embedding">Apply word embedding<a class="anchor-link" href="#Apply-word-embedding">¶</a></h2><p>Word embeddings is widely used for transfer learning</p>
 <p>Steps:</p>
 <ol>
@@ -7804,7 +7858,7 @@ Word embeddings are powerful feature extraction techniques that represent words 
 <h1 id="Learning-word-embedding">Learning word embedding<a class="anchor-link" href="#Learning-word-embedding">¶</a></h1><p>Note: the individual components of the learned word embeddings are not necessarily interpretable since the axis chosen by the algorithm does not necessarily align with interpretable axis</p>
 <h2 id="Word2vec">Word2vec<a class="anchor-link" href="#Word2vec">¶</a></h2><p>Word2vec is a framework aimed at learning word embeddings through a neural network by estimating the likelihood that a given word is surrounded by other words</p>
 <p>There are two types of word2vec model, continuous bag of words (CBOW) and skip-gram. CBOW learns the word embeddings by trying to predict a target word giving its surrounding context words, and skip-gram learns the embeddings by trying to predict all the surrounding context words given a target word</p>
-<img alt="No description has been provided for this image" src="https://community.alteryx.com/t5/image/serverpage/image-id/45458iDEB69E518EBA3AD9/image-size/large?v=v2&amp;px=999" width="500"/>
+<img alt="No description has been provided for this image" src="https://community.alteryx.com/t5/image/serverpage/image-id/45458iDEB69E518EBA3AD9/image-size/large?v=v2&amp;px=999" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h3 id="Continuous-Bag-of-Words-(CBOW)">Continuous Bag of Words (CBOW)<a class="anchor-link" href="#Continuous-Bag-of-Words-(CBOW)">¶</a></h3><p>CBOW predicts the probability of a target word occurring, given the surrounding context words. Essentially, CBOW trains a model to produce similar embeddings for words that appear in similar contexts by pulling related word vectors closer together in the embedding space and pushing unrelated ones further apart</p>
 <h4 id="Steps-for-Training-Word-Embeddings-with-CBOW:">Steps for Training Word Embeddings with CBOW:<a class="anchor-link" href="#Steps-for-Training-Word-Embeddings-with-CBOW:">¶</a></h4><ol>
 <li><p><strong>Corpus and Vocabulary</strong>:<br/>
@@ -7857,7 +7911,7 @@ $$</p>
 Use backpropagation to update both $E$ (the embedding matrix) and $W$. After training, we can extract the embedding matrix $E$ from the model and use it to convert one-hot vectors into word embeddings.</p>
 </li>
 </ol>
-<img alt="No description has been provided for this image" src="https://mlarchive.com/wp-content/uploads/2024/01/New-Project-1024x595.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://mlarchive.com/wp-content/uploads/2024/01/New-Project-1024x595.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h3 id="Skip-gram">Skip-gram<a class="anchor-link" href="#Skip-gram">¶</a></h3><p>The Skip-Gram model is another Word2Vec model that learns word embeddings by predicting surrounding context words given a center (target) word. It is essentially the inverse of CBOW. The model is trained such that words that appear in similar contexts have similar vector representations.</p>
 <h4 id="Steps-for-Training-Word-Embeddings-with-Skip-Gram:">Steps for Training Word Embeddings with Skip-Gram:<a class="anchor-link" href="#Steps-for-Training-Word-Embeddings-with-Skip-Gram:">¶</a></h4><p>The steps for training skip-gram are very similar to that of CBOW, but with the following differences</p>
 <ol>
@@ -7872,8 +7926,8 @@ $$
 Then, we use this loss to back propagate and train the embedding matrix</p>
 </li>
 </ol>
-<img alt="No description has been provided for this image" src="https://aegis4048.github.io/images/featured_images/skip-gram.png" width="700"/>
-<h3 id="CBOW-VS-Skip-gram">CBOW VS Skip-gram<a class="anchor-link" href="#CBOW-VS-Skip-gram">¶</a></h3><img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1136/format:webp/1*x6aahsfT5wtqL6x5Xj-cEg.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://aegis4048.github.io/images/featured_images/skip-gram.png" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
+<h3 id="CBOW-VS-Skip-gram">CBOW VS Skip-gram<a class="anchor-link" href="#CBOW-VS-Skip-gram">¶</a></h3><img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1136/format:webp/1*x6aahsfT5wtqL6x5Xj-cEg.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h3 id="Negative-sampling">Negative sampling<a class="anchor-link" href="#Negative-sampling">¶</a></h3><p>In practice, computing the softmax probability over a large vocabulary size is very expensive. To address this, <strong>negative sampling</strong> is often used to approximate the full softmax efficiently. Instead of predicting the correct word among all vocabulary items, the model only focuses on predicting</p>
 <ol>
 <li><p>The positive sample (actual target word)</p>
@@ -7935,7 +7989,7 @@ $$J(\theta) = \frac{1}{2}\sum_{i, j=1}^{m}f(X_{i,j})(\theta_t^Te_c + b_i + b'_j 
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="Visualize-word-embeddings-in-low-dimension:">Visualize word embeddings in low dimension:<a class="anchor-link" href="#Visualize-word-embeddings-in-low-dimension:">¶</a></h1><h2 id="t-SNE-(t-distributed-Stochastic-Neighbor-Embedding)">t-SNE (t-distributed Stochastic Neighbor Embedding)<a class="anchor-link" href="#t-SNE-(t-distributed-Stochastic-Neighbor-Embedding)">¶</a></h2><p>t-SNE is a technique aimed at reducing high-dimensional embeddings into a lower dimensional space. In practice, it is commonly used to visualize word vectors in the 2D space</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*p6W2UNZvc14eOEHY4lw1zw.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*p6W2UNZvc14eOEHY4lw1zw.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 </div>
 </div>
 </div>
@@ -7959,13 +8013,13 @@ $$J(\theta) = \frac{1}{2}\sum_{i, j=1}^{m}f(X_{i,j})(\theta_t^Te_c + b_i + b'_j 
 <p>$T_y^{(i)}$: size of the output of the $i$th training example</p>
 <p>$a^{&lt;t&gt;}$: the activation at the time step $t$ ($a^{&lt;0&gt;} = \vec{0}$)</p>
 <h2 id="Representing-words">Representing words<a class="anchor-link" href="#Representing-words">¶</a></h2><p>Each word is represented as a one-hot vector based on a dictionary</p>
-<h2 id="Architecture">Architecture<a class="anchor-link" href="#Architecture">¶</a></h2><img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*SKGAqkVVzT6co-sZ29ze-g.png"/>
+<h2 id="Architecture">Architecture<a class="anchor-link" href="#Architecture">¶</a></h2><img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*SKGAqkVVzT6co-sZ29ze-g.png"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>The image shows the unfolded version of a RNN. The actual RNNs use one cell repeatedly</p>
 <p>At each time step, the network will take in an activation from the current time step, $x^{&lt;t&gt;}$, and an activation from the previous time step, $a^{&lt;t-1&gt;}$ to provide the output $y^{&lt;t&gt;}$ and pass the activation to the next time setp, $a^{&lt;t&gt;}$. Thus, RNN takes in 2 inputs and have 2 outputs</p>
 <h3 id="Forward-propagation">Forward propagation<a class="anchor-link" href="#Forward-propagation">¶</a></h3><p>$$a^{&lt;t&gt;} = g_1(W_{aa}a^{&lt;t-1&gt;} + W_{ax}x^{&lt;t&gt;} + b_a)$$
 $$y^{&lt;t&gt;} = g_2(W_{ya}a^{&lt;t-1&gt;} + b_y)$$</p>
 <p>RNN cell architecture
-<img alt="No description has been provided for this image" src="https://global.discourse-cdn.com/dlai/original/3X/2/c/2cd9b38764a152e508d90650b5a365599c6347f8.png"/></p>
+<img alt="No description has been provided for this image" src="https://global.discourse-cdn.com/dlai/original/3X/2/c/2cd9b38764a152e508d90650b5a365599c6347f8.png"/  style="display: block; margin: 1.5rem auto; max-width: 90%;"></p>
 <p>The activation $a^{&lt;t-1&gt;}$ contains the information from previous timesteps, which represents the context. The input $x^{&lt;t&gt;}$ represents the information from the current timestep. The RNN cell combines them to produce an output that contains both the context and current information. This output servers as the context for the next timestep</p>
 <p>For the output layer, the RNN will transform the activation at this timestep and apply a softmax function on it. The softmax function gives the probability of each word being the next word, $y^{&lt;t&gt;}$. In general, we will choice the entry with the highest probability to be the next word (to ensure randomness, we may pick among the words with high probability)</p>
 <p>Note: in RNN, tanh activation is used most often</p>
@@ -7976,7 +8030,7 @@ $$y^{&lt;t&gt;} = g_2(W_{ya}a^{&lt;t-1&gt;} + b_y)$$</p>
 <li>Many to one: many input and only one output (eg. movie rating based on description)</li>
 <li>One to many: one input and many output (eg. music generation)</li>
 </ol>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*qUcWLuiBgpFVACYE.png"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*qUcWLuiBgpFVACYE.png"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h2 id="Training-language-model">Training language model<a class="anchor-link" href="#Training-language-model">¶</a></h2><ol>
 <li>Collect large corpus (body) of text as the training set</li>
 <li>Tokenize the training text into one-hot vectors based on the dictionary (UNK for unknown words)</li>
@@ -7985,7 +8039,7 @@ $$y^{&lt;t&gt;} = g_2(W_{ya}a^{&lt;t-1&gt;} + b_y)$$</p>
 </ol>
 <h2 id="Generate-sequence--(one-to-many)">Generate sequence  (one to many)<a class="anchor-link" href="#Generate-sequence--(one-to-many)">¶</a></h2><p>In order to generate text, we can randomly sample a word based on the probability distrubtion of the softmax output at the time step, $y^{&lt;t&gt;}$. Then, the sampled word is fed as the input of the next time step, where $x^{&lt;t+1&gt;} = y^{&lt;t&gt;}$, to generate a sequence</p>
 <p>Initially, we start with $a^{&lt;0&gt;} = \vec{0}$ and $x^{&lt;1&gt;} = \vec{0}$</p>
-<img alt="No description has been provided for this image" src="https://media5.datahacker.rs/2020/09/59-1-1024x410.jpg" width="700"/>
+<img alt="No description has been provided for this image" src="https://media5.datahacker.rs/2020/09/59-1-1024x410.jpg" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h2 id="Vanishing-gradient-and-solutions">Vanishing gradient and solutions<a class="anchor-link" href="#Vanishing-gradient-and-solutions">¶</a></h2><p>For a long sequential data, tranditional RNNs will experience vanishing gradient, causing the model to take longer to train and difficult to learn long term dependencies (context of a long sentence).</p>
 <p>As the backpropagation algorithm advances downwards(or backward) from the output layer towards the input layer, the gradients often get smaller and smaller and approach zero which eventually leaves the weights of the initial or lower layers nearly unchanged. This is caused by the staturation nature of the some activation functions</p>
 <h3 id="Solutions">Solutions<a class="anchor-link" href="#Solutions">¶</a></h3><ol>
@@ -7996,7 +8050,7 @@ $$y^{&lt;t&gt;} = g_2(W_{ya}a^{&lt;t-1&gt;} + b_y)$$</p>
 </ol>
 <h1 id="Gated-recurrent-unit-(GRU)">Gated recurrent unit (GRU)<a class="anchor-link" href="#Gated-recurrent-unit-(GRU)">¶</a></h1><p>GRU solves the vanishing gradient problem by capturing the long term dependencies using memory cells, which contains 2 gates, an update gate and a relevance gate. The update gate decides how much past information to remember and forget, and the relevance gate determines how much past information will we keep when forming the new memory</p>
 <p>Note: $c^{&lt;t&gt;}$ and $a^{&lt;t&gt;}$ are the same in the context of GRU, so there's only 2 inputs and 2 outputs for each GRU cell</p>
-<img alt="No description has been provided for this image" src="https://stanford.edu/~shervine/teaching/cs-230/illustrations/gru-ltr.png?00f278f71b4833d32a87ed53d86f251c" width="500"/>
+<img alt="No description has been provided for this image" src="https://stanford.edu/~shervine/teaching/cs-230/illustrations/gru-ltr.png?00f278f71b4833d32a87ed53d86f251c" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>$$c^{&lt;t&gt;} = a^{&lt;t&gt;}$$</p>
 <p>$$\tilde c^{&lt;t&gt;} = tanh(W_{cc}(\Gamma_r * c^{&lt;t-1&gt;}) + W_{cx}x^{&lt;t&gt;} + b_c)$$</p>
 <p>$$\Gamma_u = \sigma(W_{uc}c^{&lt;t-1&gt;} + W_{ux}x^{&lt;t&gt;} + b_u)$$</p>
@@ -8013,7 +8067,7 @@ $$y^{&lt;t&gt;} = g_2(W_{ya}a^{&lt;t-1&gt;} + b_y)$$</p>
 <h2 id="LSTM">LSTM<a class="anchor-link" href="#LSTM">¶</a></h2><p>Long Short-Term Memory Networks (LSTMs) solves the managing long-term data dependencies problem that traditional RNN faced by using a system of gates that control how information flows through the network — deciding what to keep and what to forget over extended sequences</p>
 <p>The LSTM cell takes in 3 inputs and produce 3 outputs, the previous cell state (the information which one is stored at the end of the previous time step), the previous hidden state (activation from previous state), and the input at the current time step, $x^{&lt;t&gt;}$</p>
 <p>The hidden state and current timestep inputs are very similar to those of the traditional RNNs. The cell state are like "memory" that moves the information with basic operations like addition and multiplication that remembers important information and forgets not important ones. This is done by 3 gates, the update gate, the forget gate, and the output gate</p>
-<img alt="No description has been provided for this image" src="https://stanford.edu/~shervine/teaching/cs-230/illustrations/lstm-ltr.png?4539fbbcbd9fabfd365936131c13476c" width="500"/>
+<img alt="No description has been provided for this image" src="https://stanford.edu/~shervine/teaching/cs-230/illustrations/lstm-ltr.png?4539fbbcbd9fabfd365936131c13476c" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>$$\tilde c^{&lt;t&gt;} = \Gamma_r = tanh(W_{ca}a^{&lt;t-1&gt;} + W_{cx}x^{&lt;t&gt;} + b_c)$$</p>
 <p>$$\Gamma_u = \sigma(W_{ua}a^{&lt;t-1&gt;} + W_{ux}x^{&lt;t&gt;} + b_u)$$</p>
 <p>$$\Gamma_f = \sigma(W_{fa}a^{&lt;t-1&gt;} + W_{fx}x^{&lt;t&gt;} + b_f)$$</p>
@@ -8028,13 +8082,13 @@ $$y^{&lt;t&gt;} = g_2(W_{ya}a^{&lt;t-1&gt;} + b_y)$$</p>
 <p>In general, LSTM is more powerful and flexible than the GRU but requires more computational power</p>
 <h1 id="Different-types-of-RNNs">Different types of RNNs<a class="anchor-link" href="#Different-types-of-RNNs">¶</a></h1><h3 id="Deep-RNN">Deep RNN<a class="anchor-link" href="#Deep-RNN">¶</a></h3><p>The Deep RNN is constructed by stacking multiple layers of RNN together. In this architecture, every RNN layer predicts the sequence of outputs to send to the next RNN layer instead of predicting a single output value. Then the final RNN layer predicts the single output</p>
 <p>Note: we can start processing the next layer as soon as the current layer produces an output for the current time step, and there is no need to wait for the entire sequence to be processed by the current layer</p>
-<img alt="No description has been provided for this image" src="https://stanford.edu/~shervine/teaching/cs-230/illustrations/deep-rnn-ltr.png?f57da6de44ddd4709ad3b696cac6a912" width="300"/>
+<img alt="No description has been provided for this image" src="https://stanford.edu/~shervine/teaching/cs-230/illustrations/deep-rnn-ltr.png?f57da6de44ddd4709ad3b696cac6a912" width="300"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h3 id="CNN-RNN">CNN-RNN<a class="anchor-link" href="#CNN-RNN">¶</a></h3><p>CNN-RNN architecture is a combination of CNN and RNN architectures. It first uses the CNN network layer to extract the essential features from the input and then send them to the RNN layer to support sequence prediction. An example application for this architecture is generating textual descriptions for the input image</p>
-<img alt="No description has been provided for this image" src="https://media.springernature.com/lw1200/springer-static/image/art%3A10.1007%2Fs11063-024-11687-w/MediaObjects/11063_2024_11687_Fig3_HTML.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://media.springernature.com/lw1200/springer-static/image/art%3A10.1007%2Fs11063-024-11687-w/MediaObjects/11063_2024_11687_Fig3_HTML.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h3 id="Encoder-decoder-RNN-(Seq2Seq)">Encoder-decoder RNN (Seq2Seq)<a class="anchor-link" href="#Encoder-decoder-RNN-(Seq2Seq)">¶</a></h3><p>Encoder-decoder RNN architecture has an encoder to convert the input to an intermediate encoder vector. Then one decoder transforms the intermediate encoder vector into the final result. An application for this is model is machine translation</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*1JcHGUU7rFgtXC_mydUA_Q.jpeg" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*1JcHGUU7rFgtXC_mydUA_Q.jpeg" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h3 id="Bidirectional-RNN">Bidirectional RNN<a class="anchor-link" href="#Bidirectional-RNN">¶</a></h3><p>Bidirectional RNN connect two RNN layers together, one in forwarding direction and the other in backward direction. With this architecture, the output layer can get information from past and future simultaneously. In general, the forward and backward will process independently, and their output will be combined to produce the final output. An application for this model is sentiment classification</p>
-<img alt="No description has been provided for this image" src="https://stanford.edu/~shervine/teaching/cs-230/illustrations/bidirectional-rnn-ltr.png?e3e66fae56ea500924825017917b464a" width="400"/>
+<img alt="No description has been provided for this image" src="https://stanford.edu/~shervine/teaching/cs-230/illustrations/bidirectional-rnn-ltr.png?e3e66fae56ea500924825017917b464a" width="400"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 </div>
 </div>
 </div>
@@ -8050,7 +8104,7 @@ $$y^{&lt;t&gt;} = g_2(W_{ya}a^{&lt;t-1&gt;} + b_y)$$</p>
 <p>Seq2Seq models address this challenge by encoding the entire input sequence into a fixed-length context vector (via the encoder), and then decoding this vector to generate the output sequence step-by-step (via the decoder). This allows the model to handle the input and output sequences of different lengths effectively.</p>
 <p>The basic sequence to sequence model has an encoder and a decoder. The encoder takes in the input sequence, converts it to a fixed-length context encoding, which captures the meaning of the input sequence, and feed it to the decoder. The decoder will takes in the context encoding and generate a sequence based on the given encoding. Note that the output at each timestep of the encoder network is discarded</p>
 <p>Note: the encoder can be a CNN, RNN, or other architecture depending on the input data</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*RSdvbRGBJnLgX4E0.png" width="700"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*RSdvbRGBJnLgX4E0.png" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>Theoretically, in training, the decoder should feed its prediction at the previous timestep as the input to the next timestep as context for predicting the next word. However, at the beginning of the training, this may cause issue because the initial, untrained network will output some random predictions, and using these predictions as the context will cause more inaccurate predictions for the sequence after, which lead to very slow convergence and model instability. Therefore, in training phase, we use the teacher forcing method by always using the ground truth label from the previous timestep as the input for next timestep. This method is like training each timestep individually, which allows the model to learn faster. After the model is trained (testing phase), we will switch back to use the model's prediction at the previous timestep as the input for the next timestep</p>
 <p>Compared to the language model previously with input activation of, $\vec 0$, the decoder of Seq2Seq model is a conditional language model that generate a sequence with maximum probability (the most likely sequence) given the ecoding as the condition</p>
 <h3 id="Issues-with-Seq2Seq-model-and-solutions">Issues with Seq2Seq model and solutions<a class="anchor-link" href="#Issues-with-Seq2Seq-model-and-solutions">¶</a></h3><ol>
@@ -8072,7 +8126,7 @@ $$y^{&lt;t&gt;} = g_2(W_{ya}a^{&lt;t-1&gt;} + b_y)$$</p>
 <li>For each word/sequence, feed it into seconds time step and compute the combined probability. Only keep track of the top $B$ sequences with the highest probability and drop the rest</li>
 <li>Repeat step 3</li>
 </ol>
-<img alt="No description has been provided for this image" src="https://stanford.edu/~shervine/teaching/cs-230/illustrations/beam-search-en.png?3515955a2324591070618dd85812d5d7" width="900"/>
+<img alt="No description has been provided for this image" src="https://stanford.edu/~shervine/teaching/cs-230/illustrations/beam-search-en.png?3515955a2324591070618dd85812d5d7" width="900"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>$B$: the beam width that determines the number of most likely sentence to be track of. Large values of $B$ yield to better result but with slower performance and increased memory. Small values of $B$ lead to worse results but is less computationally intensive. A standard value for $B$ is around 10</p>
 <h3 id="Length-normalization">Length normalization<a class="anchor-link" href="#Length-normalization">¶</a></h3><p>The combined probability is calculated by multiplying each word given the previous words, where</p>
 <p>$$P = \text{argmax}_y \Pi_{t=1}^{T_y}P(y^{&lt;t&gt;}|x, y^{&lt;1&gt;}, ...y^{&lt;t-1&gt;})$$</p>
@@ -8188,7 +8242,7 @@ $$</p>
 <h1 id="Sentiment-classification">Sentiment classification<a class="anchor-link" href="#Sentiment-classification">¶</a></h1><p>Sentiment classification predicts the sentiment based on a given sentence</p>
 <p>To make predictions, we first convert all the words in the sentence from one-hot vector into embeddings. Then, take the average or sum of the embeddings and feed it into a softmax unit for classificatioin. An issue of this method is that it is not good at catching multiple negations in the same sentence</p>
 <p>Another method is to feed the word embeddings of the sentence into a RNN by time steps and feed the activation from the last time step into a softmax unit for classification</p>
-<img alt="No description has been provided for this image" src="https://www.tensorflow.org/static/text/tutorials/images/bidirectional.png" width="400"/>
+<img alt="No description has been provided for this image" src="https://www.tensorflow.org/static/text/tutorials/images/bidirectional.png" width="400"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 </div>
 </div>
 </div>
@@ -8228,7 +8282,7 @@ $$</p>
 <p>After encoding, the last hidden state of the encoder is fed as the initial hidden state of the decoder, similar to the traditional Seq2Seq model. At each time step, the decoder produces its own hidden state, and we compute a <strong>score</strong> for each encoder hidden state by taking the dot product or some learned transformation between the decoder hidden state and each encoder hidden state. These scores represent the relevance of each input word for generating the current output. A higher score indicates that a particular input word is more important, and the attention mechanism will assign it a higher weight when generating the current output.</p>
 <p>Next, we pass all the scores through a softmax function to normalize them into attention weights, ensuring that each weight is between 0 and 1, and that their sum equals 1. These attention weights determine how much each encoder hidden state contributes to the final context vector used by the decoder.</p>
 <p>Finally, we calculate the context vector by computing the weighted sum of the encoder hidden states using the attention weights. This sum forms the context vector for the decoder at the current timestep, which contains a focused representation of the input. The decoder then uses the context vector and its hidden state to calculate an output. This method overcomes the information bottleneck of the intermediary state by allowing the decoder model to access all the hidden states</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1100/format:webp/0*C8OjldkhqO6aTHyG.png"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1100/format:webp/0*C8OjldkhqO6aTHyG.png"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h2 id="Mathematical-explanation">Mathematical explanation<a class="anchor-link" href="#Mathematical-explanation">¶</a></h2><p>First, the encoder calculates the hidden states for each input timestep, which we refer as $h_{t}$ for all input timestep where $t = 0, 1, ..., T$. After encoding, we have an array of hidden states $[h_0, h_1, ..., h_T]$</p>
 <p>At each step of decoding, the decoder takes in the decoder hidden state, $h_{s-1}$ and the predicted word, $y_{s-1}$ (ground truth label at training time) from the previous timestep to compute its current hidden state, where
 $$h_{s} = f(h_{s-1}, y_{s-1})$$</p>
@@ -8250,7 +8304,7 @@ $$c_s = \sum^{T}_{t=0}{\alpha^{(s)}_{t} h_t}$$</p>
 $$y_s = g(h_s, c_s)$$</p>
 <p>$y_s$: the decoder prediction at timestep $s$</p>
 <p>In this case, the attention mechanism is not a neural network and there's nothing to be learned. It's only there to help the encoder and decoder learn better. However, learned parameters can definitely be added to inpromve the models' capability</p>
-<img alt="No description has been provided for this image" src="https://media.geeksforgeeks.org/wp-content/uploads/20200603211336/attn.png"/>
+<img alt="No description has been provided for this image" src="https://media.geeksforgeeks.org/wp-content/uploads/20200603211336/attn.png"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>In the image, a feed-forward network is added, which is responsible for transforming the target hidden state, $h_t$, into a representation that is compatible with the attention mechanism, $A$. It takes the target hidden state h(t-1) and applies a linear transformation followed by a non-linear activation function (e.g., ReLU) to obtain a new representation, $A$. Instead of using the hidden state directly, it use a neural network to map the hidden state to a new representation as the input to attention layer. However, the above formulas still hold by replacing all $h_t$ to $A$</p>
 <h1 id="Different-types-of-attentions">Different types of attentions<a class="anchor-link" href="#Different-types-of-attentions">¶</a></h1><h2 id="1.-Bahdanau-Attention-(Additive-Attention)">1. Bahdanau Attention (Additive Attention)<a class="anchor-link" href="#1.-Bahdanau-Attention-(Additive-Attention)">¶</a></h2><p>Bahdanau attention, also known as <strong>additive attention</strong>, is very similar to the general attention mechanism introduced above. The key difference is that instead of using the <strong>current decoder hidden state</strong> $h_s$ to compute attention scores, Bahdanau attention uses the <strong>previous decoder hidden state</strong> $h_{s-1}$ and each <strong>encoder hidden state</strong> $h_t$ to compute a compatibility score, $e_t$.</p>
 <p>The attention score for each encoder hidden state is computed using a small feedforward neural network:</p>
@@ -8307,7 +8361,7 @@ where $x_0, x_1, ...$ are the word embedding for each single word</p>
 <p>After obtaining the query, key, value matrices for the input sequence, we can calculate the attention scores by using the query and key matrices, where</p>
 <p>$$A = softmax(\frac{QK^{\top}}{\sqrt{d_k}})$$</p>
 <p>$A$: the attention weight matrix, where $A = [a_0, a_1, ..., a_T]$. $A$ is a $T x T$ matrix, where $T$ indicates the number of input tokens, and $a_t$ is the attention weight for the $t$th word, which indicates how much attention should this words pay toward each other words. A higher attention weight means the corresponding Value vector should contribute more to the output representation, while a lower attention weight means it should contribute less. The sum of <strong>each row</strong> of the attention weight matrix, $a_t$, is 1. Note that this matrix is not symetrical as the attention from the word A to B is not necessarily the same as the attention from word B to A</p>
-<img alt="No description has been provided for this image" src="https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fb7dd5ec8-4912-4e0d-8265-b335c08d2958_1760x1126.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fb7dd5ec8-4912-4e0d-8265-b335c08d2958_1760x1126.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>$QK^{\top}$: a $T x T$ similarity score matrix, which is the dot product between the query and key matrices. Each entry of this matrix represents how much one word should attend to another. The result of the dot product is the attention score matrix before being normalized by the softmax function, which denotes the similarity between each of the two input words</p>
 <p>$\sqrt{d_k}$: the square root of the dimension of the key query space, which scale the dot products to prevent extremely large values. Without scaling, large dot-product values would cause the softmax function to produce highly skewed attention distributions, making the model focus too much on a few tokens and leading to unstable training.</p>
 <p>Finally, we use the attention weight matrix and the value matrix to calculate the refined, contextual word embedding specifically for this input sequence, where</p>
@@ -8318,7 +8372,7 @@ where $x_0, x_1, ...$ are the word embedding for each single word</p>
 <p>$X$: the original input embedding</p>
 <p>$Z$: which encodes contextual relationships between words. This information is combined with the original embedding $X$ through a residual connection to produce the final context-aware representation.</p>
 <p>Note: $Z$ and $X$ must have the same dimension in order of the residual connection to work. If $d_v$ does not equal $d_{model}$, another linear layer will be used to ensure their dimension matches</p>
-<img alt="No description has been provided for this image" src="https://sebastianraschka.com/images/blog/2023/self-attention-from-scratch/summary.png" width="700"/>
+<img alt="No description has been provided for this image" src="https://sebastianraschka.com/images/blog/2023/self-attention-from-scratch/summary.png" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>In summary, self attention takes in all the static word embedding, look at all the input words and make necessary adjustment to the static word embedding of each word to refine their meaning based on the given contxt, which</p>
 <ul>
 <li>captures long-range dependencies in a sequence more effectively than RNNs and LSTMs.</li>
@@ -8327,7 +8381,7 @@ where $x_0, x_1, ...$ are the word embedding for each single word</p>
 <h2 id="4.-Multihead-attention">4. Multihead attention<a class="anchor-link" href="#4.-Multihead-attention">¶</a></h2><p>Multihead attention is an extension of self attention by performing self attention in parallel $h$ times, where $h$ is the number of heads. Each self attention head has its own Q, K, V mapping to capture different contextual relationships in the sequence to propose a update to improve the original word embedding based on the context. By processing information from multiple perspectives, multi-head attention allows the model to better understand dependencies between words.</p>
 <p>After each multihead attention layer, we will have $h$ number of refined embedding matrix, denoted by $z_0, z_1, ..., z_h$, where $z_i$ is the output for the $i$th self attention head. These outputs are concatenated into a single matrix, given by</p>
 <p>$$Z = [z_0, z_1, ..., z_{h-1}]$$</p>
-<img alt="No description has been provided for this image" src="https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff406d55e-990a-4e3b-be82-d966eb74a3e7_1766x1154.png" width="700"/>
+<img alt="No description has been provided for this image" src="https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff406d55e-990a-4e3b-be82-d966eb74a3e7_1766x1154.png" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>Then, a linear transformation is applied to project this concatenated output, $Z$, back to the model’s embedding size $d_{model}$, where</p>
 <p>$$Z' = Concat(z_0, z_1, ..., z_{h-1}) W_o = Z W_o$$</p>
 <p>$W_o$: a learned linear mapping that maps Z to have the size dimension of the word embedding</p>
@@ -8379,7 +8433,7 @@ where V has the size of $(n,  d_v)$, so $Z$ has the dimension of $(m, d_v)$.</p>
 $$H' = H + Z$$
 where $H'$ is the new hidden state and $H$ is the original hidden state</p>
 <p>The final output of the cross attention layer is $H'$ (a refined decoder hidden state), which tells the decoder how to use the encoder information in the next prediction</p>
-<img alt="No description has been provided for this image" src="https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa16d2bd0-984d-4224-9c4c-2f0cc144a599_1520x1108.png" width="700"/>
+<img alt="No description has been provided for this image" src="https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa16d2bd0-984d-4224-9c4c-2f0cc144a599_1520x1108.png" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>Essentially, cross attention layer combines and aligns the information from two sources to capture the dependencies between them</p>
 </div>
 </div>
@@ -8397,9 +8451,9 @@ where $H'$ is the new hidden state and $H$ is the original hidden state</p>
 <li>Effectively capture long range dependencies</li>
 <li>Preserve the information about input order</li>
 </ol>
-<h2 id="Architecture">Architecture<a class="anchor-link" href="#Architecture">¶</a></h2><img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*hMpd6D6yc7L7eY7s.png" width="800"/>
+<h2 id="Architecture">Architecture<a class="anchor-link" href="#Architecture">¶</a></h2><img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*hMpd6D6yc7L7eY7s.png" width="800"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>The transformer model follows an encoder-decoder architecture that uses self-attention and cross-attention mechanisms. The encoder processes the entire input sequence in parallel, while the decoder is autoregressive, generating output tokens one by one. The actual encoder and decoder are made out of multiple ($N$) same encoder/decoder blocks</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*icgq7WfgAryCABqv.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*icgq7WfgAryCABqv.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h3 id="Positional-encoding">Positional encoding<a class="anchor-link" href="#Positional-encoding">¶</a></h3><p>One issue with the encoder processing all embeddings in parallel is that the self-attention module cannot capture the order of words in a sentence. Therefore, we need positional encodings to provide information about the location of each word in the sentence.</p>
 <p>Simply assigning position numbers to each word (word0, word1, etc) is a solution to this, but it comes with the issue of</p>
 <ol>
@@ -8414,7 +8468,7 @@ where $H'$ is the new hidden state and $H$ is the original hidden state</p>
 <p>$i$: the index of the encoding dimension pair, ranging from 0 to $d/2 - 1$</p>
 <p>$d$: size of the word embedding, which equals $d_{\text{model}}$</p>
 <p>Positional encoding generate values for even positions using the sine function and odd positions using the cosine function. The final encoding has the same size as the word embedding $d_\text{model}$
-<img alt="No description has been provided for this image" src="https://machinelearningmastery.com/wp-content/uploads/2022/01/PE3.png" width="500"/></p>
+<img alt="No description has been provided for this image" src="https://machinelearningmastery.com/wp-content/uploads/2022/01/PE3.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;"></p>
 <p>Sine and cosine waves oscillate, meaning they repeat values periodically. However, they still capture distance and relationships effectively due to two key properties:</p>
 <ol>
 <li>Different frequencies for different dimensions (multi-scale representation)</li>
@@ -8428,12 +8482,12 @@ where $H'$ is the new hidden state and $H$ is the original hidden state</p>
 <h4 id="Phase-Differences-Capture-Relative-Position">Phase Differences Capture Relative Position<a class="anchor-link" href="#Phase-Differences-Capture-Relative-Position">¶</a></h4><p>For the same frequency (when $i$ is fixed), the difference between positional encodings for two words separated by the same distance remains similar, where</p>
 <p>$$PE(p + k) - PE(p) \approx f(k)$$</p>
 <p>for any position $p$ and seperation $k$. This implies that the difference between any two words’ embeddings depends primarily on $k$ with only minor variations based on $p$ that are negligible in practice. Therefore, the model can infer and understand relative distances between words by analyzing the differences in their input embeddings</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1012/format:webp/1*JdYCgMl1NXshwi3GfUFSSg.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1012/format:webp/1*JdYCgMl1NXshwi3GfUFSSg.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>Finally, the positional encoding is added to the original word embedding to form the input word embeddings for the attention layer. This ensures that the new input word embeddings (size = $d_{\text{model}}$) not only encode the semantic meaning of words but also incorporate their global, local, and relative positional information within the sequence, ensuring the model understands word order and relationship effectively</p>
 <h3 id="Masked-Multihead-Attention-Layer">Masked Multihead Attention Layer<a class="anchor-link" href="#Masked-Multihead-Attention-Layer">¶</a></h3><p>In the decoder of the Transformer architecture, there is a masked multihead attention layer, also called causal attention. This is needed because, during training, we input the entire target sentence (ground truth) into the decoder for convenience using teacher forcing method. However, this also means the decoder could cheat by attending to future ground truth tokens</p>
 <p>Therefore, at each timestep, we mask out all future tokens to prevent the decoder from seeing them. This ensures that the decoder can only attend to earlier ground truth tokens, mimicking the real scenario during inference, where it must use only previously generated tokens to predict the next token.</p>
 <p>To masked out all future tokens, we first compute the similarity score matrix ($QT^{\top}$) as usual. Then, at each timestep, we add a value of $-\infty$ to the scores of future tokens. After applying softmax, the attention weights for those future tokens become $e^{-\infty} = 0$, meaning the model does not attend to or use future tokens for prediction</p>
-<p><img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*QYFua-iIKp5jZLNT.png" width="400"/><img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*3ykVCJ9okbgB0uUR.png" width="400"/></p>
+<p><img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*QYFua-iIKp5jZLNT.png" width="400"/  style="display: block; margin: 1.5rem auto; max-width: 90%;"><img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*3ykVCJ9okbgB0uUR.png" width="400"/  style="display: block; margin: 1.5rem auto; max-width: 90%;"></p>
 <p>Masking ensures that attention to future tokens is always zero, but each token still computes attention over past tokens, producing a meaningful context-aware output based solely on previous context. This context-aware output from the masked attention layer is then added to the original word embedding via a residual connection. This ensures that the static word embeddings are refined using only past context, maintaining autoregressive behavior during both training and inference.</p>
 <p>Thus, the primary purpose of causal attention is to prevent the model from using future tokens during training, thereby simulating inference-time behavior, where ground truth tokens are not available</p>
 <h3 id="Encoder">Encoder<a class="anchor-link" href="#Encoder">¶</a></h3><p>The encoder takes in the input sequence as tokens and processes them in parallel to output a refined, context-aware embedding. Thus, the encoder is not an autoregressive model</p>
@@ -8444,7 +8498,7 @@ where $H'$ is the new hidden state and $H$ is the original hidden state</p>
 <li>A Fully Connected Feed-Forward layer</li>
 <li>Another Residual Connection followed by Layer Normalization</li>
 </ul>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*Blt8BYGjFAqXyajX.png" width="700"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*Blt8BYGjFAqXyajX.png" width="700"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>First, the input is fed into the multihead attention layer, which computes how the embeddings should be updated based on the sentence context. The residual connection then adds this contextual information back to the original embedding, producing a more refined embedding.</p>
 <p>Next, this refined embedding is normalized using LayerNorm and then fed into the fully connected layer. The fully connected layer is point-wise, meaning that each token embedding is passed through the same MLP independently, using shared weights. This is because self-attention already captures contextual information between tokens, so the MLP's role is to refine each token’s representation individually. It also introduces additional non-linearity and modeling capacity, allowing the model to learn more abstract and expressive patterns.</p>
 <p>Finally, the output from the fully connected layer is added back to the input through a residual connection, followed by LayerNorm, producing the final refined representation.</p>
@@ -8460,7 +8514,7 @@ where $H'$ is the new hidden state and $H$ is the original hidden state</p>
 <li>A Fully Connected Feed-Forward Layer (MLP)</li>
 <li>Another Residual Connection followed by Layer Normalization</li>
 </ul>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*GH8TpFxjIwwbHCr4.png" width="400"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*GH8TpFxjIwwbHCr4.png" width="400"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <p>First, the decoder adds positional encoding to the input word embeddings — which are the ground truth tokens during training (via teacher forcing) or previously generated tokens during inference.</p>
 <p>Then, the decoder passes these embeddings through a masked multihead self-attention layer, which masks out all future tokens to prevent the model from “cheating.” This attention layer computes context-aware embeddings, where each token can only attend to earlier tokens in the sequence. The output is then normalized by a LayerNorm layer and passed along.</p>
 <p>Next, the output of the masked self-attention is used as the Query in a cross-attention layer, while the Key and Value come from the encoder’s output. This cross-attention mechanism computes how each token in the partially generated target sequence should attend to the encoder's representations of the input sequence. This allows the decoder to align and incorporate relevant context from the source sentence into the target-side embeddings.</p>
@@ -8496,7 +8550,7 @@ In the attention mask matrix below, each row shows which tokens a particular pos
 <p>These masked inputs are then combined with the encoder outputs using <strong>cross-attention</strong> to inform decoding with both source and target context.</p>
 </blockquote>
 <p>Note: similarly, we add a padding mask to ensure all <code>&lt;pad&gt;</code> are not being attended to by real tokens, so the paddings will have no impact on the model's results</p>
-<img alt="No description has been provided for this image" src="https://drek4537l1klr.cloudfront.net/raschka/v-7/Figures/ch03__image037.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://drek4537l1klr.cloudfront.net/raschka/v-7/Figures/ch03__image037.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h4 id="6.-Prediction-&amp;-Parallelization">6. <strong>Prediction &amp; Parallelization</strong><a class="anchor-link" href="#6.-Prediction-&amp;-Parallelization">¶</a></h4><p>The decoder outputs the full predicted target sentence, where each token is predicted independently based on its own masked context and encoder-derived information.</p>
 <p>Although each token is technically predicted <strong>autoregressively</strong>, the use of <strong>masking and teacher forcing</strong> during training enables <strong>parallel processing</strong> of all target tokens at once to speed up training.</p>
 <p>Note: the model also compute predictions for <code>&lt;pad&gt;</code> positions, but these predictions are ignored during loss calculation, so they don't affect learning.</p>
@@ -8541,11 +8595,11 @@ This process applies only to the <strong>encoder</strong>, since there is no gro
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="LLM-Architectures">LLM Architectures<a class="anchor-link" href="#LLM-Architectures">¶</a></h1><p>There are multiple variations of transformer architectures in NLP, each tailored for different purposes.</p>
 <h2 id="Seq2Seq-(Encoder-Decoder)-Models">Seq2Seq (Encoder-Decoder) Models<a class="anchor-link" href="#Seq2Seq-(Encoder-Decoder)-Models">¶</a></h2><p>Seq2Seq models use both the encoder and decoder components of the traditional transformer architecture. They are effective at both interpreting and generating text. This architecture is commonly used in tasks where the model needs to process and generate sequences - such as machine translation or text summarization - especially when attending to multiple input elements</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*O1zaE60vTfrDE0w4WTU5Ww.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*O1zaE60vTfrDE0w4WTU5Ww.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h2 id="AutoEncoding-Models-(Encoder-only)">AutoEncoding Models (Encoder-only)<a class="anchor-link" href="#AutoEncoding-Models-(Encoder-only)">¶</a></h2><p>Encoder-only models utilize only the encoder portion of the transformer. They excel at understanding and analyzing input text, making them well-suited for tasks such as sentiment analysis, text classification, or named entity recognition. These models are designed to capture contextual relationships within the input without generating new sequences.</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*-ZK1N7ATPw4v0p93aSOnIQ.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*-ZK1N7ATPw4v0p93aSOnIQ.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 <h2 id="AutoRegressive-Models-(Decoder-only)">AutoRegressive Models (Decoder-only)<a class="anchor-link" href="#AutoRegressive-Models-(Decoder-only)">¶</a></h2><p>Decoder-only models rely solely on the decoder component of the transformer. They are designed for text generation, where each token is generated based on the previously generated ones. These models, such as GPT, are optimized for tasks like story generation, chatbots, or code completion. However, since they lack an explicit encoder, their ability to deeply understand long input contexts is more limited compared to encoder-based models.</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*YV-zoM7wVTh_2yyPIIxqWA.png" width="500"/>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*YV-zoM7wVTh_2yyPIIxqWA.png" width="500"/  style="display: block; margin: 1.5rem auto; max-width: 90%;">
 </div>
 </div>
 </div>
