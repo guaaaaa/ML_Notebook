@@ -8066,6 +8066,7 @@ $$G_t = r_{t+1} + \gamma r_{t+2} + \gamma^2 r_{t+3} + \dots + \gamma^{T-t-1} r_T
 </ul>
 </li>
 </ol>
+<img alt="No description has been provided for this image" src="https://i0.wp.com/roboticseabass.com/wp-content/uploads/2020/08/rl_intro_banner-1.png?fit=1200,448&amp;ssl=1" width="700"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h3 id="Monte-Carlo-for-Action-Value-Estimation">Monte Carlo for Action-Value Estimation<a class="anchor-link" href="#Monte-Carlo-for-Action-Value-Estimation">¶</a></h3><p>In DP, state values are sufficient to determine a policy because the model (transition probabilities and rewards) allows us to look one step ahead and select the action that leads to the best expected outcome. However, in Monte Carlo methods, where no model of the environment is available, state values alone are insufficient for decision makin because even though we know the all the state values, we do not know the transition probabilities, and thus, do not know which state the agent will end up in after taking an action. Therefore, we must explicitly estimate action-value functions, $q_\pi(s, a)$, to determine which actions are better under a given policy.</p>
 <p>To estimate action values</p>
 <ol>
@@ -8096,12 +8097,14 @@ $$G_t = r_{t+1} + \gamma r_{t+2} + \gamma^2 r_{t+3} + \dots + \gamma^{T-t-1} r_T
 <li>Monte Carlo Policy Evaluation</li>
 </ol>
 <ul>
-<li>For each state-action pair $(s, a)$ that appears in the episode:
-a. Compute the return $G_t$ backward with discount.
-b. Update the action-value estimate $q_\pi(s, a)$ as the sample average of all returns observed for that pair:
+<li>For each state-action pair $(s, a)$ that appears in the episode:<ul>
+<li>Compute the return $G_t$ backward with discount.</li>
+<li>Update the action-value estimate $q_\pi(s, a)$ as the sample average of all returns observed for that pair:
 $$q_\pi(s, a) \leftarrow \text{average of all returns observed after visiting } (s, a)$$</li>
 </ul>
-<p>Note: Only the $(s, a)$ pairs actually visited in the episode are updated; others remain unchanged. In theory, an infinite number of episodes ensures accurate value estimation for all pairs. In practice, however, we use limited episodes, meaning early updates may be noisy—but over many iterations, the estimates improve.</p>
+</li>
+</ul>
+<p>Note: Only the $(s, a)$ pairs actually visited in the episode are updated; others remain unchanged. In theory, an infinite number of episodes ensures accurate value estimation for all pairs. In practice, however, we use limited episodes, meaning early updates may be noisy, but over many iterations, the estimates improve.</p>
 <ol start="4">
 <li>Policy Improvement</li>
 </ol>
@@ -8116,7 +8119,132 @@ $$\pi_{\text{new}}(s) = \arg\max_a q_\pi(s, a)$$</li>
 <li>Return to Step 2 and continue until the policy converges, or for a fixed number of iterations.</li>
 </ul>
 <p>Note: Using one or few episode per iteration is analogous to stochastic gradient descent, where each update may be noisy, but the overall trend improves the policy over time. The use of exploring starts ensures that all state-action pairs have a non-zero chance of being updated, which is critical for convergence guarantees.</p>
-<img alt="No description has been provided for this image" src="https://i0.wp.com/roboticseabass.com/wp-content/uploads/2020/08/rl_intro_banner-1.png?fit=1200,448&amp;ssl=1"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<h3 id="Monte-Carlo-for-Action-Value-Without-Exploring-Start">Monte Carlo for Action-Value Without Exploring Start<a class="anchor-link" href="#Monte-Carlo-for-Action-Value-Without-Exploring-Start">¶</a></h3><p>Exploring start requires that the agent will be initialized at all possible state-action pairs in order to give enough exploration. This can be problematic in complex, real world problem as some problems, like self-driving car, can have infinite amount of state-action pairs.</p>
+<p>To solve this, we can use $\epsilon$-soft policy. $\epsilon$-soft policy is a stochastic policy that give each possible actions at least $\frac{\epsilon}{\text{Total number of actions}}$ probability of being selected, where
+$$\pi(a|s) \geq \frac{\epsilon}{A(s)}$$</p>
+<p>For example, $\epsilon$ greedy and uniform random policies are both examples of $\epsilon$-soft policy.</p>
+<p>The stochasticity in $\epsilon$-soft policy mean that the agent will explore automatically, meaning they will eventually visit all state-action pairs with large enough episodes. This means we can remove the exploring start condition.</p>
+<p>However, $\epsilon$-soft policy also means it can only learn the optimal soft policy through policy iteration, and it can never perform as well as the optimal deterministic policy as there's always a small chance of the agent to explore even when it knows the environment completely. Nontheless, this optimal soft policy often performs well enough, and there is no need to find the optimal deterministic policy</p>
+<p>To achieve policy iteration for $\epsilon$-soft policies, we first initalize a random $\epsilon$-soft policy. Then, we run simulations to obtain an episode, and we use the observed return at each state to update the action-value estimates. Finally, we make the policy $\epsilon$ greedy with respect to the currently action-value function. This process is essentially the same as before, but instead of using a determinstic policy, all the policies involved are stochastic, and instead of arrving at the optimal dterministic policy, we will arrive at the optimal $\epsilon$-soft policy</p>
+<h3 id="Monte-Carlo-for-Action-Value-Without-Exploring-Starts">Monte Carlo for Action-Value Without Exploring Starts<a class="anchor-link" href="#Monte-Carlo-for-Action-Value-Without-Exploring-Starts">¶</a></h3><p>In Monte Carlo control with exploring starts, every state-action pair must have a non-zero probability of being the initial pair in an episode. This guarantees that all $(s, a)$ pairs are eventually visited, which is critical for ensuring convergence to the optimal policy. However, exploring starts are impractical in real world problems, especially those with continuous or infinite state-action spaces, like self-driving cars, where it’s impossible to initialize the agent in every possible situation.</p>
+<h3 id="$%5Cboldsymbol%7B%5Cvarepsilon%7D$-Soft-Policies">$\boldsymbol{\varepsilon}$-Soft Policies<a class="anchor-link" href="#$%5Cboldsymbol%7B%5Cvarepsilon%7D$-Soft-Policies">¶</a></h3><p>To ensure sufficient exploration without exploring starts, we use $\varepsilon$-soft policies, which are stochastic policies that assign non-zero probability to all actions in every state, where</p>
+<p>$$\pi(a \mid s) \geq \frac{\varepsilon}{|\mathcal{A}(s)|}$$</p>
+<p>This guarantees that every action in every state has a chance of being selected with at least probability of $\frac{\varepsilon}{\text{Number of possible actions}}$. Thus, all state-action pairs are eventually explored with enough episodes. Both $\varepsilon$-greedy policy and uniform random policy are examples of $\varepsilon$-soft policies</p>
+<p>Using an $\varepsilon$-soft policy ensures exploration and removes the need for exploring starts. However, there’s a trade-off, where the agent can only converge to the optimal $\varepsilon$-soft policy, not the optimal deterministic policy. Even after learning a near-optimal policy, the agent still occasionally explores due to the non-zero $\varepsilon$.</p>
+<p>In practice, the performance of the optimal $\varepsilon$-soft policy is often close to that of the optimal deterministic policy, and perform well enough for the need.</p>
+<h3 id="Monte-Carlo-Control-with-$%5Cvarepsilon$-Soft-Policy-(Policy-Iteration)">Monte Carlo Control with $\varepsilon$-Soft Policy (Policy Iteration)<a class="anchor-link" href="#Monte-Carlo-Control-with-$%5Cvarepsilon$-Soft-Policy-(Policy-Iteration)">¶</a></h3><p>The process is similar to standard Monte Carlo policy iteration, with the key difference being the use of stochastic policies:</p>
+<ol>
+<li><p>Initialize:</p>
+<ul>
+<li>Initialize a random $\varepsilon$-soft policy $\pi$.</li>
+<li>Initialize action-value estimates $q(s, a)$ arbitrarily.</li>
+</ul>
+</li>
+<li><p>Generate Episode:</p>
+<ul>
+<li>Generate an episode following the current $\varepsilon$-soft policy.</li>
+<li>Record the sequence of $(s_t, a_t, r_{t+1})$.</li>
+</ul>
+</li>
+<li><p>Policy Evaluation:</p>
+<ul>
+<li>For each state-action pair in the episode:<ul>
+<li>Compute return $G_t$ and update $q(s, a)$ as the sample average.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Policy Improvement:</p>
+<ul>
+<li>For each state $s$ visited:<ul>
+<li>Make the policy $\varepsilon$-greedy with respect to the current $q(s, a)$:
+$$
+\pi(a \mid s) =
+\begin{cases}
+1 - \varepsilon + \frac{\varepsilon}{|\mathcal{A}(s)|}, &amp; \text{if } a = \arg\max_a q(s, a) \\
+\frac{\varepsilon}{|\mathcal{A}(s)|}, &amp; \text{otherwise}
+\end{cases}
+$$</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Repeat steps 2–4 until convergence.</p>
+</li>
+</ol>
+<p>Overall, $\varepsilon$-soft policy solves the problem of insufficient exploration with a large number of possible state-action pairs, and is able to achieve a good enough, sub-optimal stochastic policy.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=641a2dfc">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="On-Policy-vs-Off-Policy-Learning">On-Policy vs Off-Policy Learning<a class="anchor-link" href="#On-Policy-vs-Off-Policy-Learning">¶</a></h1><p>In reinforcement learning, there are two fundamental paradigms for learning from interaction, on-policy and off-policy learning. The key difference lies in whether the policy being learned is the same as the policy used to generate the data.</p>
+<h2 id="On-Policy-Learning">On-Policy Learning<a class="anchor-link" href="#On-Policy-Learning">¶</a></h2><p>In on-policy learning, the agent learns about and improves the same policy that it uses to make decisions. This means the data used for learning is generated by following the current policy, which typically includes a balance of exploitation and exploration.</p>
+<p><strong>Pros:</strong></p>
+<ol>
+<li>Conceptually simpler.</li>
+<li>Lower variance in value estimates since learning is based on the actual policy being executed.</li>
+</ol>
+<p><strong>Cons:</strong></p>
+<ol>
+<li>Exploration is constrained by the policy itself.</li>
+<li>May learn slower due to limited exploration.</li>
+</ol>
+<h2 id="Off-Policy-Learning">Off-Policy Learning<a class="anchor-link" href="#Off-Policy-Learning">¶</a></h2><p>In off-policy learning, the agent learns about a different policy than the one used to generate the data. There are two distinct policies involved:</p>
+<ol>
+<li>Target policy: the policy the agent is trying to learn or evaluate, denoted by $\pi(a \mid s)$</li>
+<li>Behaviour policy: the policy used to generate data (select actions), denoted by $b(a \mid s)$</li>
+</ol>
+<p>This allows the agent to learn an optimal or deterministic target policy while still exploring using a stochastic behavior policy.</p>
+<p><strong>Pros:</strong></p>
+<ol>
+<li>More general and powerful; can learn from data generated by other agents or past experiences.</li>
+<li>Enables stronger exploration while still converging to an optimal deterministic policy.</li>
+</ol>
+<p><strong>Cons:</strong></p>
+<ol>
+<li>Higher variance in updates, especially when using importance sampling.</li>
+<li>Requires careful alignment between behavior and target policies.</li>
+</ol>
+<p>For off-policy learning to be valid, the behavior policy must cover all the actions that the target policy might take. That is:
+$$\text{If } \pi(a \mid s) &gt; 0, \text{ then } b(a \mid s) &gt; 0$$</p>
+<p>This ensures that the agent gets enough data to estimate the value of the target policy correctly. If the behavior policy never explores certain actions that the target policy might select, it is impossible to evaluate or improve the target policy accurately.</p>
+<h2 id="Importance-Sampling">Importance Sampling<a class="anchor-link" href="#Importance-Sampling">¶</a></h2><p>Importance sampling is a fundamental technique used in off-policy reinforcement learning. It allows us to estimate expectations under one probability distribution (the target policy) using samples drawn from a different distribution (the behavior policy). This is crucial in off-policy learning, where the agent aims to learn or evaluate a policy that is different from the one used to generate data.</p>
+<p>In off-policy learning, we want to compute the expected return or value function under the target policy $\pi$, but the agent collects data using the behavior policy $b$, which is, generally, a more exploratory policy. Since the distrubtion of the target and behaviour policies are different, we need a way to "correct" for the difference in distributions, which is importance sampling.</p>
+<h3 id="The-Mathematics">The Mathematics<a class="anchor-link" href="#The-Mathematics">¶</a></h3><p>Suppose we want to estimate the expected value of some function $f(x)$ under a target distribution $p(x)$, but we only have samples from a different distribution $q(x)$. Then:</p>
+<p>$$
+\mathbb{E}_{x \sim p}[f(x)] = \sum_x p(x) f(x) = \sum_x \frac{p(x)}{q(x)} q(x) f(x) = \mathbb{E}_{x \sim q}\left[\frac{p(x)}{q(x)} f(x)\right]
+$$</p>
+<p>Here, $\frac{p(x)}{q(x)}$ is the importance sampling ratio, which reweights the samples to reflect their importance under the target distribution. The importance sampling ratio reflects the ratio between the two distributions, which allows us to estimate expectations under one distribution using samples from another by accounting for the difference in likelihood between the two.</p>
+<h3 id="Importance-Sampling-in-Reinforcement-Learning">Importance Sampling in Reinforcement Learning<a class="anchor-link" href="#Importance-Sampling-in-Reinforcement-Learning">¶</a></h3><p>In the context of RL, the goal is to estimate the expected return under a target policy $\pi$, but the data (state-action-reward trajectories) was generated by a different behavior policy $b$. Even if the actions taken differ, both the target policy $\pi$ and the behavior policy $b$ interact with the same environment. This means the state transition dynamics are the same for both, since they are governed by the MDP and do not depend on the policy itself. As a result, the only difference between trajectories generated by $b$ and those from $\pi$ lies in how actions are selected at each state, which is the difference in the distributions of the policies. By accounting for this difference with importance sampling, we can accurately estimate the expected return of the target policy $\pi$ using samples generated by the behavior policy $b$.</p>
+<ul>
+<li>Let $\pi(a_t \mid s_t)$ be the probability of taking action $a_t$ in state $s_t$ under the target policy $\pi$.</li>
+<li>Let $b(a_t \mid s_t)$ be the probability of taking the same action under the behavior policy $b$.</li>
+</ul>
+<p>At time step $t$, the importance sampling ratio is
+$$\rho_t = \frac{\pi(a_t \mid s_t)}{b(a_t \mid s_t)}$$</p>
+<p>This ratio tells us how to reweight a sample from the behavior policy $b$ to estimate its expected contribution under the target policy $\pi$. In other words, it represents the ratio of the likelihood of taking the same action $a$ in the same state $s$ between the two policies.</p>
+<ul>
+<li>If $\rho_t$ is small, it means this action was much more likely under $b$ than under $\pi$, so this sample is less relevant to what $\pi$ would do. We downweight it.</li>
+<li>If $\rho_t$ is large, it means this action is more consistent with what $\pi$ would have done. We upweight it.</li>
+</ul>
+<p>Essentially, $\rho_t$ tells us how much a sample from $b$ should count when estimating what $\pi$ would do. It adjusts for the differences of the distributions between the two policies, so that we can use data from one policy to estimate the behavior of another.</p>
+<p>To estimate the return under the target policy $\pi$ over a full trajectory of length $T$, we compute the cumulative importance sampling ratio from time $t$ onward, where</p>
+<p>$$\rho_{t:T-1} = \prod_{k=t}^{T-1} \frac{\pi(a_k \mid s_k)}{b(a_k \mid s_k)} = \rho_t \cdot \rho_{t+1} \cdots \rho_{T-1}$$</p>
+<p>This cumulative ratio adjusts for the differences between the target policy $\pi$ and the behavior policy $b$ at each timestep along the trajectory. It effectively reweights the entire trajectory so that it reflects how likely the actions would be under the target policy. Then, given a trajectory generated by $b$, we can estimate the expected return under the target policy $\pi$ using:</p>
+<p>$$v_\pi(s_t) = \mathbb{E}_b[\rho_{t:T-1} \cdot G_t \mid s_t] \approx \frac{1}{N} \sum_{i=1}^N \rho^{(i)} G^{(i)}$$</p>
+<ul>
+<li>$G_t$: the observed return from time $t$ onward based on the behavior policy $b$, where $G_t = r_{t+1} + \gamma r_{t+2} + \gamma^2 r_{t+3} + \dots$</li>
+<li>$\rho_{t:T-1}$: the cumulative importance sampling ratio</li>
+<li>$\rho^{(i)} G^{(i)}$: one reweighted return from the $i$-th trajectory.</li>
+<li>$N$: the total number of trajectories sampled from the behavior policy $b$.</li>
+</ul>
+<p>So if we have multiple trajectories, we compute the adjusted return for each using $\rho^{(i)} G^{(i)}$, and then average them to estimate the expected return under the target policy.</p>
 </div>
 </div>
 </div>
