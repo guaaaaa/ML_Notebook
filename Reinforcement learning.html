@@ -8291,7 +8291,7 @@ $$\pi(s) = \arg\max_a q(s, a) \quad \text{or} \quad \varepsilon\text{-greedy}(q(
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3f6e307c">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1524dbf8">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8342,6 +8342,58 @@ $$v(S_t) \leftarrow v(S_t) + \alpha \left[ R_{t+1} + \gamma v(S_{t+1}) - v(S_t) 
 </ul>
 </li>
 </ol>
+<h2 id="Advantages-of-TD">Advantages of TD<a class="anchor-link" href="#Advantages-of-TD">¶</a></h2><ol>
+<li><p>Model-Free: TD methods do not require a model of the environment’s dynamics (transition probabilities or reward function), making them applicable to unknown or complex environments.</p>
+</li>
+<li><p>Online and Incremental Updates: TD can update value estimates after every step without waiting for the episode to finish. This is especially beneficial for problems with long episodes or continuing (non-terminating) tasks.</p>
+</li>
+<li><p>Faster Convergence in Stochastic Environments: In many stochastic tasks, TD methods tend to converge faster and with less variance than Monte Carlo methods, since they bootstrap from existing estimates rather than relying solely on complete returns.</p>
+</li>
+</ol>
+<h2 id="TD-for-Control">TD for Control<a class="anchor-link" href="#TD-for-Control">¶</a></h2><p>When using TD learning for control, knowing the optimal state-value function from policy evaluation alone is not enough in a model-free setting, because we do not know the environment’s transition dynamics. Without a model, we can’t directly compute which action leads to the best next state from just $v(s)$. Instead, we learn the action-value function $q(s, a)$, which estimates the expected return for taking action $a$ in state $s$ and then following the policy. This allows us to both evaluate and improve the policy directly.</p>
+<h3 id="SARSA-(On-Policy-TD-Control)">SARSA (On-Policy TD Control)<a class="anchor-link" href="#SARSA-(On-Policy-TD-Control)">¶</a></h3><p>SARSA is an on-policy TD control algorithm that learns the optimal action-value function. It is similar to the TD(0) method for state-value estimation, but instead of updating from state to state, it updates from state-action pair to state-action pair, where</p>
+<p>$$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \, q(S_{t+1}, A_{t+1}) - q(S_t, A_t) \right]$$</p>
+<p>This update requires the five key events:</p>
+<ul>
+<li>$(S_t, A_t)$: current state-action pair</li>
+<li>$R_{t+1}$: reward from taking $A_t$ in $S_t$</li>
+<li>$(S_{t+1}, A_{t+1})$: next state-action pair chosen according to the current policy</li>
+</ul>
+<p>Because SARSA uses $A_{t+1}$ from the current policy, it learns the value of the policy as it is being followed (on-policy learning). After each update, the policy can be improved by making it greedy or $\epsilon$-greedy with respect to the updated $q(s, a)$.</p>
+<h3 id="SARSA-Algorithm">SARSA Algorithm<a class="anchor-link" href="#SARSA-Algorithm">¶</a></h3><ol>
+<li><p>Given:</p>
+<ul>
+<li>Initial policy $\pi$ (e.g., $\epsilon$-greedy)</li>
+<li>Learning rate $\alpha \in (0, 1]$</li>
+<li>Discount factor $\gamma \in [0, 1]$</li>
+</ul>
+</li>
+<li><p>Initialize:</p>
+<ul>
+<li>$q(s, a)$ arbitrarily for all $s \in \mathcal{S}$, $a \in \mathcal{A}$</li>
+</ul>
+</li>
+<li><p>Repeat (for each episode):</p>
+<ul>
+<li>Initialize starting state $S_0$</li>
+<li>Choose action $A_0 \sim \pi(\cdot \mid S_0)$</li>
+<li>For each timestep $t$:<ul>
+<li>Take action $A_t$, observe the reward $R_{t+1}$ and the next state $S_{t+1}$</li>
+<li>Choose the next action according to the current policy $A_{t+1} \sim \pi(\cdot \mid S_{t+1})$</li>
+<li>Update:
+$$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \, q(S_{t+1}, A_{t+1}) - q(S_t, A_t) \right]$$</li>
+<li>Update $\pi$ to be greedy or $\epsilon$-greedy with respect to $q$</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Repeat until convergence:</p>
+<ul>
+<li>Continue until $q(s, a)$ converges.</li>
+</ul>
+</li>
+</ol>
+<p>Note: MC methods update only after an episode finishes. If an agent becomes trapped in a state (or a loop), the episode may never end, preventing any learning from occurring. In contrast, online learning methods such as SARSA update their estimates during the episode at every timestep. This allows the agent to quickly recognize that a policy leading to such traps is poor and adjust its behavior before the episode is over.</p>
 </div>
 </div>
 </div>
