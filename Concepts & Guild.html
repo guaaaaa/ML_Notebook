@@ -7785,21 +7785,46 @@ a.anchor-link {
 <li>End to end learning requires a lot more data than a sequential sub-task model and also limits the hand-design components</li>
 </ul>
 <h2 id="Skewed-dataset">Skewed dataset<a class="anchor-link" href="#Skewed-dataset">¶</a></h2><p>The ratio of the positive and negative cases are signficantly skewed</p>
-<h3 id="Precision-and-recall">Precision and recall<a class="anchor-link" href="#Precision-and-recall">¶</a></h3><ul>
-<li>True positive: acutal class = 1, predicted class = 1</li>
-<li>False positive: acutal class = 0, predicted class = 1</li>
-<li>True negative: acutal class = 0, predicted class = 0</li>
-<li>False negative: acutal class = 1, predicted class = 0</li>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=235ae34f">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="Accuracy">Accuracy<a class="anchor-link" href="#Accuracy">¶</a></h2><p>In classification problems, accuracy measures the proportion of correctly classified data points:</p>
+<p>$$\text{Accuracy} = \frac{\text{Number of correct predictions}}{\text{Total number of predictions}}$$</p>
+<p>While accuracy is an important metric, it can be misleading—especially for imbalanced datasets. For example, in a dataset with 1 positive sample and 99 negative samples, a model that always predicts “negative” will achieve 99% accuracy but completely fail to detect the positive class.   This is why precision and recall are needed to provide deeper insight into model performance.</p>
+<h2 id="Precision-and-Recall">Precision and Recall<a class="anchor-link" href="#Precision-and-Recall">¶</a></h2><p>In a binary classification problem, predictions fall into one of four categories:</p>
+<ol>
+<li>True Positive (TP): Actual class = 1, predicted class = 1</li>
+<li>False Positive (FP): Actual class = 0, predicted class = 1</li>
+<li>True Negative (TN): Actual class = 0, predicted class = 0</li>
+<li>False Negative (FN): Actual class = 1, predicted class = 0</li>
+</ol>
+<p>These 4 categories are usually plotted with a confusion matrix
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*ZPTFqlhFPUvLg8P6q62ttg.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;"></p>
+<p>We can use these 4 categories to calculate the precision and recall</p>
+<p>$$\text{Precision} = \frac{TP}{TP + FP}$$</p>
+<p>$$\text{Recall} = \frac{TP}{TP + FN}$$</p>
+<ul>
+<li><p>Precision: Measures the accuracy of the model’s positive predictions, which is the proportion of predicted positives that are actually positive. High precision is important when the cost of misclassifying a negative case as positive is high. In other words, we aim for high precision when we only want to assign a positive label if the model is very confident, even if that means missing some actual positives.</p>
+</li>
+<li><p>Recall: Measures the model’s ability to detect all actual positive cases, which is the proportion of actual positives that are correctly identified by the model. High recall is important when the cost of missing a positive case is high. In other words, we aim for high recall when we want to avoid missing any positive cases, even if it means incorrectly labeling some negatives as positive.</p>
+</li>
 </ul>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*pOtBHai4jFd-ujaNXPilRg.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
-<p>This method helps to detect if an algorithm only predict one class all the time</p>
-<p>Precision measures the proportion of positive predictions that are actually correct, which useful when the cost of misclassifying a positive case is high. Recall measures the proportion of actual positive cases that are correctly identified by the model, which is useful when the cost of missing a positive case is high</p>
-<p>A model should aim for high precision and recall</p>
-<h3 id="Precision-recall-tradeoff">Precision recall tradeoff<a class="anchor-link" href="#Precision-recall-tradeoff">¶</a></h3><p>The tradeoff between precision and recall occurs because increasing the threshold for classification will result in fewer false positives (increasing precision) but also more false negatives (decreasing recall), and vice versa</p>
+<h3 id="Precision%E2%80%93Recall-Trade-off">Precision–Recall Trade-off<a class="anchor-link" href="#Precision%E2%80%93Recall-Trade-off">¶</a></h3><p>Neither precision nor recall should be used alone because both scores can be cheated. If we only want high precision, we can achieve this by setting the threshold to give a positive label to be very high, so the model only gives a positive label when it's very confident, which leads to a high precision score. However, this is problematic as lots of apparent enough positive examples will be classified as negatives since the model will only give positive labels when it's super confident.</p>
+<p>If we only want high recall, we can achieve this by setting the threshold to give a positive label to be very low, so the model will give a positive label even when it's not confident enough, so it never misses a positive class to achieve a high recall score. However, lots of negative classes are misclassified as positive.</p>
+<p>When we want to achieve high precision and recall at the same time, the tradeoff occurs because increasing the threshold for classification will result in fewer false positives (increasing precision) but also more false negatives (decreasing recall), and vice versa. The balance between the two is often determined based on the problem requirements or by optimizing for a combined metric such as the F1 score.</p>
 <img alt="No description has been provided for this image" src="https://jamesmccaffrey.wordpress.com/wp-content/uploads/2014/11/precisionrecallgraph.jpg" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
-<p>In general, the threshold will be manaully picked or determined through F1 score</p>
-<h3 id="F1-score">F1 score<a class="anchor-link" href="#F1-score">¶</a></h3><p>F1 score between 0 and 1 that indicates the precision and recall of a model. The higher the F1 score, the higher the precision and recall of the model</p>
-<p>$$F_1 = \frac{2\cdot precision \cdot recall}{precision + recall}$$</p>
+<h2 id="F1-Score">F1 Score<a class="anchor-link" href="#F1-Score">¶</a></h2><p>F1 score is a performance metric to evaluate how well a classification model performs by combining both precision and recall. F1 score is between 0 and 1; the higher the F1 score, the higher the precision and recall of the model</p>
+<p>$$F_1 = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$$</p>
+<h2 id="Multiclass-Classification">Multiclass Classification<a class="anchor-link" href="#Multiclass-Classification">¶</a></h2><p>In multiclass classification, we cannot directly compute a single precision, recall, or F1 score for the entire model. Instead, we calculate these metrics per class by treating one class as the positive class and all other classes as negative. This effectively transforms the multiclass problem into a binary classification problem for that specific class, allowing us to compute precision, recall, and F1 as usual.</p>
+<p>To obtain an overall evaluation for the model, we can calculate the scores for each class and then find the micro-average, macro-average or weighted average of the individual F1 scores as a global evaluation metric.</p>
+<img alt="No description has been provided for this image" src="https://www.researchgate.net/publication/361092131/figure/fig1/AS:1166908405612546@1655224052772/S-1-multiclass-confusion-matrix-TP-true-positive-FP-false-positive-FN-false-negative.png" width="200"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 </div>
 </div>
 </div>

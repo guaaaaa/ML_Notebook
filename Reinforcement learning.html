@@ -8398,42 +8398,13 @@ $$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \, q(S_{t+
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9f6e2f0f">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ead42e1d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Stochastic-environment">Stochastic environment<a class="anchor-link" href="#Stochastic-environment">¶</a></h2><p>Stochastic environment is random in nature so the agent has a probability to fail to perform the action as expected, so the algorithm will perform the policy multiple times and maximize the expected return (average return) based on different reward sequence</p>
-<p>$$\text {Expected return} = Average(R_1 + \gamma^2 R_2 + \gamma^3 R_3 + ... + \gamma^n R_n) = E[R_1 + \gamma^2 R_2 + \gamma^3 R_3 + ... + \gamma^n R_n]$$</p>
-<p>$$Q(s,a) = R(s) + \gamma E[max_{a'}Q(s', a')]$$</p>
-<p>The policy will selected an action that maximize the expected return in state $s$</p>
-<h2 id="Continuous-states-space">Continuous states space<a class="anchor-link" href="#Continuous-states-space">¶</a></h2><p>In a continuous states space, the state of the agent, $s$, will be a vector that contains all the information needed</p>
-<h2 id="Deep-reinforcement-learning">Deep reinforcement learning<a class="anchor-link" href="#Deep-reinforcement-learning">¶</a></h2><ol>
-<li><p>Randomly initalize the neural network with a guess on $Q(s,a)$</p>
-</li>
-<li><p>Repeat {</p>
-<ul>
-<li>Generate a training set<ol>
-<li>From state $s$, perform a random action $a$ that results in state $s'$. Then, construct a tuple $(s, a, R(s), s')$</li>
-<li>Create and store sufficient amount of tuple (replay buffer) for training
-Calculate $Q(y = R(s) + \gamma max_{a'} (s',a')$ by using the guessed function give by the neural network</li>
-</ol>
-</li>
-<li>Train the neural netowrk<ol>
-<li>Create training set with the tuples, where $x=(s,a)$ and $y = R(s) + \gamma max_{a'} Q(s',a')$</li>
-<li>Using the training set to train a network $Q_{new}$ such that $Q_{new}(s,a)\approx y$</li>
-</ol>
-</li>
-<li>Set $Q = Q_{new}$</li>
-</ul>
-<p>}</p>
-</li>
-</ol>
-<p>With each interation, the neural network can get a better approximation of the $Q$ function</p>
-<p>The neural network takes in a state, action pair and approximates the return a list $Q(s,a)$ values that contains the return for each action performed, so the algorithm can pick the action that maximize $Q(s,a)$ in the list</p>
-<h2 id="Mini-batch">Mini batch<a class="anchor-link" href="#Mini-batch">¶</a></h2><p>When the training set is large, the algorithm only takes a subset of the training example to compute the cost and a different subset next time. Thus, the algorithm will not take the most optimal step each time, but it will speed up the training process significantly</p>
-<h2 id="Soft-update">Soft update<a class="anchor-link" href="#Soft-update">¶</a></h2><p>When updating $Q = Q_{new}$, the new network may be worse than the old one. To prevent full overwritting, we update the weigths and bias through $w = p \times w + (1-p) \times w_{new}$ and $b = p \times b + (1-p) \times b_{new}$ instead of $w = w_{new}$  and $b = b_{new}$, where $b$ is a value between 0 and 1</p>
+<h1 id="Q-Learning">Q-Learning<a class="anchor-link" href="#Q-Learning">¶</a></h1>
 </div>
 </div>
 </div>
