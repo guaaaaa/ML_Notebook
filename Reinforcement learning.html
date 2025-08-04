@@ -8394,17 +8394,65 @@ $$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \, q(S_{t+
 </li>
 </ol>
 <p>Note: MC methods update only after an episode finishes. If an agent becomes trapped in a state (or a loop), the episode may never end, preventing any learning from occurring. In contrast, online learning methods such as SARSA update their estimates during the episode at every timestep. This allows the agent to quickly recognize that a policy leading to such traps is poor and adjust its behavior before the episode is over.</p>
+<h2 id="Q-Learning">Q-Learning<a class="anchor-link" href="#Q-Learning">¶</a></h2><p>Q-learning is an off-policy TD control algorithm that directly learns the optimal action-value function $q_*$, rather than the action-value function of the current policy $q_\pi$. This differs from SARSA (on-policy), which learns $q_\pi$ for the policy being followed. The Q-learning update rule is</p>
+<p>$$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \max_a q(S_{t+1}, a) - q(S_t, A_t) \right]$$</p>
+<ul>
+<li>The max operator selects the value of the best possible next action, regardless of the current policy.</li>
+<li>This makes Q-learning off-policy: it learns as if the agent is always acting greedily, even if it is exploring in practice.</li>
+</ul>
+<p>Both SARSA and Q-learning are sample-based solutions to the Bellman equations and can converge to the true action-value functions given enough samples. However there's a key difference in which Bellman equation the algorithm is solving</p>
+<ul>
+<li><p>SARSA solves the Bellman expectation equation for $q_\pi$, where
+$$q_\pi(s, a) = \sum_{s'} \sum_{r} p(s', r \mid s, a) \left[ r + \gamma \sum_{a'} \pi(a' \mid s') q_\pi(s', a') \right]$$</p>
+</li>
+<li><p>Q-learning solves the Bellman optimality equation for $q_*$, where
+$$q_*(s, a) = \sum_{s'} \sum_{r} p(s', r \mid s, a) \left[ r + \gamma \max_{a'} q_*(s', a') \right]$$</p>
+</li>
+</ul>
+<p>Therefore, SARSA need to follow policy iteration by first estimate $q_\pi$ from experience, then make the policy greedy (or $\epsilon$-greedy) with respect to $q_\pi$. On the other hand, Q-learning effectively uses value iteration. It updates $q(s,a)$ as if it were already the optimal $q_*$, combining policy evaluation and improvement in a single step.</p>
+<p>Q-learning is an off-policy algorithm because it always learns from the value of the best possible action it could take in the next state, rather than the value of the action it actually took. In this case, the target policy (the policy Q-learning is trying to learn) is always greedy with respect to the current action-value estimates. The behaviour policy (the policy used to select actions during learning) can be any exploratory policy, such as $\epsilon$-greedy or even random, as long as it ensures sufficient exploration. This separation between the behavior policy and the target policy is what makes Q-learning off-policy.</p>
+<p>Importance sampling</p>
+<h3 id="Q-Learning-Algorithm">Q-Learning Algorithm<a class="anchor-link" href="#Q-Learning-Algorithm">¶</a></h3><ol>
+<li><p>Given:</p>
+<ul>
+<li>Learning rate $\alpha \in (0, 1]$</li>
+<li>Discount factor $\gamma \in [0, 1]$</li>
+</ul>
+</li>
+<li><p>Initialize:</p>
+<ul>
+<li>$q(s, a)$ arbitrarily for all $s \in \mathcal{S}$, $a \in \mathcal{A}$</li>
+</ul>
+</li>
+<li><p>Repeat (for each episode):</p>
+<ul>
+<li>Initialize starting state $S_0$</li>
+<li>Choose initial action $A_0$ using an exploration policy (e.g., $\epsilon$-greedy based on $q$)</li>
+<li>For each timestep $t$:<ul>
+<li>Take action $A_t$, observe reward $R_{t+1}$ and next state $S_{t+1}$</li>
+<li>Update:
+$$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \max_a q(S_{t+1}, a) - q(S_t, A_t) \right]$$</li>
+<li>Choose next action $A_{t+1}$ using the exploration policy</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Until convergence</strong>:</p>
+<ul>
+<li>Continue until $q(s, a)$ stabilizes or a predefined stopping condition is met.</li>
+</ul>
+</li>
+</ol>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ead42e1d">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=921acf12">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Q-Learning">Q-Learning<a class="anchor-link" href="#Q-Learning">¶</a></h1>
 </div>
 </div>
 </div>
