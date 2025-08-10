@@ -8411,7 +8411,7 @@ $$q_*(s, a) = \sum_{s'} \sum_{r} p(s', r \mid s, a) \left[ r + \gamma \max_{a'} 
 </ul>
 <p>Therefore, SARSA need to follow policy iteration by first estimate $q_\pi$ from experience, then make the policy greedy (or $\epsilon$-greedy) with respect to $q_\pi$. On the other hand, Q-learning effectively uses value iteration. It updates $q(s,a)$ as if it were already the optimal $q_*$, combining policy evaluation and improvement in a single step.</p>
 <p>Q-learning is an off-policy algorithm because it always learns from the value of the best possible action it could take in the next state, rather than the value of the action it actually took. In this case, the target policy (the policy Q-learning is trying to learn) is always greedy with respect to the current action-value estimates. The behaviour policy (the policy used to select actions during learning) can be any exploratory policy, such as $\epsilon$-greedy or even random, as long as it ensures sufficient exploration. This separation between the behavior policy and the target policy is what makes Q-learning off-policy.</p>
-<p>Importance sampling</p>
+<p>Although Q-learning is an off-policy algorithm, it does not require importance sampling to reweight trajectories. Importance sampling is typically used to correct for differences in action-selection probabilities between the target policy and the behavior policy. However, Q-learning’s update rule always evaluates the next state using the greedy action with respect to the current action-value estimates, regardless of the action actually taken by the behavior policy. Because the target in the update is determined solely by the current Q-values and not by the behavior policy’s action probabilities, no such correction is needed.</p>
 <h3 id="Q-Learning-Algorithm">Q-Learning Algorithm<a class="anchor-link" href="#Q-Learning-Algorithm">¶</a></h3><ol>
 <li><p>Given:</p>
 <ul>
@@ -8437,7 +8437,7 @@ $$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \max_a q(S
 </li>
 </ul>
 </li>
-<li><p><strong>Until convergence</strong>:</p>
+<li><p>Until convergence:</p>
 <ul>
 <li>Continue until $q(s, a)$ stabilizes or a predefined stopping condition is met.</li>
 </ul>
@@ -8497,13 +8497,53 @@ $$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \max_a q(S
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=09c05d6b">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9de04851">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Models-In-Reinforcement-Learning">Models In Reinforcement Learning<a class="anchor-link" href="#Models-In-Reinforcement-Learning">¶</a></h1>
+<h1 id="Models-In-Reinforcement-Learning">Models In Reinforcement Learning<a class="anchor-link" href="#Models-In-Reinforcement-Learning">¶</a></h1><p>In reinforcement learning, a model stores knowledge about the environment dynamics, which tells the agent how the environment responds to actions by producing rewards and transitioning to new states. In other words, the model tells the agent how the world works based on its current understanding. By using this knowledge, the model can be used to simulate the environment and produce simulated experience for the agent to learn from. There are two types of models</p>
+<ol>
+<li><p>Sample models: return a single possible outcome by sampling from the underlying probability distribution of state transitions and rewards.</p>
+<ul>
+<li>Pros: Fast, memory-efficient.</li>
+<li>Cons: Less accurate, as each sample is only an approximation of the full distribution.</li>
+</ul>
+</li>
+<li><p>Distribution model: specify the complete probability distribution over all possible outcomes.</p>
+<ul>
+<li>Pros: More accurate and informative.</li>
+<li>Cons: Larger, more computationally expensive.</li>
+<li>Note: A distribution model can also be used to generate a sample model by sampling from it.</li>
+</ul>
+</li>
+</ol>
+<p>In reinforcement learning, there are two types of learning methods, model-based and model-free methods. Model-based methods. Model-based methods rely heavily on planning—using the model to simulate possible futures, evaluate them, and improve the policy before acting in the real environment, like DP. Model-free methods, on the other hand, do not learn or estimate the model and learn the value function directly from experience through trial and error, like MC or TD methods.</p>
+<p>Note: For learning to happen, the agent must interact with an environment, which itself follows some transition and reward dynamics (this is the “true model” of the world). The key difference between model-based and model-free methods lies in whether the learning algorithm explicitly learns or uses its own approximation of this model. Both approaches aim to improve estimates of value functions (and ultimately the policy), but model-based methods do so by first estimating the transition and reward functions and then planning with them, whereas model-free methods skip this step and learn value functions directly from experience without building an explicit model.</p>
+<h1 id="Planning-with-Model-Experience">Planning with Model Experience<a class="anchor-link" href="#Planning-with-Model-Experience">¶</a></h1><p>In model-based RL, planning takes the model as input and outputs an improved policy for interacting with the environment. The process can also refine the model itself as more real-world data is gathered, creating a continuous loop of improvement between model learning and policy optimization. The key of planning is to obtain a better estimation of the value functions</p>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:554/1*j5chypwunyX00ejvuu10Gw.png" width="300"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<h2 id="Random-Tabular-Q-Planning">Random Tabular Q-Planning<a class="anchor-link" href="#Random-Tabular-Q-Planning">¶</a></h2><p>Random tabular Q-planning is a model-based reinforcement learning algorithm. Instead of interacting with the real environment, it uses a learned or known model of the environment to simulate experiences and update the action-value function. At each step, the algorithm picks a random state–action pair (not necessarily from a real trajectory), queries the model for the resulting reward and next state, and then performs a Q-value update.<br/>
+By simulating many such updates from the model, the policy can improve without needing to gather new real-world experience, follows the algorithm below</p>
+<ol>
+<li><p>Initialize:</p>
+<ul>
+<li>For all $ s \in \mathcal{S} $ and $ a \in \mathcal{A} $, set $ q(s, a) $ arbitrarily (e.g., 0).</li>
+</ul>
+</li>
+<li><p>Loop (Planning):</p>
+<ul>
+<li>Randomly select a state $ S_t $ and an action $ A_t $ from the state–action space.</li>
+<li>Use the model to get the predicted reward $ R_{t+1} $ and next state $ S_{t+1} $. (If using a distribution model, you may sample or use expected values.)</li>
+<li>Update:
+$$
+q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \max_a q(S_{t+1}, a) - q(S_t, A_t) \right]
+$$</li>
+<li>Optionally, update the policy to be greedy or $\epsilon$-greedy with respect to $ q $.</li>
+</ul>
+</li>
+</ol>
+<p>Note: All updates in this algorihtm use simulated experience from the model, not real-world interaction.</p>
 </div>
 </div>
 </div>
