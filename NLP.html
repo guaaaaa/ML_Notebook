@@ -8542,7 +8542,37 @@ This process applies only to the <strong>encoder</strong>, since there is no gro
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Reinforcement-Learning-From-Human-Feedback">Reinforcement Learning From Human Feedback<a class="anchor-link" href="#Reinforcement-Learning-From-Human-Feedback">¶</a></h1><h1 id="Direct">Direct<a class="anchor-link" href="#Direct">¶</a></h1>
+<h1 id="Reinforcement-Learning-From-Human-Feedback">Reinforcement Learning From Human Feedback<a class="anchor-link" href="#Reinforcement-Learning-From-Human-Feedback">¶</a></h1>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=db6a6898">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Context-Engineering">Context Engineering<a class="anchor-link" href="#Context-Engineering">¶</a></h1><img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*0V7rL_0pjOrVA2Zb" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<h2 id="Prompt-Engineering">Prompt Engineering<a class="anchor-link" href="#Prompt-Engineering">¶</a></h2><p>Prompt engineering is a key aspect of context engineering. A prompt is simply the input given to a Generative AI model to guide its output, and prompt engineering is the practice of shaping that input to achieve better results.</p>
+<p>It is arguably the simplest form of context engineering because it requires no changes to the model or code. Instead, prompts are written directly in human language, and their effects take place immediately. This makes prompt engineering especially useful when fast iteration is needed or when computational resources are limited.</p>
+<p>Despite its simplicity, prompt engineering can significantly improve a model’s accuracy and reliability when a well-designed prompt is used. There are six main categories of techniques that can help us achieve this faster:</p>
+<ol>
+<li>Zero-shot</li>
+<li>Few-shot</li>
+<li>Chain-of-thought</li>
+<li>Decomposition</li>
+<li>Ensembling</li>
+<li>Self-criticism (or self-reflection)</li>
+</ol>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1300/format:webp/1*hdTtxGg3FbJGIULWGk6wSw.png" width="600"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<h3 id="Zero-shot">Zero-shot<a class="anchor-link" href="#Zero-shot">¶</a></h3><p>Zero-shot prompting means asking the model to perform a task without providing any examples or extended context. This approach gives the model greater flexibility in generating responses. However, because the model must infer the task entirely from the instructions, the outputs can be less consistent and less accurate, as many decisions are left to the model’s internal reasoning without explicit human guidance.</p>
+<h3 id="Few-shot">Few-shot<a class="anchor-link" href="#Few-shot">¶</a></h3><p>Few-shot prompting builds on zero-shot prompting by including a small number of examples that demonstrate how the task should be performed. These examples act as templates, guiding the model toward the desired format, reasoning steps, or style of response. While this can improve performance and consistency, it does not guarantee strong generalization. The choice of examples is critical as the given samples should be representative of the task space and balanced to avoid introducing bias or skewed behavior.</p>
+<h3 id="Chain-of-Thought-(CoT)">Chain of Thought (CoT)<a class="anchor-link" href="#Chain-of-Thought-(CoT)">¶</a></h3><p>CoT prompting explicitly instructs the model to generate intermediate reasoning steps before producing the final answer. This approach encourages the model to “think out loud,” using additional space and tokens to break down the problem step by step. CoT is particularly effective for tasks that require multi-step reasoning, logical sequences, or mathematical problem solving, as it helps the model arrive at a more accurate solution rather than jumping directly to an answer. However, CoT has limitations. It may not improve performance for tasks without a clear reasoning structure, and it can be unnecessary for simple tasks. Moreover, the effectiveness of CoT depends on the model’s underlying reasoning ability learned during pre-training. For highly complex problems beyond the model’s capability, CoT alone will not guarantee correct results.</p>
+<h3 id="Decomposition">Decomposition<a class="anchor-link" href="#Decomposition">¶</a></h3><p>Decomposition prompting instructs the model to break down a complex task into smaller, manageable sub-tasks, solve them individually, and then combine the results into a final answer. This strategy leverages the model’s strength in handling simpler problems, making it more effective for larger or multi-step tasks. Decomposition can also involve planning steps or even tool use to achieve better overall results. However, if the decomposition is poorly defined, the model may generate incomplete, redundant, or inconsistent sub-results. Additionally, the process can increase token usage and complexity, which may not be efficient for simpler tasks that do not require structured breakdown.</p>
+<h3 id="Ensembling">Ensembling<a class="anchor-link" href="#Ensembling">¶</a></h3><p>Ensembling is a prompting strategy where the same task is addressed using multiple different prompts, producing several responses that are then aggregated into a final answer. This approach increases stability and reliability by reducing dependence on a single, perfect prompt as it relies on multiple “good enough” prompts can collectively yield strong results. However, ensembling has limitations. It generally requires more computation and tokens, since multiple prompts must be run. Additionally, if the task itself is too complex or beyond the model’s capability, ensembling will not resolve the underlying limitations of the model.</p>
+<h3 id="Self-Criticism">Self-Criticism<a class="anchor-link" href="#Self-Criticism">¶</a></h3><p>Self-criticism prompting instructs the model to critique and refine its own responses before presenting a final answer. By explicitly asking the model to review, verify, and reflect on its output, this method can improve accuracy, reduce errors, and encourage more thoughtful reasoning. However, self-criticism may lead to longer and more verbose outputs, increasing token usage. In some cases, the model may generate superficial critiques that do not meaningfully improve the answer.</p>
+<p>Overall, each prompting technique has its own strengths and limitations, and they can often be used in combination to achieve better results. While prompt engineering is a valuable starting point within context engineering, it is not a reliable solution for many complex tasks on its own. To handle such cases effectively, it should be complemented with other context engineering strategies and techniques.</p>
 </div>
 </div>
 </div>

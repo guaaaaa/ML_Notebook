@@ -8409,8 +8409,8 @@ $$q_\pi(s, a) = \sum_{s'} \sum_{r} p(s', r \mid s, a) \left[ r + \gamma \sum_{a'
 $$q_*(s, a) = \sum_{s'} \sum_{r} p(s', r \mid s, a) \left[ r + \gamma \max_{a'} q_*(s', a') \right]$$</p>
 </li>
 </ul>
-<p>Therefore, SARSA need to follow policy iteration by first estimate $q_\pi$ from experience, then make the policy greedy (or $\epsilon$-greedy) with respect to $q_\pi$. On the other hand, Q-learning effectively uses value iteration. It updates $q(s,a)$ as if it were already the optimal $q_*$, combining policy evaluation and improvement in a single step.</p>
-<p>Q-learning is an off-policy algorithm because it always learns from the value of the best possible action it could take in the next state, rather than the value of the action it actually took. In this case, the target policy (the policy Q-learning is trying to learn) is always greedy with respect to the current action-value estimates. The behaviour policy (the policy used to select actions during learning) can be any exploratory policy, such as $\epsilon$-greedy or even random, as long as it ensures sufficient exploration. This separation between the behavior policy and the target policy is what makes Q-learning off-policy.</p>
+<p>Therefore, SARSA need to follow policy iteration by first estimate $q_\pi$ from experience, then make the policy greedy (or $\epsilon$-greedy) with respect to $q_\pi$. On the other hand, Q-learning effectively uses value iteration. It updates $q(s,a)$ as if it were already the optimal $q_*$, combining policy evaluation and improvement in a single step during the update.</p>
+<p>Q-learning is an off-policy algorithm because it always learns from the value of the best possible action it could take in the next state, rather than the value of the action it actually took. In this case, the target policy (the policy Q-learning is trying to learn) is always greedy with respect to the current action-value estimates, which is not needed during learning because we only aim to get the optimal action-value function, $q_*$. Once $q_*$ is obtained, we can directly extract the optimal policy from it by acting greedily with respect to $q_*$. The behaviour policy (the policy used to select actions during learning) can be any exploratory policy, such as $\epsilon$-greedy or even random, as long as it ensures sufficient exploration. This separation between the behavior policy and the target policy is what makes Q-learning off-policy.</p>
 <p>Although Q-learning is an off-policy algorithm, it does not require importance sampling to reweight trajectories. Importance sampling is typically used to correct for differences in action-selection probabilities between the target policy and the behavior policy. However, Q-learning’s update rule always evaluates the next state using the greedy action with respect to the current action-value estimates, regardless of the action actually taken by the behavior policy. Because the target in the update is determined solely by the current Q-values and not by the behavior policy’s action probabilities, no such correction is needed.</p>
 <h3 id="Q-Learning-Algorithm">Q-Learning Algorithm<a class="anchor-link" href="#Q-Learning-Algorithm">¶</a></h3><ol>
 <li><p>Given:</p>
@@ -8497,7 +8497,7 @@ $$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \max_a q(S
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b9112276">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1192783a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8521,7 +8521,7 @@ $$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \max_a q(S
 </ol>
 <p>In reinforcement learning, there are two types of learning methods, model-based and model-free methods. Model-based methods. Model-based methods rely heavily on planning—using the model to simulate possible futures, evaluate them, and improve the policy before acting in the real environment, like DP, which looks ahead for the future rewards before selecting an action. Model-free methods, on the other hand, do not learn or estimate the model and learn the value function directly from experience through trial and error, like MC or TD methods.</p>
 <p>Note: For learning to happen, the agent must interact with an environment, which itself follows some transition and reward dynamics (this is the “true model” of the world). The key difference between model-based and model-free methods lies in whether the learning algorithm explicitly learns or uses its own approximation of this model. Both approaches aim to improve estimates of value functions (and ultimately the policy), but model-based methods do so by first estimating the transition and reward functions and then planning with them, whereas model-free methods skip this step and learn value functions directly from experience without building an explicit model.</p>
-<p>Note: In any reinforcement learning setup, there is always one model that truly exists, which is the environment’s real rules. This is the true model of the world, whether it’s physics in the real world or the programmed logic in a simulator. The difference between model-based and model-free methods is about whether the agent also builds a second model of its own:</p>
+<p>In any reinforcement learning setup, there is always one model that truly exists, which is the environment’s real rules. This is the true model of the world, whether it’s physics in the real world or the programmed logic in a simulator. The difference between model-based and model-free methods is about whether the agent also builds a second model of its own:</p>
 <p>Model-based methods have two models in play</p>
 <ul>
 <li>The true model: the real environment’s transition and reward dynamics that the agent interact with.</li>
@@ -8534,7 +8534,6 @@ $$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \max_a q(S
 </ul>
 <p>The agent doesn’t bother creating its own copy. Instead, it directly learns value functions and policies from trial-and-error experience, without explicitly modeling how states change or what rewards to expect.</p>
 <h1 id="Planning-with-Model-Experience">Planning with Model Experience<a class="anchor-link" href="#Planning-with-Model-Experience">¶</a></h1><p>In model-based RL, planning takes the model as input and outputs an improved policy for interacting with the environment. The process can also refine the model itself as more real-world data is gathered, creating a continuous loop of improvement between model learning and policy optimization. The key of planning is to obtain a better estimation of the value functions</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:554/1*j5chypwunyX00ejvuu10Gw.png" width="300"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h2 id="Random-Tabular-Q-Planning">Random Tabular Q-Planning<a class="anchor-link" href="#Random-Tabular-Q-Planning">¶</a></h2><p>Random tabular Q-planning is a model-based reinforcement learning algorithm. Instead of interacting with the real environment, it uses a learned or known model of the environment to simulate experiences and update the action-value function. At each step, the algorithm picks a random state–action pair (not necessarily from a real trajectory), queries the model for the resulting reward and next state, and then performs a Q-value update.<br/>
 By simulating many such updates from the model, the policy can improve without needing to gather new real-world experience, follows the algorithm below</p>
 <ol>
@@ -8556,6 +8555,89 @@ $$</li>
 </li>
 </ol>
 <p>Note: All updates in this algorihtm use simulated experience from the model, not real-world interaction.</p>
+<h2 id="Dyna-Q">Dyna-Q<a class="anchor-link" href="#Dyna-Q">¶</a></h2><p>Dyna is an architecture that allows the agent to perform online planning. This means the agents are able to interact with the real environment and plan for future steps at the same time. In online planning, the real experiences is used in two ways</p>
+<ol>
+<li>Directory RL: the agent use the real experience to update the value functions and improve policy</li>
+<li>Model learning: the agent use the real experience to improve the model to make it more accurately match the real environment</li>
+</ol>
+<p>Model learning often make fuller use of a limited amount of experience and thus achieve a better policy with fewer environmental interactions, meaning the agent will think and plan before it takes actions. On the other hand, direct RL are much simpler and are not affected by biases in the design of the model as it only learns from actual outcome.</p>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:554/1*j5chypwunyX00ejvuu10Gw.png" width="300"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<p>Dyna-Q unifies all the above process: planning, acting, model-learning, and direct RL, all occurring continually. In Dyna-Q, we use random sample one-step tabular Q-planning for model learning and one-step tabular Q-learning for direct RL.</p>
+<p>Q-learning is the same as before, where the agent update its action-value estimates based on the best possible action at the state.</p>
+<p>Q-planning consist three steps</p>
+<ol>
+<li>Search Controls: the process that randomly selects the starting states and actions for the simulated experiences generated by the model. This selection must be a state-action pair that the agent had experience before because, otherwise, the agent cannot do planning from here as it has no information about what will happen after</li>
+<li>Model Queries: the process that given a state-action pair to the model, the model returns a reward and state transition. This process assuems the environment to be detereminstic, meaning it assumes the same state-action pair will always produce the same reward and state transition based on the last observation.</li>
+<li>Value Updates: Update the action-value function based on the simulations as if it actually happens in real experience</li>
+</ol>
+<h3 id="Dyna-Q-Algorithm">Dyna-Q Algorithm<a class="anchor-link" href="#Dyna-Q-Algorithm">¶</a></h3><p>Fill out here</p>
+<h2 id="Dyna-Q">Dyna-Q<a class="anchor-link" href="#Dyna-Q">¶</a></h2><p>Dyna-Q is an architecture that allows the agent to perform online planning by integrating learning, planning, and acting into a single unified process, allowing the agent to interact with the real environment while simultaneously planning for future steps. In online planning, each real experience is used in two ways:</p>
+<ol>
+<li>Direct Reinforcement Learning (Direct RL): The agent immediately updates its value function and improve the policy using the real experience.</li>
+<li>Model Learning: The agent uses the real experience to improve its internal model of the environment’s dynamics, making it more accurately match the real world for planning purposes.</li>
+</ol>
+<p>By maintaining a model through model learning, the agent can generate simulated experiences to improve the policy without further real-world interaction. This makes fuller use of limited data, enabling better performance with fewer environmental interactions. On the other hand, direct RL is simpler and free from biases that may arise from an imperfect model since it updates only from actual outcomes.</p>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:554/1*j5chypwunyX00ejvuu10Gw.png" width="300"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<p>Dyna-Q runs the following processes continuously and in parallel:</p>
+<ol>
+<li>Planning through simulated experiences generated by the model</li>
+<li>Acting by interacting with the environment</li>
+<li>Model learning by updating the internal model from real experiences</li>
+<li>Direct RL through updating the value function from real experiences</li>
+</ol>
+<p>For direct RL, Dyna-Q uses one-step tabular Q-learning like before, where
+$$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \max_a q(S_{t+1}, a) - q(S_t, A_t) \right]$$</p>
+<p>For planning, Dyna-Q uses random-sample one-step tabular Q-planning, which consists of:</p>
+<ol>
+<li>Search Control: Randomly select a state–action pair from those the agent has previously experienced. If the agent has never visited a state–action pair, it cannot plan from it because no outcome information is available.</li>
+<li>Model Query: Feed the selected state–action pair into the model, which returns a simulated reward and next state. In the basic Dyna-Q formulation, the model is assumed deterministic, meaning it returns the same result for a given state–action pair as last observed.</li>
+<li>Value Update: Apply the same Q-learning update rule as in direct RL, but using the simulated transition as if it were real.</li>
+</ol>
+<p>Note: Each Q-planning step simulates and updates only one state–action pair (a single one-step transition) at a time. However, Q-planning is performed many times in succession—typically after every real Q-learning update—so the accumulated effect over multiple steps approximates broader planning.</p>
+<h3 id="Dyna-Q-Algorithm">Dyna-Q Algorithm<a class="anchor-link" href="#Dyna-Q-Algorithm">¶</a></h3><ol>
+<li><p>Initialize:</p>
+<ul>
+<li>For all $s \in \mathcal{S}$ and $a \in \mathcal{A}$, set $q(s,a)$ arbitrarily (e.g., $0$).</li>
+<li>Initialize an empty model $\mathcal{M}$ (e.g., a table mapping $(s,a)\!\to\!(r,s')$).</li>
+<li>Set hyperparameters: learning rate $\alpha$, discount factor $\gamma$, exploration rate $\epsilon$, and planning steps $n$.</li>
+</ul>
+</li>
+<li><p>Loop (for each episode or until stopping):</p>
+<ul>
+<li><p>Initialize start state $S$.</p>
+<p>(A) Acting + Direct RL</p>
+<ul>
+<li>Choose action $A$ using an exploration policy (e.g., $\epsilon$-greedy).</li>
+<li>Take $A$ in the real environment; observe $R$ and next state $S'$.</li>
+<li>Q-learning update (direct RL):
+$$q(S,A) \leftarrow q(S,A) \;+\; \alpha \left[ R \;+\; \gamma \max_{a} q(S',a) \;-\; q(S,A) \right]$$</li>
+<li>Model learning (record the transition):<ul>
+<li>Store/update $\mathcal{M}(S,A) \leftarrow (R,S')$.</li>
+</ul>
+</li>
+<li>Set $S \leftarrow S'$.</li>
+</ul>
+<p>(B) Planning (repeat $n$ times):</p>
+<ul>
+<li>Search control: Randomly select a previously observed state–action pair $(\tilde S,\tilde A)$ from the keys of $\mathcal{M}$.</li>
+<li>Model query: retrieve $(\tilde R,\tilde S') \leftarrow \mathcal{M}(\tilde S,\tilde A)$
+(for stochastic models, either sample or use expected values).</li>
+<li>Q-planning update (simulated):
+$$q(\tilde S,\tilde A) \leftarrow q(\tilde S,\tilde A) \;+\; \alpha \left[ \tilde R \;+\; \gamma \max_{a} q(\tilde S',a) \;-\; q(\tilde S,\tilde A) \right]$$</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Repeat Step 2 until convergence or a stopping criterion is met (e.g., max episodes, small change in $q$).</p>
+</li>
+</ol>
+<h3 id="Summary">Summary<a class="anchor-link" href="#Summary">¶</a></h3><p>Dyna-Q blends the strengths of model-based and model-free learning:</p>
+<ul>
+<li><strong>Model-Free Component:</strong> Learns directly from real interactions (direct RL)</li>
+<li><strong>Model-Based Component:</strong> Uses an internal model for planning and simulating extra experience</li>
+</ul>
+<p>By alternating between these two, Dyna-Q improves data efficiency and overall learning speed.</p>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/1*a1ReZc7DyscMyo8nQpWuwg.png" width="400"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 </div>
 </div>
 </div>
