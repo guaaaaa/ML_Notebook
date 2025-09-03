@@ -8646,7 +8646,7 @@ $$q(\tilde S,\tilde A) \leftarrow q(\tilde S,\tilde A) \;+\; \alpha \left[ \tild
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=678bbf40">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a6e97152">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8718,10 +8718,58 @@ $$w \leftarrow w + \alpha \big( G_t - \hat{v}(S_t; w) \big) \nabla_w \hat{v}(S_t
 </li>
 </ol>
 <p>Notes: This algorithm uses Monte Carlo targets $G_t$, so it waits until the end of the episode to perform updates, which updates once for each time step in the episode after the episode finishes. This is not an online algorithm since the agent must wait for the episode to finish to learn.</p>
+<h3 id="Semi-Gradient-TD">Semi-Gradient TD<a class="anchor-link" href="#Semi-Gradient-TD">¶</a></h3><p>The Gradient Monte Carlo method is unbiased but suffers from two main issues:</p>
+<ol>
+<li>It is slow to converge because it waits for full returns.</li>
+<li>It is not online, as it must wait until the episode ends to compute $G_t$.</li>
+</ol>
+<p>We can address these issues by applying one-step bootstrapping with the TD algorithm. Instead of using the sampled return $G_t$ as the update target, we replace it with the TD target:</p>
+<p>$$\text{TD target: } R_{t+1} + \gamma \hat{v}(S_{t+1}; w)$$</p>
+<p>Thus, the weight update becomes:</p>
+<p>$$w \leftarrow w + \alpha \big( R_{t+1} + \gamma \hat{v}(S_{t+1}; w) - \hat{v}(S_t; w) \big) \nabla_w \hat{v}(S_t; w)$$</p>
+<p>This update does not compute the true gradient of the objective. This is because the TD target, $R_{t+1} + \gamma \hat{v}(S_{t+1}; w)$, itself depends on the weights $w$ through bootstrapping $\hat{v}(S_{t+1}; w)$, which can be changed with a change in weights. This introduces bias, because the update direction is not the true gradient. For this reason, the method is called semi-gradient TD.</p>
+<p>The semi-gradient TD algorithm does not converge as robustly as gradient methods since it's gradient update is biased, but in most use cases, the convergence is good enough. Also, the semi-gradient TD algorithm has the following advantages</p>
+<ol>
+<li>Online learning: Unlike Monte Carlo, this method can update after every step, not just after episodes.</li>
+<li>Faster convergence: Bootstrapping typically accelerates learning compared to pure Monte Carlo.</li>
+<li>Bias vs. variance: Semi-gradient TD introduces bias (due to ignoring part of the gradient), but it greatly reduces variance compared to MC, leading to faster practical convergence.</li>
+</ol>
+<h3 id="Semi-Gradient-TD-Algorithm">Semi-Gradient TD Algorithm<a class="anchor-link" href="#Semi-Gradient-TD-Algorithm">¶</a></h3><ol>
+<li>Input:<ul>
+<li>A policy $\pi$ for evaluation</li>
+<li>A parametrized function $\hat v(s; w)$ that is used for estimation</li>
+<li>Step size $\alpha$</li>
+</ul>
+</li>
+<li>Initialize all the weights $w$ arbitrarily</li>
+<li>Loop for each episode<ul>
+<li>For each timestep in the episode<ul>
+<li>Select action $A$ based on the policy</li>
+<li>Take the action and observe the reward, $R$, and the transition to the next state $S_{t+1}$</li>
+<li>Update the weights
+$$w \leftarrow w + \alpha \big( R_{t+1} + \gamma \hat{v}(S_{t+1}; w) - \hat{v}(S_t; w) \big) \nabla_w \hat{v}(S_t; w)$$</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="Linear-Methods">Linear Methods<a class="anchor-link" href="#Linear-Methods">¶</a></h3><p>Linear approximation is a special and simpler case of general function approximation in reinforcement learning. Instead of directly using raw states, each state s is mapped to a real-valued feature vector</p>
+<p>$$x(s) = [x_1(s), x_2(s), x_3(s), \dots, x_n(s)]$$</p>
+<p>where the feature vector $x(s)$ has the same dimensionality as the weight vector $w$. The state-value function can then be approximated as a weighted sum (dot product) of these features</p>
+<p>$$\hat{v}(s; w) = w^\top x(s) = \sum_{i=1}^n w_i , x_i(s)$$</p>
+<p>For linear functions, the gradient with respect to the weight vector is straightforward, where
+$$\nabla_w \hat{v}(s; w) = x(s)$$</p>
+<p>This means that the gradient is simply the feature vector itself, which makes linear function approximation computationally efficient and conceptually simple. It also highlights the importance of designing good features, as they directly determine how the weights are updated during learning.</p>
+<p>For Gradient Monte Carlo methods with linear function approximation, the learning process is guaranteed to converge to the global optimum of the value function approximation if</p>
+<ol>
+<li>If the features are well-designed</li>
+<li>The step size $\alpha$ is appropriately chosen</li>
+</ol>
+<p>For</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=979ab4d9">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=b4974731">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
