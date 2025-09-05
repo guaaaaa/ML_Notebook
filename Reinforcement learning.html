@@ -8779,17 +8779,35 @@ $$\nabla_w \hat{v}(s; w) = x(s)$$</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=b4974731">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2be4c895">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span> 
-</pre></div>
-</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="Feature-Construction-for-Function-Approximation">Feature Construction for Function Approximation<a class="anchor-link" href="#Feature-Construction-for-Function-Approximation">¶</a></h2><p>The way we represent states through features is crucial for reinforcement learning, as it directly impacts training speed, stability, and the ability to incorporate prior domain knowledge. Good feature construction can enable an RL agent to generalize well, especially when dealing with large or continuous state spaces.</p>
+<p>In linear function approximation, each feature is treated independently, meaning the model cannot naturally capture interactions between features. To address this, we often engineer or combine features to create richer representations that capture these relationships.</p>
+<h3 id="State-Aggregation">State Aggregation<a class="anchor-link" href="#State-Aggregation">¶</a></h3><p>State aggregation is one of the simplest techniques for feature construction. It works by grouping similar states together and treating them as if they were the same single state. This drastically reduces the number of distinct states, which makes learning more computationally efficient and improves generalization in large or continuous state spaces.</p>
+<p>In state aggregation, the core idea is to partition the state space into non-overlapping groups or aggregated states. This means each original state is assigned to exactly one group, and no state can belong to multiple groups at the same time.</p>
+<img alt="No description has been provided for this image" src="https://raw.githubusercontent.com/wayexists02/my-study-note/image/typora/image/image-20200303011108051.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<p>However, aggregation must be done carefully because too coarse aggregation makes the agent overgeneralizes by treating very different states as identical, which can lead to poor performance. Too fine aggregation, on the other hand, makes the agent essentially treats every state as unique, losing the benefit of generalization and requiring much more data. The key is to find a balance between generalization and discrimination.</p>
+<h3 id="Coarse-Coding">Coarse Coding<a class="anchor-link" href="#Coarse-Coding">¶</a></h3><p>Coarse coding is a way of representing a state with features that can overlap with each other. This means an update to an overlapping region will update the value estimation of multiple states because each overlapping region is represented by the union of multiple states, which achieves better generation. Also, the shape of the selected features will determine the nature of the generalization. The coverage of the overlapping areas defines the ability to discriminate. Smaller but more distinct overlapping regions allows more fine-grin learning and better discrimination where larger and less overlapping regions treats large state space equally for better generalization.</p>
+<p>Coarse coding is a way to represent states using overlapping features, which allows for more flexible and powerful generalization compared to non-overlapping methods like state aggregation. In coarse coding, each feature represents a region of the state space, and multiple features can cover the same state. This means a single state may activate several features at once. When an update occurs, all active features are adjusted, which in turn affects all states that share those features. As a result, learning about one state immediately improves the value estimates of nearby states. This overlapping structure provides smoother generalization, where similar states are treated similarly.</p>
+<p>The shape and size of these overlapping regions determine how the agent generalizes across states and how well it can discriminate between them:</p>
+<ul>
+<li>Small, distinct regions: Provide fine-grained discrimination, allowing the agent to distinguish small differences between states. Suitable for tasks requiring precise control or where small differences are critical.</li>
+<li>Large, broad regions: Lead to stronger generalization, as many states share the same features. Useful when the environment is noisy or when learning must be fast with limited data.</li>
+</ul>
+<p>Intuition</p>
+<p>Think of coarse coding like a collection of spotlights overlapping on a map:
+•	Each spotlight covers part of the map (state space).
+•	A single location may be illuminated by multiple spotlights at once.
+•	Adjusting the brightness of one spotlight influences all locations it covers.</p>
+<p>This overlap enables the agent to share experience between similar states, striking a balance between:
+•	Generalization: learning efficiently by reusing knowledge, and
+•	Discrimination: differentiating between states when needed.</p>
+<img alt="No description has been provided for this image" src="https://raw.githubusercontent.com/wayexists02/my-study-note/image/typora/image/image-20200303011256015.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 </div>
 </div>
 </div>
