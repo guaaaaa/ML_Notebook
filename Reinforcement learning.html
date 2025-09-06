@@ -8780,7 +8780,7 @@ $$\nabla_w \hat{v}(s; w) = x(s)$$</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2be4c895">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4a92b2d5">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8792,22 +8792,42 @@ $$\nabla_w \hat{v}(s; w) = x(s)$$</p>
 <p>In state aggregation, the core idea is to partition the state space into non-overlapping groups or aggregated states. This means each original state is assigned to exactly one group, and no state can belong to multiple groups at the same time.</p>
 <img alt="No description has been provided for this image" src="https://raw.githubusercontent.com/wayexists02/my-study-note/image/typora/image/image-20200303011108051.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <p>However, aggregation must be done carefully because too coarse aggregation makes the agent overgeneralizes by treating very different states as identical, which can lead to poor performance. Too fine aggregation, on the other hand, makes the agent essentially treats every state as unique, losing the benefit of generalization and requiring much more data. The key is to find a balance between generalization and discrimination.</p>
-<h3 id="Coarse-Coding">Coarse Coding<a class="anchor-link" href="#Coarse-Coding">¶</a></h3><p>Coarse coding is a way of representing a state with features that can overlap with each other. This means an update to an overlapping region will update the value estimation of multiple states because each overlapping region is represented by the union of multiple states, which achieves better generation. Also, the shape of the selected features will determine the nature of the generalization. The coverage of the overlapping areas defines the ability to discriminate. Smaller but more distinct overlapping regions allows more fine-grin learning and better discrimination where larger and less overlapping regions treats large state space equally for better generalization.</p>
-<p>Coarse coding is a way to represent states using overlapping features, which allows for more flexible and powerful generalization compared to non-overlapping methods like state aggregation. In coarse coding, each feature represents a region of the state space, and multiple features can cover the same state. This means a single state may activate several features at once. When an update occurs, all active features are adjusted, which in turn affects all states that share those features. As a result, learning about one state immediately improves the value estimates of nearby states. This overlapping structure provides smoother generalization, where similar states are treated similarly.</p>
+<h3 id="Coarse-Coding">Coarse Coding<a class="anchor-link" href="#Coarse-Coding">¶</a></h3><p>Coarse coding is a way to represent states using overlapping features, which allows for more flexible and powerful generalization compared to non-overlapping methods like state aggregation. In coarse coding, each feature represents a region of the state space, and multiple features can cover the same state. This means a single state may activate several features at once. When an update occurs, all active features are adjusted, which in turn affects all states that share those features. As a result, learning about one state immediately improves the value estimates of nearby states. This overlapping structure provides smoother generalization, where similar states are treated similarly.</p>
 <p>The shape and size of these overlapping regions determine how the agent generalizes across states and how well it can discriminate between them:</p>
 <ul>
 <li>Small, distinct regions: Provide fine-grained discrimination, allowing the agent to distinguish small differences between states. Suitable for tasks requiring precise control or where small differences are critical.</li>
 <li>Large, broad regions: Lead to stronger generalization, as many states share the same features. Useful when the environment is noisy or when learning must be fast with limited data.</li>
 </ul>
-<p>Intuition</p>
-<p>Think of coarse coding like a collection of spotlights overlapping on a map:
-•	Each spotlight covers part of the map (state space).
-•	A single location may be illuminated by multiple spotlights at once.
-•	Adjusting the brightness of one spotlight influences all locations it covers.</p>
-<p>This overlap enables the agent to share experience between similar states, striking a balance between:
-•	Generalization: learning efficiently by reusing knowledge, and
-•	Discrimination: differentiating between states when needed.</p>
+<p>By tuning the size and shape of these overlapping features, we can control the trade-off between generalization and discrimination</p>
 <img alt="No description has been provided for this image" src="https://raw.githubusercontent.com/wayexists02/my-study-note/image/typora/image/image-20200303011256015.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<h3 id="Tile-Coding">Tile Coding<a class="anchor-link" href="#Tile-Coding">¶</a></h3><p>Tile coding is a type of coarse coding technique that creates overlapping state representations to improve generalization. It works by applying state aggregation (tiling) multiple times, with each tiling slightly offset from the others. In each tiling, the state space is divided into non-overlapping tiles (like a grid). Therefore, a given state activates exactly one tile in each tiling, meaning multiple features are active for the same state across different tilings. When the agent updates its value estimate, all active tiles are updated, which simultaneously updates the estimates of nearby states that share those tiles. This structure allows the agent to generalize efficiently as updaing to one state propagate to neighboring states through overlapping tiles.</p>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1226/1*itlhmnwLnEtUaalSsivUVA.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<p>The size and direction of the offset between tilings directly affect the degree and direction of generalization. Small offsets provide finer discrimination between nearby states and allow the agent to distinguish subtle differences. While larger offsets promote stronger generalization by grouping states more broadly, which is useful in noisy or high-dimensional environments. Also, the directions of offsets between each tiling directly impact the generalization directions.</p>
+<p>Tile coding is especially practical for modern reinforcement learning systems because:</p>
+<ol>
+<li>It is computationally efficient as only a fixed, small number of features are active per state.</li>
+<li>It naturally supports incremental updates, making it ideal for online learning.</li>
+<li>Its simplicity makes it easier to debug and visualize compared to complex non-linear methods like neural networks.</li>
+</ol>
+<h3 id="Neural-Networks-for-Feature-Representation">Neural Networks for Feature Representation<a class="anchor-link" href="#Neural-Networks-for-Feature-Representation">¶</a></h3><p>Another way to represent features in reinforcement learning is by using a neural network. In this approach, we can directly feed raw state data into the network rather than relying on hand-crafted features. The network automatically learns feature representations through the process of backpropagation, discovering patterns and relationships within the data as it trains.</p>
+<p>The learning process is framed as a supervised learning problem, where:</p>
+<ul>
+<li>Input: The raw state or its basic attributes.</li>
+<li>Output: The predicted value for that state, such as $\hat{v}(s; w)$.</li>
+<li>Objective: Minimize the value error, so the network’s predictions get closer to the true expected return.</li>
+</ul>
+<p>Compared to coarse coding or other manual feature engineering methods, the neural networks have the advantages of</p>
+<ol>
+<li>Capture complex, non-linear relationships that simpler methods cannot represent.</li>
+<li>Eliminate the need for manual feature construction, as the network itself discovers useful features during training.</li>
+<li>Suitable for unstructured and high-dimensional inputs, such as images or raw sensor data.</li>
+</ol>
+<p>But neural network also has the disadvantages of</p>
+<ol>
+<li>Prone to unstable learning, especially in RL where training data is non-stationary and bootstrapped targets are used.</li>
+<li>The learned features are often uninterpretable, making it difficult to understand why certain decisions are made.</li>
+<li>Require careful tuning of hyperparameters and large amounts of data for effective learning.</li>
+</ol>
 </div>
 </div>
 </div>
