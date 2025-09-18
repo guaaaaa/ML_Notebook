@@ -8954,29 +8954,14 @@ $$</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b85af4af">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5a8d663f">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Policy-Gradient-Method">Policy Gradient Method<a class="anchor-link" href="#Policy-Gradient-Method">¶</a></h1><p>So far, all the method we introduces are value based learning, which means we learns the state values and action values functions from experience, then the agent select actions bsed on these value estimates, and we extract the policy from the leraned value functions. Therefore, the value functions acts like a bridge between the agent's current state and policy.</p>
-<p>However, we can also learns a policy direction as a function parametrized by $\theta$, which indicates the policy function's parameter. Therefore, we can write a policy as the probability to select an action given the agent's current state and the policy parameters, where</p>
-<p>$$\pi(a | s, \theta)$$</p>
-<p>Here, the constrains from probability theories are</p>
-<ol>
-<li>The probabilty for selecting each action at every state must be greater or equal to 0</li>
-<li>The sum of probability for selecting all actions must equal to 1 for every state</li>
-</ol>
-<p>Given by</p>
-<ol>
-<li>$pi(a | s, \theta) \geq 0$ for all A, and S</li>
-<li>$\sum_a pi(a | s, \theta) = 1$</li>
-</ol>
-<p>To satisfy these constrains, we define the output value from the learned policy function to be $h(s, a, \theta) \in R$, which is also called action preference. Then, we can apply a softmax function to all the action preferences at each state to ensure all the policy satisfy the constrains from the probability theorm, where</p>
-<p>$\pi(a | s, \theta) = ...$</p>
 <h1 id="Policy-Gradient-Method">Policy Gradient Method<a class="anchor-link" href="#Policy-Gradient-Method">¶</a></h1><p>So far, all the methods we have introduced are value-based learning methods. In these methods, the agent first learns value functions, such as the state-value function $v(s)$ or the action-value function $q(s, a)$ from experience. Then, the agent selects actions based on these value estimates, and the policy is indirectly derived from the learned value functions. In other words, the value functions act as a bridge between the agent’s current state and its decision-making policy.</p>
-<p>Instead of learning value functions and deriving a policy from them, we can directly learn the policy as a parameterized function. We represent the policy by $\pi(a \mid s, \theta)$, which gives the probability of selecting action a given state $s$ and parameters $\theta$. Here, $\theta$ represents the learnable parameters of the policy.</p>
+<p>Instead of learning value functions and deriving a policy from them, we can directly learn the policy as a parameterized function and optimize it. This method is called the policy gradient method. We represent the policy by $\pi(a \mid s, \theta)$, which gives the probability of selecting action a given state $s$ and parameters $\theta$. Here, $\theta$ represents the learnable parameters of the policy.</p>
 <p>For $\pi(a \mid s, \theta)$ to be a valid probability distribution, it must satisfy two constraints:</p>
 <ol>
 <li><p>Non-negativity: $\pi(a \mid s, \theta) \geq 0 \quad \forall a \in \mathcal{A}, , s \in \mathcal{S}$</p>
@@ -8987,6 +8972,28 @@ $$</p>
 <p>These ensure that for every state, the probability of each action is non-negative and the total probability over all actions equals 1.</p>
 <p>To satisfy these constraints, we first define a real-valued function called the action preference, denoted as $h(s, a, \theta)$. The action preference represents how desirable it is to take action a in state s under parameters $\theta$. Since $h(s, a, \theta)$ can take any real value, we convert it into a valid probability distribution using the softmax function, where</p>
 <p>$$\pi(a \mid s, \theta) = \frac{e^{h(s, a, \theta)}}{\sum_{a’} e^{h(s, a’, \theta)}}$$</p>
+<p>After the softmax function, the probability distribution for all actiosn under every states is now valid.</p>
+<h2 id="Advanages-of-Policy-Gradient-Method">Advanages of Policy Gradient Method<a class="anchor-link" href="#Advanages-of-Policy-Gradient-Method">¶</a></h2><p>The optimal policy for a given problem can be deterministic or stochastic. In value-based methods, improving the policy usually involves making it greedy or $\epsilon$-greedy with respect to the current action-value estimates.</p>
+<p>However, this approach has two major limitations:</p>
+<ol>
+<li><p>Difficulty in Learning Stochastic Policies: in many problems, the optimal policy is stochastic, meaning the agent must randomize its actions to perform well (e.g., Rock-Paper-Scissors, exploration in partially observable environments). Value-based methods struggle here because they force a near-deterministic improvement step by greedily selecting the best action or occasionally exploring using $\epsilon$-greedy. This makes it difficult for the agent to naturally converge to a well-calibrated stochastic policy, as the randomness is artificially imposed instead of being learned.</p>
+</li>
+<li><p>Limitations of $\epsilon$-Greedy Exploration: $\epsilon$-greedy is used in both tabular and function approximation settings to ensure exploration. However, because exploration is purely random, the agent always explores, even when it has already learned the optimal behavior. This creates a performance ceiling, as the agent never fully transitions to optimal exploitation and continues to take suboptimal random actions occasionally.</p>
+</li>
+</ol>
+<p>Policy gradient methods directly parameterize and optimize the policy. This allows them to adapt naturally to the type of policy required. If the optimal policy is deterministic, the learned policy will gradually converge to a pure deterministic form without requiring artificial exploration like $\epsilon$-greedy. If the optimal policy is stochastic, the method will self-adjust and discover the correct distribution of actions through experience. This flexibility makes policy gradient methods more expressive and often more suitable for complex or uncertain environments.</p>
+<p>Also, in some problems, the value function can be extremely complex, while the policy itself is simple. In such cases, directly learning the policy is more efficient and practical than learning a full value function and deriving the policy indirectly. However, this is problem-dependent as there are also situations where value-based methods are simpler and more stable.</p>
+<h2 id="Policy-Gradient-Objective">Policy Gradient Objective<a class="anchor-link" href="#Policy-Gradient-Objective">¶</a></h2><p>The goal of reinforcement learning is to find a policy that maximizes the agent’s cumulative rewards. For policy gradient methods, we directly optimize a parameterized policy $\pi(a \mid s, \theta)$. The objective function for this approach can be defined as the average reward under a given policy, where</p>
+<p>$$r(\pi) = \sum_{s \in \mathcal{S}} \mu_{\pi}(s) \sum_{a \in \mathcal{A}} \pi(a \mid s) \sum_{s’, r} p(s’, r \mid s, a) , r$$</p>
+<ul>
+<li>$\sum_{s’, r} p(s’, r \mid s, a) r$: the expected immediate reward for taking action a in state s.</li>
+<li>$\pi(a \mid s) \sum_{s’, r} p(s’, r \mid s, a) r$: the expected reward at state s, weighted by the probability of selecting action a under policy $\pi$.</li>
+<li>$\mu_{\pi}(s)$: The stationary distribution over states under policy $\pi$, representing how frequently each state is visited when the agent follows $\pi$.</li>
+</ul>
+<p>This objective function captures the long-term performance of a policy, where it first accounts for how often each state is visited $\mu_{\pi}(s)$. Then, for each state, it considers the probability of taking each action and the expected reward for that action.</p>
+<p>By maximizing $r(\pi)$ with respect to the policy parameters $\theta$, the agent gradually adjusts its behavior to favor actions and states that yield higher rewards.</p>
+<p>Formally, the optimization problem is:</p>
+<p>$$\theta^* = \arg \max_\theta r(\pi_\theta)$$</p>
 </div>
 </div>
 </div>
