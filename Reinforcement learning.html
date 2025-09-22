@@ -8954,7 +8954,7 @@ $$</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ce2ae81a">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=63eb2226">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8998,20 +8998,49 @@ $$</p>
 <p>$$
 \nabla_{\theta} r(\pi) = \nabla_{\theta} \sum_{s \in \mathcal{S}} \mu_{\pi}(s) \sum_{a \in \mathcal{A}} \pi(a \mid s) \sum_{s’, r} p(s’, r \mid s, a) , r
 $$</p>
-<p>The term \mu_{\pi}(s) represents the state distribution under policy $\pi$. However, this distribution changes whenever the policy changes, making its gradient extremely difficult to compute accurately, which is impractical.</p>
+<p>Once we know the gradient of the objective, we can update the policy's parameter, $\theta$, with gradient ascent with step size of $\alpha$, where</p>
+<p>$$\theta_{t+1} = \theta_t + \alpha \nabla_{\theta} r(\pi)$$</p>
+<p>However, in the gradient of the average reward, the term $\mu_{\pi}(s)$ represents the state distribution under policy $\pi$ because his distribution changes whenever the policy changes, making its gradient extremely difficult to compute accurately, which is impractical.</p>
 <p>The policy gradient theorem resolves this issue by providing a clean, analytic expression for the gradient that avoids differentiating the state distribution. It shows that</p>
 <p>$$\nabla_{\theta} r(\pi) = \sum_{s \in \mathcal{S}} \mu_{\pi}(s) \sum_{a \in \mathcal{A}} \nabla_{\theta} \pi(a \mid s) , q_{\pi}(s, a)$$</p>
 <ul>
 <li>$q_{\pi}(s, a)$: the action-value function, representing the expected return starting from state $s$, taking action $a$, and then following policy $\pi$.</li>
-<li>$\nabla_{\theta} \pi(a \mid s)$ is the gradient of the policy with respect to its parameters.</li>
+<li>$\nabla_{\theta} \pi(a \mid s)$: the gradient of the policy with respect to its parameters.</li>
 </ul>
 <p>This form bypasses the need to compute $\nabla_{\theta} \mu_{\pi}(s)$ and gives a practical way to estimate the gradient from experience.</p>
-<p>The action-value $q_{\pi}(s, a)$ serves as a directional signal for the gradient</p>
+<p>In the policy gradient theorem expression, $\nabla_{\theta} \pi(a \mid s)$ describes how the probability of selecting each action changes as the policy parameters $\theta$ are adjusted.</p>
 <ul>
-<li>If an action is better than average, $q_{\pi}(s, a)$ will be high, leading to a positive gradient. This increases the probability of selecting that action in the future.</li>
-<li>If an action is worse than average, $q_{\pi}(s, a)$ will be low or negative, leading to a negative gradient. This decreases the probability of selecting that action.</li>
+<li>If a small increase in a parameter raises the probability of selecting an action, the gradient is positive for that action.</li>
+<li>If a small increase lowers the probability, the gradient is negative.</li>
 </ul>
-<p>Thus, the policy gradient theorem naturally pushes the policy toward actions that yield higher returns, improving the agent’s behavior over time.</p>
+<p>The action-value $q_{\pi}(s, a)$ serves as a signal that guides the gradient update, indicating whether the probability of selecting an action should be increased or decreased to improve the policy.</p>
+<ul>
+<li>If an action's expected reward is better than average, $q_{\pi}(s, a)$ will be high. This increases the probability of selecting that action in the future.</li>
+<li>If an action's expected reward is worse than average, $q_{\pi}(s, a)$ will be low or negative. This decreases the probability of selecting that action.</li>
+</ul>
+<p>Thus, with the two term together, the policy gradient theorem naturally pushes the policy toward actions that yield higher rewards, improving the agent’s behavior over time.</p>
+<p>The update rule is given by</p>
+<p>$$\theta_{t+1} = \theta_t + \alpha \sum_{s \in \mathcal{S}} \mu_{\pi}(s) \sum_{a \in \mathcal{A}} \nabla_{\theta} \pi(a \mid s) , q_{\pi}(s, a)$$</p>
+<h2 id="Stochastic-Policy-Gradient">Stochastic Policy Gradient<a class="anchor-link" href="#Stochastic-Policy-Gradient">¶</a></h2><p>In the current policy gradient expression, it requires summing over all possible state action pairs to computes the full gradient, which is inpractical since the state action space is often very large.
+$$\nabla_{\theta} r(\pi) = \sum_{s \in \mathcal{S}} \mu_{\pi}(s) \sum_{a \in \mathcal{A}} \nabla_{\theta} \pi(a \mid s) , q_{\pi}(s, a)$$</p>
+<p>Therefore, we can simplify the gradient computation by computing a stochastic gradient of only based on only one samples. This can be done by replacing $s$ and $a$ with an observed state action pair $(S_t, A_t)$.</p>
+<p>$$\nabla_{\theta} r(\pi) \approx \frac{\nabla_{\theta} \pi(A_t \mid S_t)}{\pi(A_t \mid S_t)} q_{\pi}(S_t, A_t) = \nabla_{\theta} \ln{\pi(A_t \mid S_t)}q_{\pi}(S_t, A_t)$$</p>
+<p>This formula approximates the true grtadient using only one sample, and the update rule becomes</p>
+<p>$$\theta_{t+1} = ...$$</p>
+<h2 id="Stochastic-Policy-Gradient">Stochastic Policy Gradient<a class="anchor-link" href="#Stochastic-Policy-Gradient">¶</a></h2><p>In the current policy gradient expression, the exact policy gradient sums over all state–action pairs, which is intractable in large spaces:</p>
+<p>$$\nabla_\theta r(\pi_\theta)
+= \sum_{s\in\mathcal S}\mu_{\pi_\theta}(s)\sum_{a\in\mathcal A}\pi_\theta(a\mid s),\nabla_\theta \ln \pi_\theta(a\mid s) q_{\pi_\theta}(s,a)$$</p>
+<p>Instead, we use a stochastic estimation by sampling a single state–action pair $(S_t,A_t)$ from the on-policy distribution and replacing the expectation with that sample</p>
+<p>$$
+\nabla_\theta r(\pi_\theta)
+\approx \nabla_\theta \ln \pi_\theta(A_t\mid S_t) q(S_t,A_t)
+$$</p>
+<p>where $q(S_t,A_t)$ is an observed sample at a timesteps. Now, the agent is able update the policy online after each timestep with the newly observed state-action pair. Therefore, the update rule becomes</p>
+<p>$$
+\theta_{t+1}
+= \theta_t + \alpha, \nabla_\theta \ln \pi_\theta(A_t\mid S_t) q(S_t,A_t)
+$$</p>
+<h2 id="Actor-Critic-Algorithm">Actor-Critic Algorithm<a class="anchor-link" href="#Actor-Critic-Algorithm">¶</a></h2>
 </div>
 </div>
 </div>
