@@ -7712,6 +7712,65 @@ Assigning grammatical categories (e.g., nouns, verbs, adjectives) to each word i
 </div>
 </div>
 </div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f62f6424">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Tokenization-methods">Tokenization methods<a class="anchor-link" href="#Tokenization-methods">¶</a></h1><p>Tokenization strategies generally classified into character level or word level, but both with their own issues.</p>
+<ul>
+<li><p>Character Level Tokenization:Treat every character (<code>'a'</code>, <code>'b'</code>, <code>'c'</code>) as a token. This is a simple method and will gives a fixed vocabulary size, but can cause context overflow because even a shrot sentence becomes a massive sequence of tokens. This fills up the model's memory (context window) too quickly, making it impossible to process long documents.</p>
+</li>
+<li><p>Word Level Tokenization: Treat every unique word as a token. This solves the long context problem of character level tokenization but it fails to see the relationship between similar words. For example, <code>"Study"</code>, <code>"Studying"</code>, and <code>"Studies"</code> share the same semantic meaning but differ only in grammar/tense. Word level tokenization treats them as 3 completely unrelated IDs, forcing the model to relearn the concept of <code>"studying"</code> from scratch, even if it already knows <code>"study"</code>, and this will make the vocabulary size to be unnecessarily large with lots of redundancy.</p>
+</li>
+</ul>
+<p>BPE is a subword tokenization method that combines the benefits of both character and word level tokenization by breaking words into meaningful "subwords" based on frequency. For example, BPE identifies <code>"study"</code>, <code>"ing"</code>, and <code>"es"</code> are frequent building blocks, so instead of storing 3 separate words, BPE tokenizes them dynamically:</p>
+<ul>
+<li><code>"studying"</code> $\rightarrow$ <code>["study", "ing"]</code></li>
+<li><code>"studies"</code> $\rightarrow$ <code>["study", "es"]</code></li>
+</ul>
+<p>This method allow the model to capture the semantic meaning (<code>study</code>) and the tense meaning (<code>ing</code> or <code>es</code>) efficiently without blowing up the vocabulary size or the sequence length.</p>
+<h2 id="BPE-Algorithm">BPE Algorithm<a class="anchor-link" href="#BPE-Algorithm">¶</a></h2><p>BPE is an iterative process that grows the vocabulary from characters up to subwords and words by selecting the tokens that appears most commonly together and combine them into new tokens.</p>
+<ol>
+<li><p><strong>Initialize (Character Level):</strong></p>
+<ul>
+<li>Start with a vocabulary containing only individual characters (and a special end-of-word symbol like <code>&lt;/w&gt;</code>).</li>
+<li>Represent all words in your data as sequences of these characters.</li>
+<li><em>Example Data:</em> <code>['h', 'u', 'g', '&lt;/w&gt;']</code>, <code>['p', 'u', 'g', '&lt;/w&gt;']</code></li>
+</ul>
+</li>
+<li><p><strong>Count Pairs:</strong></p>
+<ul>
+<li>Scan the entire dataset and count the frequency of every adjacent pair of tokens.</li>
+<li><em>Example:</em> How often does <code>u</code> appear next to <code>g</code>?</li>
+</ul>
+</li>
+<li><p><strong>Merge the Best Pair:</strong></p>
+<ul>
+<li>Identify the single most frequent pair in the data (e.g., <code>u</code> + <code>g</code>).</li>
+<li>Merge them into a new, single token (e.g., <code>ug</code>).</li>
+<li>Add this new token to the vocabulary.</li>
+</ul>
+</li>
+<li><p><strong>Update Data:</strong></p>
+<ul>
+<li>Replace all occurrences of that pair in the dataset with the new token.</li>
+<li><em>Example Data becomes:</em> <code>['h', 'ug', '&lt;/w&gt;']</code>, <code>['p', 'ug', '&lt;/w&gt;']</code></li>
+</ul>
+</li>
+<li><p><strong>Repeat:</strong></p>
+<ul>
+<li>Repeat steps 2-4 for a fixed number of merges (hyperparameter).</li>
+<li><strong>Result:</strong> Common words become single tokens (e.g., "apple"), while rare words remain as sequences of subwords (e.g., "un" + "friend" + "ly").</li>
+</ul>
+</li>
+</ol>
+<img alt="No description has been provided for this image" src="https://pantelis.github.io/aiml-common/lectures/nlp/nlp-introduction/tokenization/images/bpe-example.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+</div>
+</div>
+</div>
+</div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d95eecee">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
