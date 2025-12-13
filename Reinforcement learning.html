@@ -7747,7 +7747,7 @@ One simple estimation approach is the sample-average method, where the estimated
 </ul>
 <p>This form only requires storing the current estimate and does not require keeping track of all past rewards, making it computationally efficient.</p>
 <h2 id="Non-Stationary-Problem">Non-Stationary Problem<a class="anchor-link" href="#Non-Stationary-Problem">¶</a></h2><p>A problem is said to be stationary if the reward distribution for each action remains the same over time. However, in many real world RL problems, the environment is non-stationary, meaning the reward distributions change over time. In such cases, an agent must be able to adapt its action-value estimates to reflect the most recent outcomes more than older ones. The incremental update rule can be written in a recursive form</p>
-<p>$$\hat{q}_{t+1} = (1-\alpha)^t\hat{q}_1 + \sum^{t}_{i=1}\alpha_t (1-\alpha)^{t-i} r_i$$</p>
+<p>$$\hat{q}_{t+1} = (1-\alpha)^t\hat{q}_1 + \sum^{t}_{i=1}\alpha (1-\alpha)^{t-i} r_i$$</p>
 <ul>
 <li>$\alpha$: a constant step size between 0 and 1</li>
 <li>$r_i$: the reward recieved after taking the action at timestep $i$</li>
@@ -7821,7 +7821,7 @@ based on the current state–action pair $(s, a)$.</li>
 <p>In episodic tasks, each episode has a fixed or variable length and terminates at some final time step $T$.<br/>
 Since the episode ends, the return is always finite:</p>
 <p>$$G_t = r_{t+1} + r_{t+2} + \dots + r_T$$</p>
-<p>In continuing tasks**, the agent–environment interaction does not end, so we introduce a discount factor $\gamma \in [0, 1)$ to ensure the return remains finite, where</p>
+<p>In continuing tasks, the agent–environment interaction does not end, so we introduce a discount factor $\gamma \in [0, 1)$ to ensure the return remains finite, where</p>
 <p>$$G_t = r_{t+1} + \gamma r_{t+2} + \gamma^2 r_{t+3} + \dots = \sum_{k=0}^{\infty} \gamma^k r_{t+k+1}$$</p>
 <ul>
 <li>A larger discount factor ($\gamma \to 1$) makes the agent more far-sighted, valuing long-term rewards.</li>
@@ -7887,7 +7887,7 @@ $$v_\pi(s) = \mathbb{E}_\pi \left[ G_t \mid s_t = s \right] = \sum_{a} \pi(a \mi
 </ul>
 <h3 id="Bellman-Equation-for-the-Action-Value-Function">Bellman Equation for the Action-Value Function<a class="anchor-link" href="#Bellman-Equation-for-the-Action-Value-Function">¶</a></h3><p>Similarly, the action-value function can also be expressed in a recursive form using the Bellman equation.<br/>
 It defines the expected return starting from state $s$, taking a specific action $a$, and then following policy $\pi$ thereafter:</p>
-<p>$$q_\pi(s, a) = \mathbb{E}_\pi \left[ G_t \mid s_t = s, a_t = a \right] = \sum_{s'} \sum_{r} p(s', r \mid s, a) \left[ r + \gamma \sum_{a'} \pi(a' \mid s') q_\pi(s', a') \right]$$</p>
+<p>$$q_\pi(s, a) = \mathbb{E}_\pi \left[ G_t \mid s_t = s, a_t = a \right] = \sum_{s'} \sum_{r} p(s', r \mid s, a) \left[ r + \gamma \sum_{a'} \pi(a' \mid s') q_\pi(s', a') \right] = \sum_{s'} \sum_{r} p(s', r \mid s, a) \left[ r + \gamma v_{\pi}(s') \right]$$</p>
 <ul>
 <li>There is no policy term in the outer expectation because the first action $a$ is already fixed (we are evaluating $q_\pi(s, a)$ for a specific action).</li>
 <li>The recursion comes into play after the transition to the next state $s'$, where the agent resumes following policy $\pi$. For each possible next state $s'$ and reward $r$, we<ol>
@@ -7898,6 +7898,14 @@ It defines the expected return starting from state $s$, taking a specific action
 </ul>
 <p>This gives a complete recursive expression for $q_\pi(s, a)$, based on the one-step lookahead and expected future return.</p>
 <p>In summary, the Bellman equation leverages the recursive structure of MDPs to transform an infinite sum of future rewards into a system of linear equations. While this makes value computation more tractable in theory, solving this system exactly becomes computationally infeasible in large-scale problems due to the exponential growth in the number of states and actions.</p>
+<h3 id="Relationship-Between-State-Value-and-Action-Value">Relationship Between State-Value and Action Value<a class="anchor-link" href="#Relationship-Between-State-Value-and-Action-Value">¶</a></h3><ol>
+<li><p>State value expressed in terms of action value: $v(s)$ is the weighted sum of $q(s,a)$ across all possible actions weighted by the policy
+$$v_{\pi}(s) = \sum_{a} \pi(a|s) q_{\pi}(s, a)$$</p>
+</li>
+<li><p>Action value expressed in terms of next state value: $q(s,a)$ is the expected immediate reward plus the discounted value of next state $s'$
+$$q_{\pi}(s, a) = \sum_{s', r} p(s', r | s, a) \left[ r + \gamma v_{\pi}(s') \right]$$</p>
+</li>
+</ol>
 <h2 id="Optimal-Policy">Optimal Policy<a class="anchor-link" href="#Optimal-Policy">¶</a></h2><p>The goal of reinforcement learning is to find an optimal policy that maximizes the expected cumulative reward. A policy $\pi$ is said to be better than or equal to another policy $\pi'$ if, for every state $s$, the expected return of following $\pi$ is at least as high as that of following $\pi'$. Formally, $\pi \geq \pi'$ if and only if</p>
 <p>$$ v_\pi(s) \geq v_{\pi'}(s) \quad \text{for all } s \in \mathcal{S}$$</p>
 <p>An optimal policy, denoted by $\pi_*$, is a policy that is better than or equal to all other policies. That is, for any other policy $\pi'$</p>
@@ -7997,7 +8005,7 @@ $$\pi_{\text{new}}(s) = \arg\max_a \sum_{s'} \sum_r p(s', r \mid s, a) \left[ r 
 </ul>
 </li>
 </ol>
-<img alt="No description has been provided for this image" src="https://plusreinforcement.com/wp-content/uploads/2018/07/screen-shot-2018-07-04-at-7-37-40-pm.png" width="350"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<img alt="No description has been provided for this image" src="https://lcalem.github.io/imgs/sutton/gpi_interaction.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h1 id="Generalized-Policy-Iteration">Generalized Policy Iteration<a class="anchor-link" href="#Generalized-Policy-Iteration">¶</a></h1><p>Generalized Policy Iteration  refers to the framework in reinforcement learning where policy evaluation and policy improvement are interact repeatedly and approximately to gradually refine a policy toward optimality. The key idea is that evaluation and improvement do not need to fully complete before the next begins. As long as policy evaluation moves the value function closer to accurate estimates under the current policy, and policy improvement makes the policy greedier with respect to those estimates, the process will converge over time. If both the value function and the policy eventually stabilize, meaning no further updates occur, then the policy must be optimal, and the value function must be the optimal value function.</p>
 <h2 id="Value-Iteration">Value Iteration<a class="anchor-link" href="#Value-Iteration">¶</a></h2><p>Value iteration is a form of generalized policy iteration that streamlines the process of finding the optimal policy. It addresses the inefficiency in traditional policy iteration, where the policy evaluation step requires multiple sweeps over all states until the value function converges. Instead of fully evaluating the current policy before improving it, value iteration performs a single update to each state's value in each iteration and greedy policy improvement. This reduces computational cost while still ensuring convergence to the optimal policy.</p>
 <p>The core update rule is:
@@ -8050,11 +8058,14 @@ $$v_{k+1}(s) = \max_a \sum_{s'} \sum_r p(s', r \mid s, a) \left[ r + \gamma v_k(
 <h3 id="Monte-Carlo-for-Policy-Evaluation">Monte Carlo for Policy Evaluation<a class="anchor-link" href="#Monte-Carlo-for-Policy-Evaluation">¶</a></h3><p>To evaluate a policy using the Monte Carlo approach</p>
 <ol>
 <li>Given a policy, run simulations based on it to generate many episodes.</li>
-<li>Record the returns (cumulative discounted rewards) observed following each state.</li>
-<li>Estimate the value of a state as the average return observed when visiting that state across many episodes.</li>
+<li>Record the observed returns of each visited stated in the episode.</li>
+<li>Update the value estimate towards based on the observed return from that state.</li>
 </ol>
-<p>Given that episodes terminate, the return $G_t$ at each time step $t$ can be computed backward from the end of the episode, where
+<p>Given that episodes terminate, the return $G_t$ at each time step $t$, where the agent is in state $s_t$ can be computed backward from the end of the episode, where
 $$G_t = r_{t+1} + \gamma r_{t+2} + \gamma^2 r_{t+3} + \dots + \gamma^{T-t-1} r_T$$</p>
+<p>Then, we update the value function of the state $s_t$ to be
+$$v(s_t) \leftarrow v(s_t) + \alpha \left[ G_t - v(s_t) \right]$$
+where $[ G_t - v(s_t)]$ refers to the error between the observed return and the current estimates, and $\alpha$ is the update step size or learning rate.</p>
 <p>With enough samples, the average return for each state converges to the true expected return under the given policy.</p>
 <h3 id="Monte-Carlo-vs-DP">Monte Carlo vs DP<a class="anchor-link" href="#Monte-Carlo-vs-DP">¶</a></h3><ol>
 <li><p>No Need for a Model: Monte Carlo methods do not require access to the environment's transition or reward model. They learn directly from sampled episodes, unlike DP which requires complete knowledge of the dynamics.</p>
@@ -8067,14 +8078,15 @@ $$G_t = r_{t+1} + \gamma r_{t+2} + \gamma^2 r_{t+3} + \dots + \gamma^{T-t-1} r_T
 </li>
 </ol>
 <img alt="No description has been provided for this image" src="https://i0.wp.com/roboticseabass.com/wp-content/uploads/2020/08/rl_intro_banner-1.png?fit=1200,448&amp;ssl=1" width="700"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
-<h3 id="Monte-Carlo-for-Action-Value-Estimation">Monte Carlo for Action-Value Estimation<a class="anchor-link" href="#Monte-Carlo-for-Action-Value-Estimation">¶</a></h3><p>In DP, state values are sufficient to determine a policy because the model (transition probabilities and rewards) allows us to look one step ahead and select the action that leads to the best expected outcome. However, in Monte Carlo methods, where no model of the environment is available, state values alone are insufficient for decision makin because even though we know the all the state values, we do not know the transition probabilities, and thus, do not know which state the agent will end up in after taking an action. Therefore, we must explicitly estimate action-value functions, $q_\pi(s, a)$, to determine which actions are better under a given policy.</p>
+<h3 id="Monte-Carlo-for-Action-Value-Estimation">Monte Carlo for Action-Value Estimation<a class="anchor-link" href="#Monte-Carlo-for-Action-Value-Estimation">¶</a></h3><p>In DP, state values are sufficient to determine a policy because the model (transition probabilities and rewards) allows us to look one step ahead and select the action that leads to the best expected outcome. However, in Monte Carlo methods, where no model of the environment is available, state values alone are insufficient for decision making because even though we know the all the state values, we do not know the transition probabilities, and thus, do not know which state the agent will end up in after taking an action. Therefore, we must explicitly estimate action-value functions, $q_\pi(s, a)$, to determine which actions are better under a given policy.</p>
 <p>To estimate action values</p>
 <ol>
 <li>Generate episodes using the current policy.</li>
 <li>For each state–action pair, we record the return following that pair.</li>
 <li>The estimated action value $q_\pi(s, a)$ is the average of these observed returns.</li>
 </ol>
-<p>This is similar to estimating state values, except we condition on both the state and the action taken.</p>
+<p>This is similar to estimating state values, except we condition on both the state and the action taken, where
+$$q(s, a) \leftarrow q(s, a) + \alpha \left[ G_t - q(s, a) \right]$$</p>
 <h3 id="Exploring-Starts">Exploring Starts<a class="anchor-link" href="#Exploring-Starts">¶</a></h3><p>However, this methods has an critical issue when the agent follows a deterministic policy, and certain state–action pairs may never be visited. As a result, some action values will never be updated, and the agent cannot learn about better actions it never tries. This violates the principle of sufficient exploration, making it impossible to guarantee convergence to the optimal policy.</p>
 <p>One common solution in Monte Carlo control is exploring starts, where each episode begins from a randomly chosen state–action pair and follow the policy for the remainder of the episode. This ensures that all state–action pairs have a non-zero probability of being explored. With enough episodes, this guarantees that all $q_\pi(s, a)$ values are visited and accurately estimated.</p>
 <h3 id="Monte-Carlo-Method-for-Policy-Iteration">Monte Carlo Method for Policy Iteration<a class="anchor-link" href="#Monte-Carlo-Method-for-Policy-Iteration">¶</a></h3><p>Monte Carlo methods can be used to perform policy iteration. This is achieved through sampling episodes and estimating the action values from experience. The algorithm proceeds as follows</p>
@@ -8100,7 +8112,7 @@ $$G_t = r_{t+1} + \gamma r_{t+2} + \gamma^2 r_{t+3} + \dots + \gamma^{T-t-1} r_T
 <li>For each state-action pair $(s, a)$ that appears in the episode:<ul>
 <li>Compute the return $G_t$ backward with discount.</li>
 <li>Update the action-value estimate $q_\pi(s, a)$ as the sample average of all returns observed for that pair:
-$$q_\pi(s, a) \leftarrow \text{average of all returns observed after visiting } (s, a)$$</li>
+$$q_\pi(s, a) \leftarrow q(s, a) + \alpha \left[ G_t - q(s, a) \right]$$</li>
 </ul>
 </li>
 </ul>
@@ -8119,13 +8131,6 @@ $$\pi_{\text{new}}(s) = \arg\max_a q_\pi(s, a)$$</li>
 <li>Return to Step 2 and continue until the policy converges, or for a fixed number of iterations.</li>
 </ul>
 <p>Note: Using one or few episode per iteration is analogous to stochastic gradient descent, where each update may be noisy, but the overall trend improves the policy over time. The use of exploring starts ensures that all state-action pairs have a non-zero chance of being updated, which is critical for convergence guarantees.</p>
-<h3 id="Monte-Carlo-for-Action-Value-Without-Exploring-Start">Monte Carlo for Action-Value Without Exploring Start<a class="anchor-link" href="#Monte-Carlo-for-Action-Value-Without-Exploring-Start">¶</a></h3><p>Exploring start requires that the agent will be initialized at all possible state-action pairs in order to give enough exploration. This can be problematic in complex, real world problem as some problems, like self-driving car, can have infinite amount of state-action pairs.</p>
-<p>To solve this, we can use $\epsilon$-soft policy. $\epsilon$-soft policy is a stochastic policy that give each possible actions at least $\frac{\epsilon}{\text{Total number of actions}}$ probability of being selected, where
-$$\pi(a|s) \geq \frac{\epsilon}{A(s)}$$</p>
-<p>For example, $\epsilon$ greedy and uniform random policies are both examples of $\epsilon$-soft policy.</p>
-<p>The stochasticity in $\epsilon$-soft policy mean that the agent will explore automatically, meaning they will eventually visit all state-action pairs with large enough episodes. This means we can remove the exploring start condition.</p>
-<p>However, $\epsilon$-soft policy also means it can only learn the optimal soft policy through policy iteration, and it can never perform as well as the optimal deterministic policy as there's always a small chance of the agent to explore even when it knows the environment completely. Nontheless, this optimal soft policy often performs well enough, and there is no need to find the optimal deterministic policy</p>
-<p>To achieve policy iteration for $\epsilon$-soft policies, we first initalize a random $\epsilon$-soft policy. Then, we run simulations to obtain an episode, and we use the observed return at each state to update the action-value estimates. Finally, we make the policy $\epsilon$ greedy with respect to the currently action-value function. This process is essentially the same as before, but instead of using a determinstic policy, all the policies involved are stochastic, and instead of arrving at the optimal dterministic policy, we will arrive at the optimal $\epsilon$-soft policy</p>
 <h3 id="Monte-Carlo-for-Action-Value-Without-Exploring-Starts">Monte Carlo for Action-Value Without Exploring Starts<a class="anchor-link" href="#Monte-Carlo-for-Action-Value-Without-Exploring-Starts">¶</a></h3><p>In Monte Carlo control with exploring starts, every state-action pair must have a non-zero probability of being the initial pair in an episode. This guarantees that all $(s, a)$ pairs are eventually visited, which is critical for ensuring convergence to the optimal policy. However, exploring starts are impractical in real world problems, especially those with continuous or infinite state-action spaces, like self-driving cars, where it’s impossible to initialize the agent in every possible situation.</p>
 <h3 id="$%5Cboldsymbol%7B%5Cvarepsilon%7D$-Soft-Policies">$\boldsymbol{\varepsilon}$-Soft Policies<a class="anchor-link" href="#$%5Cboldsymbol%7B%5Cvarepsilon%7D$-Soft-Policies">¶</a></h3><p>To ensure sufficient exploration without exploring starts, we use $\varepsilon$-soft policies, which are stochastic policies that assign non-zero probability to all actions in every state, where</p>
 <p>$$\pi(a \mid s) \geq \frac{\varepsilon}{|\mathcal{A}(s)|}$$</p>
@@ -8347,9 +8352,93 @@ $$v(S_t) \leftarrow v(S_t) + \alpha \left[ R_{t+1} + \gamma v(S_{t+1}) - v(S_t) 
 </li>
 <li><p>Online and Incremental Updates: TD can update value estimates after every step without waiting for the episode to finish. This is especially beneficial for problems with long episodes or continuing (non-terminating) tasks.</p>
 </li>
-<li><p>Faster Convergence in Stochastic Environments: In many stochastic tasks, TD methods tend to converge faster and with less variance than Monte Carlo methods, since they bootstrap from existing estimates rather than relying solely on complete returns.</p>
+<li><p>Faster Convergence in Stochastic Environments: In many stochastic tasks, TD methods tend to converge faster and with less variance than Monte Carlo methods, since they bootstrap from existing estimates rather than relying solely on complete returns so it is more sample efficient.</p>
 </li>
 </ol>
+<img alt="No description has been provided for this image" src="https://towardsdatascience.com/wp-content/uploads/2023/08/1kGWG1Z3TxHg-dGbZ7DLR1g.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<h2 id="Bias-and-Variance-Tradeoff">Bias and Variance Tradeoff<a class="anchor-link" href="#Bias-and-Variance-Tradeoff">¶</a></h2><p>Bias refers to the systematic error between the agent's target estimation and the true value. Variance refers to how much the target estimation fluctuates across different episodes for the same state.</p>
+<ul>
+<li><p>Monte Carlo (Low Bias, High Variance): MC relies on the actual total return ($G_t$) from a completed episode. Because the target is calculated using real, completed experience, it is an unbiased estimate of the true value. However, the variance is high because the return depends on the accumulated randomness of every single action and state transition in the entire episode. One lucky or unlucky step early on can drastically swing the final total. As you collect more samples, the average of these high-variance samples will eventually converge to the true value.</p>
+</li>
+<li><p>TD (High Bias, Low Variance): TD relies on bootstrapping, meaning it updates its estimate using its own existing guess ($V(s)$) rather than the real final outcome. Because the existing guess is likely imperfect (especially at the start), the target is systematically incorrect, leading to high bias. The high bias is generally not a problem, but under certain setting the estimation might diverge. However, the variance is low because the target depends on only one step of randomness (the immediate next state and reward), ignoring the randomness of the rest of the episode.</p>
+</li>
+</ul>
+<h2 id="n-Step-TD-Algorithm">n-Step TD Algorithm<a class="anchor-link" href="#n-Step-TD-Algorithm">¶</a></h2><p>n-Step TD is the generalization of TD(0) and Monte Carlo. While TD(0) updates based on just the immediate next step, n-Step TD looks $n$ steps into the future before bootstrapping.</p>
+<p>Therefore, the n-step Return ($G_{t:t+n}$) is calculated as the sum of the first $n$ rewards plus the estimated value of the state $n$ steps later</p>
+<p>$$G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \dots + \gamma^{n-1} R_{t+n} + \gamma^n V(S_{t+n})$$</p>
+<p>And the Value Update Rule is</p>
+<p>$$V(S_t) \leftarrow V(S_t) + \alpha \left[ G_{t:t+n} - V(S_t) \right]$$</p>
+<p>By increasing the value of $n$, the algorithm looks further into the future to use more observed real rewards ($R$) instead of relying heavily on the estimation of the next state's value ($V$).</p>
+<ul>
+<li>As $n$ increases: The Bias decreases (closer to real data), but the Variance increases (more random steps accumulated).</li>
+<li>As $n$ decreases: The Bias increases (more bootstrapping), but the Variance decreases.</li>
+</ul>
+<p>Conceptually, Monte Carlo (MC) is essentially TD($\infty$), where the agent looks infinite timesteps into the future (or until the episode terminates), using only real rewards and no bootstrapping.</p>
+<p>In n-Step TD algorithms, the parameter $n$ must be tuned carefully to find the "sweet spot" in the error curve:</p>
+<ol>
+<li>Initial Improvement: As $n$ increases from 1, the prediction error usually drops because the bias is strictly decreasing. We are relying less on the potentially faulty initial value estimates.</li>
+<li>The Turning Point: However, if $n$ becomes too large, the error starts to increase again. At this point, the bias is already very low, but the variance begins to dominate. The target becomes too noisy because it includes too many random transitions.</li>
+</ol>
+<p>Therefore, the optimal $n$ is usually an intermediate value that balances the stability of TD with the accuracy of MC, which means balancing the bias and variance within the estimations.</p>
+<img alt="No description has been provided for this image" src="https://lcalem.github.io/imgs/sutton/nstep_graph.png" width="700"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<h2 id="TD($%5Clambda$)">TD($\lambda$)<a class="anchor-link" href="#TD($%5Clambda$)">¶</a></h2><p>n-Step TD looks exactly n steps ahead and then applies bootstrapping. However, this method requires picking a specific $n$ to balance bias and variance, which is brittle and difficult to tune. TD($\lambda$) solves this by using all available n-step horizons simultaneously. It calculates a weighted average of all n-step returns. This approach utilizes more data and replaces the hard choice of a specific $n$ with a smoother parameter $\lambda$. The weighting follows an exponential decay, placing more emphasis on shorter n-step returns (targets closer to the current state). This ensures that immediate, lower-variance estimates contribute most to the update, while longer-term returns still help correct bias.</p>
+<p>For a timestep $t$ in a trajectory, we define its n-step return ($G_t^{(n)}$) to be a target constructed by summing actual rewards for $n$ steps, and then bootstrapping (estimating) the rest of the value function.</p>
+<ul>
+<li><p>1-Step Return (TD(0)):
+$$G_t^{(1)} = R_{t+1} + \gamma V(S_{t+1})$$</p>
+<ul>
+<li>Estimate the current states with the estimation of the next state. High bias, low variance.</li>
+</ul>
+</li>
+<li><p>2-Step Return:
+$$G_t^{(2)} = R_{t+1} + \gamma R_{t+2} + \gamma^2 V(S_{t+2})$$</p>
+<ul>
+<li>Use more real reward from experiment and less estimation of next state. Decreasing bias, increasing variance.</li>
+</ul>
+</li>
+<li><p>Infinite-Step Return (TD($\infty$) = Monte Carlo):
+$$G_t^{(\infty)} = R_{t+1} + \gamma R_{t+2} + ... + \gamma^{T-1} R_T$$</p>
+<ul>
+<li>Use pure reward signal without estimation of another state. Zero bias, high variance.</li>
+</ul>
+</li>
+</ul>
+<p>n-step TD will only select one of the step to use, but TD($\lambda$) uses all of the n-step returns to calculate a weighted average of every possible horizon. We define a new target called the $\lambda$-Return ($G_t^\lambda$), where</p>
+<p>$$
+\begin{aligned}
+G_t^\lambda &amp;= (1 - \lambda) \sum_{n=1}^{\infty} \lambda^{n-1} G_t^{(n)} = (1 - \lambda) \cdot \underbrace{\left( R_{t+1} + \gamma V(S_{t+1}) \right)}_{\text{1-step return } (G_t^{(1)})} 
++ (1 - \lambda)\lambda \cdot \underbrace{\left( R_{t+1} + \gamma R_{t+2} + \gamma^2 V(S_{t+2}) \right)}_{\text{2-step return } (G_t^{(2)})} + (1 - \lambda)\lambda^2 \cdot \underbrace{\left( R_{t+1} + \gamma R_{t+2} + \gamma^3 R_{t+3} + \gamma^3 V(S_{t+3}) \right)}_{\text{3-step return } (G_t^{(3)})}
++ \dots
+\end{aligned}
+$$</p>
+<ul>
+<li>$G_t^{(n)}$: the n-step return for the a state at timestep $t$.</li>
+</ul>
+<ol start="2">
+<li>$\lambda$: the decay factor between 0 and 1, so as $n$ increases (looking further into the future), the weight we assign to that return decays because we care more about the more recent returns.</li>
+<li>*$(1 - \lambda)$: a normalization constant that ensures that all the weights sum up to exactly 1, so the final target is mathematically valid.</li>
+</ol>
+<p>The parameter $\lambda$ acts as a slider for how much you trust "deep" future data versus your current immediate estimate. A smaller $\lambda$ means putting more empahsis onto the recent data, where a larger $\lambda$ means putting more weights onto the future data.</p>
+<ul>
+<li><p>If $\lambda = 0$ (TD-0):
+The formula collapses. The weight for the 1-step return becomes 1, and all other weights become 0, so only the immediate next step is considered, which is equivalent to TD-0.</p>
+</li>
+<li><p>If $\lambda = 1$ (Monte Carlo):
+Impossbile because when $\lambda = 1$, the return is just 0. However, as $\lambda$ approaches 1, the decay disappears. The algorithm puts all the weight on the longest possible return (the full episode), so only the actual final outcome matters, which is equivalent to Monte-Carlo</p>
+</li>
+<li><p>If $0 &lt; \lambda &lt; 1$ (TD Lambda):
+Balanced approach, where the immediate steps have the highest weight (low variance) while the distant steps still contribute, correcting the bias of your initial estimates.</p>
+</li>
+</ul>
+<p>The algorithm at each timstep uses all valid $n$-step returns available from the current state until the terminal state, so the earlier timestep will have more data avalible and timestep closer to the terminal state will have less data avaliable.</p>
+<ul>
+<li><p>At the beginning of the trajectory, the agent looks ahead at 1-step, 2-step, 3-step... all the way to the final step $T$ (the Monte Carlo return) and calculates a weighted average of all these returns, which blends the low-variance bias of TD(0) with the high-variance unbiasedness of Monte Carlo.</p>
+</li>
+<li><p>At the end of the trajectory, the agent does not have any future steps. At step $T-1$, the only valid return is the 1-step return ($R_T + \gamma V(S_T)$), which effectively behaving like TD(0).</p>
+</li>
+</ul>
+<h3 id="The-Forward-View">The Forward View<a class="anchor-link" href="#The-Forward-View">¶</a></h3><p>The reason above explanation is often separated from implementation is because this is the forward view of the algorithm, so in order to compute $G_t^{(n)}$, we need to wait for the entire episode to terminate, making it impossible perform online learning.</p>
+<img alt="No description has been provided for this image" src="https://towardsdatascience.com/wp-content/uploads/2019/08/1L-LUOyW5W-0gBxx80GHdHQ.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h2 id="TD-for-Control">TD for Control<a class="anchor-link" href="#TD-for-Control">¶</a></h2><p>When using TD learning for control, knowing the optimal state-value function from policy evaluation alone is not enough in a model-free setting, because we do not know the environment’s transition dynamics. Without a model, we can’t directly compute which action leads to the best next state from just $v(s)$. Instead, we learn the action-value function $q(s, a)$, which estimates the expected return for taking action $a$ in state $s$ and then following the policy. This allows us to both evaluate and improve the policy directly. We will address 3 different TD control algorithms: SARSA, Q-learning, and expected SARSA</p>
 <h3 id="SARSA-(On-Policy-TD-Control)">SARSA (On-Policy TD Control)<a class="anchor-link" href="#SARSA-(On-Policy-TD-Control)">¶</a></h3><p>SARSA is an on-policy TD control algorithm that learns the optimal action-value function. It is similar to the TD(0) method for state-value estimation, but instead of updating from state to state, it updates from state-action pair to state-action pair, where</p>
 <p>$$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \, q(S_{t+1}, A_{t+1}) - q(S_t, A_t) \right]$$</p>
@@ -8954,7 +9043,7 @@ $$</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=63eb2226">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=fddfeb32">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -9035,7 +9124,7 @@ $$\nabla_{\theta} r(\pi) = \sum_{s \in \mathcal{S}} \mu_{\pi}(s) \sum_{a \in \ma
 \nabla_\theta r(\pi_\theta)
 \approx \nabla_\theta \ln \pi_\theta(A_t\mid S_t) q(S_t,A_t)
 $$</p>
-<p>where $q(S_t,A_t)$ is an observed sample at a timesteps. Now, the agent is able update the policy online after each timestep with the newly observed state-action pair. Therefore, the update rule becomes</p>
+<p>where $q(S_t,A_t)$ is an observed sample at a timesteps. Now, the agent is able to update the policy online after each timestep with the newly observed state-action pair. Therefore, the update rule becomes</p>
 <p>$$
 \theta_{t+1}
 = \theta_t + \alpha, \nabla_\theta \ln \pi_\theta(A_t\mid S_t) q(S_t,A_t)
