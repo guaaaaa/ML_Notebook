@@ -7767,6 +7767,9 @@ Assigning grammatical categories (e.g., nouns, verbs, adjectives) to each word i
 </li>
 </ol>
 <img alt="No description has been provided for this image" src="https://pantelis.github.io/aiml-common/lectures/nlp/nlp-introduction/tokenization/images/bpe-example.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<h2 id="Implementation">Implementation<a class="anchor-link" href="#Implementation">¶</a></h2><p>After performing BPE, we obtain a large vocabulary, and we stores it in a hashmap with the key being the token itself and the value being the index of each token (e.g. <code>{"study": 4521, "ing": 102, "apple": 339, ...}</code>). The actual value of the index doesn't matter since it's just an identifier, which will later be used to identify the correct word embedding.</p>
+<p>Therefore, given any inputs, the text will first be segmented into a sequence of valid tokens from the vocabulary, and then converted into a sequence of token indicies.</p>
+<img alt="No description has been provided for this image" src="https://cdn.prod.website-files.com/67e0e1c8c7139275092d8943/67e0e1c8c7139275092d8d89_66db4fe5ffb5398fd15c1aa8_66618d3b0d18959af0cfcb1c_Marqo%252520Course%252520(9).png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 </div>
 </div>
 </div>
@@ -7777,8 +7780,8 @@ Assigning grammatical categories (e.g., nouns, verbs, adjectives) to each word i
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Feature-Extractions">Feature Extractions<a class="anchor-link" href="#Feature-Extractions">¶</a></h1><p>Feature extraction involves transforming raw input data into numerical representations that retain meaningful information, enabling models to process and analyze the data. In NLP, feature extraction techniques help capture the importance, relationships, and patterns of words or phrases in a corpus.</p>
-<h2 id="Common-Feature-Extraction-Techniques">Common Feature Extraction Techniques<a class="anchor-link" href="#Common-Feature-Extraction-Techniques">¶</a></h2><ol>
+<h1 id="Word-Representation">Word Representation<a class="anchor-link" href="#Word-Representation">¶</a></h1><p>Word representation involves transforming raw input text into numerical representations that retain meaningful information, enabling models to process and analyze the data. In NLP, word representation techniques help capture the importance, relationships, and patterns of words or phrases in a corpus.</p>
+<h2 id="Common-Word-Representation-Techniques">Common Word Representation Techniques<a class="anchor-link" href="#Common-Word-Representation-Techniques">¶</a></h2><ol>
 <li><p><strong>Bag of Words (BoW)</strong><br/>
 Bag of Words represents text as a collection of its words, ignoring grammar and word order but retaining word frequency. It is simple and quick to compute, but the lack of contextual understanding and high-dimensional sparsity can limit its effectiveness. Additionally, non-informative terms (e.g., stop words) may appear frequently and dominate the representation.</p>
 <img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/format:webp/0*sK9pIrYSFfqlsDbC.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
@@ -7837,8 +7840,9 @@ Word embeddings are powerful feature extraction techniques that represent words 
 <img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*sXNXYfAqfLUeiDXPCo130w.png" width="600"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h2 id="Embedding-matrix">Embedding matrix<a class="anchor-link" href="#Embedding-matrix">¶</a></h2><p>For a given word $w$ and its one-hot encoding vector $o_w$, the embedding matrix $E$ is a matrix that maps its 1-hot representation $o_w$ to its embedding $e_w$ as follows:</p>
 <p>$$e_w = Eo_w$$</p>
-<p>$E$: the embedding matrix with number of rows equals to number of features for the embedding and number of columns equals to the number of vocabulary in the one-hot encoding dictionary</p>
-<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1400/1*Bq6lIOdjCK172I1V04RwLA.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<p>$E$: the embedding matrix with number of rows equals to number of features for the embedding and number of columns equals to the size of the vocabulary, where each column correspond to an embedding vector of a token</p>
+<img alt="No description has been provided for this image" src="https://blogger.googleusercontent.com/img/a/AVvXsEhE3s3vC-QZBZ5Xdb3q6X0JR8uSa25smRVB0pk-r_IGUGBIb6mnS4CumYCwPYKtqsKK-3nE4qCsVCd3m62iraz124xvdhtkaWs4YgVyfsrH8TjI2iiMsd_XIUpBhSnl_TvyWCxkCb916cXjChKDaQ3DWFXwlcF9p2b1X6qNzoXPa6F0fAH7xsp86cGZU_k=w1200-h630-p-k-no-nu" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<p>In implementation, instead of turning a tokenized input into a huge one-hot matrix then perform multiplication, we can simply use the index of each token as identifier to extract the corresponding columns from the embedding matrix, since each column represents a word embedding.</p>
 <h2 id="Apply-word-embedding">Apply word embedding<a class="anchor-link" href="#Apply-word-embedding">¶</a></h2><p>Word embeddings is widely used for transfer learning</p>
 <p>Steps:</p>
 <ol>
@@ -7969,6 +7973,8 @@ $$</p>
 $$J(\theta) = \frac{1}{2}\sum_{i, j=1}^{m}f(X_{i,j})(\theta_t^Te_c + b_i + b'_j + log(X_{i,j}))^2$$</p>
 <p>$f$: a weighting function such that $f(X_{i,j}) = 0$ when $X_{i,j} = 0$ (do not add loss if two words are not in context)</p>
 <p>Initially, we initialize $e$ and $\theta$ randomly. After training, given the symmetry that $e$ and $\theta$ play in this model, the final word embedding $e_w^{final} = \frac{e_w + \theta_w}{2}$</p>
+<h1 id="Modern-Word-Embeddings">Modern Word Embeddings<a class="anchor-link" href="#Modern-Word-Embeddings">¶</a></h1><p>In modern architectures, instead of pre-train the word embeddings (like Glove and Word2Vec) before training the model, the common approach is to train the embeddings as paarameters during model training, so the embeddings and model are trained from end to end.</p>
+<p>To do this, the embedding matrix is first randomly initialized, and treated as trainable parameters. Intialially, the model predictions will be bad since neither the embeddings nor the model are trained. Through massive training, the both the model's parameters and the embeddings will be updated through backpropagation, and eventually, the embeddings will represent the precise semantic concept of words that the specific model finds most useful. Compared to the traditional approaches, trainable embeddings learns more native and with better expressitivity since the embeddings is learned specifically to adapt the model and learned through very large corpus of text.</p>
 </div>
 </div>
 </div>
@@ -8551,6 +8557,8 @@ In the attention mask matrix below, each row shows which tokens a particular pos
 <p>$V$: total vocalubary size</p>
 <p>$\hat{y}_t$: the predicted probabilities for each word (probabilities sum to 1)</p>
 <p>$y_t$: one-hot encoded ground truth token</p>
+<p>Minimizing the Cross-Entropy Loss is mathematically equivalent to maximizing the likelihood of predicting the correct token.</p>
+<p>Since each training example has only one ground truth token (represented by a one-hot vector), the calculation of the loss strictly focuses on the probability of that specific token rather than the entire vocabulary. However, because the Softmax function uses all tokens in its denominator, minimizing this loss via backpropagation (to increase the probability of the ground truth) will implicitly reduce the probability of all other 'incorrect' tokens."</p>
 <p>Because sequences are padded to the same length for batching, some positions in the ground truth labels are <code>&lt;pad&gt;</code> tokens, which shouldn't contribute to the loss.</p>
 <p>Therefore, we define a binary mask $m_t \in \{0, 1\}$ for each position $t$:</p>
 <ul>
