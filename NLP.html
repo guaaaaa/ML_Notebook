@@ -8020,8 +8020,29 @@ $$y^{&lt;t&gt;} = g_2(W_{ya}a^{&lt;t-1&gt;} + b_y)$$</p>
 <p>The activation $a^{&lt;t-1&gt;}$ contains the information from previous timesteps, which represents the context. The input $x^{&lt;t&gt;}$ represents the information from the current timestep. The RNN cell combines them to produce an output that contains both the context and current information. This output servers as the context for the next timestep</p>
 <p>For the output layer, the RNN will transform the activation at this timestep and apply a softmax function on it. The softmax function gives the probability of each word being the next word, $y^{&lt;t&gt;}$. In general, we will choice the entry with the highest probability to be the next word (to ensure randomness, we may pick among the words with high probability)</p>
 <p>Note: in RNN, tanh activation is used most often</p>
-<h2 id="Loss-function">Loss function<a class="anchor-link" href="#Loss-function">¶</a></h2><p>$$L(\hat{y}, y) = \sum^{T_y}_{t=1} -y^{&lt;t&gt;}log(\hat{y}^{&lt;t&gt;}) - (1 - y^{&lt;t&gt;})log(1 - \hat{y}^{&lt;t&gt;})$$</p>
-<p>The BCE loss function is used at each timestep to compute the difference between the predicted probability, $\hat{y}^{&lt;t&gt;}$, and the true labe, $\hat{y}^{&lt;t&gt;}$. The true label only contains one entry with value 1 and the rest are 0s (one-hot encoding)</p>
+<h2 id="Backpropogation-Through-Time">Backpropogation Through Time<a class="anchor-link" href="#Backpropogation-Through-Time">¶</a></h2><p>Since RNN process information recursively, when performing backpropogation to update model's weights. For a processed input batch (assuming we have a output at each timestep, but the sequences in the batch are not necessarily the same length), we first applies a mask to remove invalid loss. For example, the input <code>[ "I",   "love", "cats", "&lt;PAD&gt;", "&lt;PAD&gt;" ]</code> has the loss of <code>[0.1, 0.2, 0.05, 2.3, 4.1]</code>, but the last two entries are not useful because they are not loss about the real input. Therefore, we multiplies the loss with a mask of <code>[1, 1, 1, 0, 0]</code>.</p>
+<p>Then, we compute a scaler valued batch loss, where
+$$L=\frac^{\sum{\text{Valid Token Loss}}}_{\text{Number of Valid Tokens in the Batch}}$$</p>
+<p>Finally, we compute the gradient of the loss with respect to the weights, and update the model's parameters.</p>
+<h2 id="Loss-Function">Loss Function<a class="anchor-link" href="#Loss-Function">¶</a></h2><p>At each timestep $t$, the Cross-Entropy Loss function computes the error between the predicted probability distribution $\hat{y}^{\langle t \rangle}$ and the ground truth $y^{\langle t \rangle}$:</p>
+<p>$$\mathcal{L}_t(\hat{y}, y) = - \sum^{V}_{j=1} y^{\langle t \rangle}_j \log(\hat{y}^{\langle t \rangle}_j)$$</p>
+<ul>
+<li>$V$: Size of the vocabulary.</li>
+<li>$y^{\langle t \rangle}_j$: Ground truth (1 for the correct token, 0 for others).</li>
+<li>$\hat{y}^{\langle t \rangle}_j$: Predicted probability for token $j$.</li>
+</ul>
+<p>Since there is only one ground truth label (one-hot encoding) within the vocabulary $V$ at each timestep, the summation effectively collapses into a single term corresponding to the correct class: $-\log(\hat{y}_{correct})$.</p>
+<h2 id="Backpropagation-Through-Time-(BPTT)-&amp;-Batching">Backpropagation Through Time (BPTT) &amp; Batching<a class="anchor-link" href="#Backpropagation-Through-Time-(BPTT)-&amp;-Batching">¶</a></h2><p>Since RNNs process information recursively, special care must be taken during training batches with variable-length sequences.</p>
+<p><strong>1. Masking Invalid Timesteps</strong>
+Assuming we produce an output at every timestep, but sequences in the batch have different lengths (padded to match the longest sequence), we must ignore predictions made on padding tokens.</p>
+<ul>
+<li>Example: If an batch example is <code>["I", "love", "cats", "&lt;PAD&gt;", "&lt;PAD&gt;"]</code>, the raw loss might look like <code>[0.1, 0.2, 0.05, 2.3, 4.1]</code>. We apply a binary mask <code>[1, 1, 1, 0, 0]</code> via element-wise multiplication, the masked loss becomes <code>[0.1, 0.2, 0.05, 0.0, 0.0]</code>.</li>
+</ul>
+<p><strong>2. Calculating Batch Loss</strong>
+We compute a single scalar-valued loss for the entire batch by averaging only the valid tokens:</p>
+<p>$$\mathcal{L}_{batch} = \frac{\sum \text{Valid Token Losses}}{\text{Number of Valid Tokens}}$$</p>
+<p><strong>3. Gradient Update</strong>
+Finally, we perform backpropagation. The gradients are calculated by unrolling the network and accumulating errors from all valid timesteps backwards through the sequence, so the gradient is computed $T$ times, once for each timestep. Once the total gradient with respect to the weights is computed, we compute the sum and perform a single parameter update for the batch.</p>
 <h2 id="Different-types-of-RNN">Different types of RNN<a class="anchor-link" href="#Different-types-of-RNN">¶</a></h2><ol>
 <li>Many to many: many input and many output (eg. translation)</li>
 <li>Many to one: many input and only one output (eg. movie rating based on description)</li>

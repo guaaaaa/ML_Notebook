@@ -8417,7 +8417,7 @@ $$</p>
 <li>$\lambda$: the decay factor between 0 and 1, so as $n$ increases (looking further into the future), the weight we assign to that return decays because we care more about the more recent returns.</li>
 <li>$(1 - \lambda)$: a normalization constant that ensures that all the weights sum up to exactly 1, so the final target is mathematically valid.</li>
 </ul>
-<p>Note: the final return of the episode is weighted by $\lambda^{L-1}$ instead of $\lambda^{L}$ because this ensures the sum of weight is always 1 for any episode length $L$, where
+<p>Note: the final return of the episode is weighted by $\lambda^{L-1}$ because this ensures the sum of weight is always 1 for any episode length $L$, where
 $(1 - \lambda)\sum^{L-1}_{n=1}\lambda^{n-1} + \lambda^{L-1} = 1$</p>
 <p>The parameter $\lambda$ acts as a slider for how much you trust "deep" future data versus your current immediate estimate. A smaller $\lambda$ means putting more empahsis onto the recent data, where a larger $\lambda$ means putting more weights onto the future data.</p>
 <ul>
@@ -8433,13 +8433,30 @@ Balanced approach, where the immediate steps have the highest weight (low varian
 </ul>
 <p>The algorithm at each timstep uses all valid $n$-step returns available from the current state until the terminal state, so the earlier timestep will have more data avalible and timestep closer to the terminal state will have less data avaliable.</p>
 <ul>
-<li><p>At the beginning of the trajectory, the agent looks ahead at 1-step, 2-step, 3-step... all the way to the final step $T$ (the Monte Carlo return) and calculates a weighted average of all these returns, which blends the low-variance bias of TD(0) with the high-variance unbiasedness of Monte Carlo.</p>
+<li><p>At the beginning of the trajectory, the agent looks ahead at 1-step, 2-step, 3-step... all the way to the final step $T$ (the Monte Carlo return) and calculates a weighted average of all these returns, which blends the low-variance bias of TD(0) with the high-variance unbiasedness of Monte Carlo. This method maximizes the data utilization of the entire trajectory</p>
 </li>
-<li><p>At the end of the trajectory, the agent does not have any future steps. At step $T-1$, the only valid return is the 1-step return ($R_T + \gamma V(S_T)$), which effectively behaving like TD(0).</p>
+<li><p>At the end of the trajectory, the agent does not have any future steps. At step $T-1$, the only valid return is the 1-step return ($R_T + \gamma V(S_T)$), which effectively behaving like TD(0). This is okay since that's the only data avaliable</p>
 </li>
 </ul>
 <h3 id="The-Forward-View">The Forward View<a class="anchor-link" href="#The-Forward-View">¶</a></h3><p>The reason above explanation is often separated from implementation is because this is the forward view of the algorithm, so in order to compute $G_t^{(n)}$, we need to wait for the entire episode to terminate, making it impossible perform online learning.</p>
 <img alt="No description has been provided for this image" src="https://towardsdatascience.com/wp-content/uploads/2019/08/1L-LUOyW5W-0gBxx80GHdHQ.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<h3 id="The-Backward-View-(Eligibility-Tracing)">The Backward View (Eligibility Tracing)<a class="anchor-link" href="#The-Backward-View-(Eligibility-Tracing)">¶</a></h3><p>To make the TD($\lambda$) learning online, we use a technique called eligibility tracing. Instead of "looking forward" to compute the return (which is impossible during online learning), eligibility tracing allows the current error to "look backward" and update the past states that contributed to the current situation.</p>
+<p>To do this, the agent maintains an eligibility trace, $E(s)$, for every state, initialized to 0. At each timestep $t$:</p>
+<ol>
+<li>Decay: The eligibility of all states is decayed by a factor of $\gamma \lambda \in (0, 1)$.</li>
+<li>Increment: The eligibility of the current state $S_t$ is increased by 1 (Accumulating Trace), indicating it was just visited.</li>
+</ol>
+<p>Then, we calculate the current TD error ($\delta_t$):
+$$\delta_t = R_{t+1} + \gamma v(S_{t+1}) - v(S_t)$$</p>
+<p>Crucially, we then update the value of every state $s$ (not just the current one), scaled by its eligibility trace:
+$$v(s) \leftarrow v(s) + \alpha \cdot \delta_t \cdot E_t(s)$$</p>
+<p>This allows online learning because the update at timestep $t$ relies only on available data ($S_t, R_{t+1}, S_{t+1}$).</p>
+<p>These updates are initially imperfect because they rely on estimated values of future state ($v(S_{t+1})$) that may contain errors. However, the mechanism allows for continuous correction:</p>
+<ul>
+<li>When the agent reaches a future state and finds there is an error in its previous estimation, $\delta_{future}$, this new error is broadcast backwards because  we need to correct all the past estimations that used this estimation that contains an error.</li>
+<li>However, the error is scaled down by $\gamma \lambda$ because if this state that contains error is in the far future, the impact of its error will reduced by a factor of $\lambda$ every timestep, so when we're correcting the error, the correction term also need to be scaled down by its eligibility $E(s)$.</li>
+</ul>
+<p>At the end of an episode, the learned value function will be the same as performing the forward view since both views are mathematically the same.</p>
 <h2 id="TD-for-Control">TD for Control<a class="anchor-link" href="#TD-for-Control">¶</a></h2><p>When using TD learning for control, knowing the optimal state-value function from policy evaluation alone is not enough in a model-free setting, because we do not know the environment’s transition dynamics. Without a model, we can’t directly compute which action leads to the best next state from just $v(s)$. Instead, we learn the action-value function $q(s, a)$, which estimates the expected return for taking action $a$ in state $s$ and then following the policy. This allows us to both evaluate and improve the policy directly. We will address 3 different TD control algorithms: SARSA, Q-learning, and expected SARSA</p>
 <h3 id="SARSA-(On-Policy-TD-Control)">SARSA (On-Policy TD Control)<a class="anchor-link" href="#SARSA-(On-Policy-TD-Control)">¶</a></h3><p>SARSA is an on-policy TD control algorithm that learns the optimal action-value function. It is similar to the TD(0) method for state-value estimation, but instead of updating from state to state, it updates from state-action pair to state-action pair, where</p>
 <p>$$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \, q(S_{t+1}, A_{t+1}) - q(S_t, A_t) \right]$$</p>
