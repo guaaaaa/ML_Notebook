@@ -8136,7 +8136,7 @@ $$\pi_{\text{new}}(s) = \arg\max_a q_\pi(s, a)$$</li>
 <p>$$\pi(a \mid s) \geq \frac{\varepsilon}{|\mathcal{A}(s)|}$$</p>
 <p>This guarantees that every action in every state has a chance of being selected with at least probability of $\frac{\varepsilon}{\text{Number of possible actions}}$. Thus, all state-action pairs are eventually explored with enough episodes. Both $\varepsilon$-greedy policy and uniform random policy are examples of $\varepsilon$-soft policies</p>
 <p>Using an $\varepsilon$-soft policy ensures exploration and removes the need for exploring starts. However, there’s a trade-off, where the agent can only converge to the optimal $\varepsilon$-soft policy, not the optimal deterministic policy. Even after learning a near-optimal policy, the agent still occasionally explores due to the non-zero $\varepsilon$.</p>
-<p>In practice, the performance of the optimal $\varepsilon$-soft policy is often close to that of the optimal deterministic policy, and perform well enough for the need.</p>
+<p>In theory, if each state-action pair is visited many times, its action-value estimate will converge towards the true value, and if we are confident enough about the estimation, we can stop exploring and commit to a greedy policy.</p>
 <h3 id="Monte-Carlo-Control-with-$%5Cvarepsilon$-Soft-Policy-(Policy-Iteration)">Monte Carlo Control with $\varepsilon$-Soft Policy (Policy Iteration)<a class="anchor-link" href="#Monte-Carlo-Control-with-$%5Cvarepsilon$-Soft-Policy-(Policy-Iteration)">¶</a></h3><p>The process is similar to standard Monte Carlo policy iteration, with the key difference being the use of stochastic policies:</p>
 <ol>
 <li><p>Initialize:</p>
@@ -8176,8 +8176,11 @@ $$</li>
 </li>
 <li><p>Repeat steps 2–4 until convergence.</p>
 </li>
+<li><p>Convert $\varepsilon$-soft policy to greedy policy.</p>
+</li>
 </ol>
-<p>Overall, $\varepsilon$-soft policy solves the problem of insufficient exploration with a large number of possible state-action pairs, and is able to achieve a good enough, sub-optimal stochastic policy.</p>
+<p>Overall, $\varepsilon$-soft policy solves the problem of insufficient exploration with a large number of possible state-action pairs, and is able to achieve a good enough, sub-optimal stochastic policy. Once all possible state-action pairs are visited enough number of times, we can convert the policy into a greedy one.</p>
+<p>In tabular Monte Carlo, both exploring start and $\varepsilon$-greedy ensure asymptotic convergence to the optimal policy given infinite episodes and satisfying specific conditions.</p>
 </div>
 </div>
 </div>
