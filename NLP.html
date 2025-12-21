@@ -8396,22 +8396,62 @@ where $x_0, x_1, ...$ are the word embedding for each single word</p>
 <li>captures long-range dependencies in a sequence more effectively than RNNs and LSTMs.</li>
 <li>allows parallel computation, enabling faster training.</li>
 </ul>
-<h2 id="4.-Multihead-attention">4. Multihead attention<a class="anchor-link" href="#4.-Multihead-attention">¶</a></h2><p>Multihead attention is an extension of self attention by performing self attention in parallel $h$ times, where $h$ is the number of heads. Each self attention head has its own Q, K, V mapping to capture different contextual relationships in the sequence to propose a update to improve the original word embedding based on the context. By processing information from multiple perspectives, multi-head attention allows the model to better understand dependencies between words.</p>
-<p>After each multihead attention layer, we will have $h$ number of refined embedding matrix, denoted by $z_0, z_1, ..., z_h$, where $z_i$ is the output for the $i$th self attention head. These outputs are concatenated into a single matrix, given by</p>
-<p>$$Z = [z_0, z_1, ..., z_{h-1}]$$</p>
+<h2 id="4.-Multi-Head-Attention-(MHA)">4. Multi-Head Attention (MHA)<a class="anchor-link" href="#4.-Multi-Head-Attention-(MHA)">¶</a></h2><p>Multi-Head Attention is an evolution of Self-Attention that allows the model to attend to information from different representation subspaces simultaneously. Instead of one "large" attention mechanism, the model runs $h$ self-attention heads in parallel.</p>
+<p>If we used a single attention head for the entire embedding dimension, the model would be forced to average all relationships into one attention map. By splitting into $h$ heads, we achieve:</p>
+<ul>
+<li><strong>Diverse Focus:</strong> Different heads can focus on different aspects of language (e.g., Head 1 focuses on grammar, Head 2 on sentiment, Head 3 on long-range dependencies).</li>
+<li><strong>Independent Scores:</strong> Because each head has its own Softmax operation, Head 1 can assign a high attention weight between "Bank" and "River," while Head 2 can simultaneously assign a high weight between "Bank" and "Closed."</li>
+</ul>
+<p>To implement this efficiently, we project the input into lower-dimensional subspaces. Let:</p>
+<ul>
+<li>$T$ = Sequence length (number of tokens)</li>
+<li>$d_{model}$ = The original embedding dimension (e.g., 512)</li>
+<li>$h$ = Number of heads (e.g., 8)</li>
+<li>$d_k$ = The head dimension, where $d_k = d_{model} / h$ (e.g., 64)</li>
+</ul>
+<h4 id="Step-1:-Linear-Projection-(The-Split)">Step 1: Linear Projection (The Split)<a class="anchor-link" href="#Step-1:-Linear-Projection-(The-Split)">¶</a></h4><p>Instead of one projection of size $(d_{model}, d_{model})$, each head $i$ uses its own weight matrices to create "shrunken" versions of $Q, K,$ and $V$ with dimension of $d_{k}/h$.</p>
+<ul>
+<li>Weight Matrices of the $i$th head: $W_i^Q, W_i^K, W_i^V$)<ul>
+<li>Size: $(d_{model}, d_k)$</li>
+</ul>
+</li>
+<li>Mapping of the $i$th head: $Q_i, K_i, V_i$<ul>
+<li>Size: $(T, d_k)$ instead of $(T, d_{model})$</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p><em>Note: In practice, for efficiency, we do one large $(d_{model}, d_{model})$ multiplication and then slice the output into $h$ heads as if they are computed individually.</em></p>
+</blockquote>
+<h4 id="Step-2:-Scaled-Dot-Product-Attention">Step 2: Scaled Dot-Product Attention<a class="anchor-link" href="#Step-2:-Scaled-Dot-Product-Attention">¶</a></h4><p>Each head computes attention score independently. Because the Softmax is applied only within the $d_k$ subspace, the heads do not "interfere" with each other’s attention scores.</p>
+<ul>
+<li>Attention Score of the $i$th head: $\text{Softmax}\left(\frac{Q_i K_i^T}{\sqrt{d_k}}\right)$<ul>
+<li>Size: $(T, T)$</li>
+</ul>
+</li>
+<li>$i$th head Output ($z_i$): $z_i = \text{Softmax}\left(\frac{Q_i K_i^T}{\sqrt{d_k}}\right)V$<ul>
+<li>Size: $(T, d_k)$</li>
+</ul>
+</li>
+</ul>
+<h4 id="Step-3:-Concatenation-(The-Reassembly)">Step 3: Concatenation (The Reassembly)<a class="anchor-link" href="#Step-3:-Concatenation-(The-Reassembly)">¶</a></h4><p>We concatenate the $h$ outputs from each head back together side-by-side.
+$$Z_{concat} = [z_0, z_1, \dots, z_{h-1}]$$</p>
+<ul>
+<li>Size: $h \times (T, d_k) \rightarrow (T, d_{model})$</li>
+</ul>
+<h4 id="Step-4:-Final-Linear-Projection-($W%5EO$)">Step 4: Final Linear Projection ($W^O$)<a class="anchor-link" href="#Step-4:-Final-Linear-Projection-($W%5EO$)">¶</a></h4><p>Even though the dimension is back to $d_{model}$, we apply a final learned matrix $W^O$ to "mix" the information captured by the different specialists.</p>
+<ul>
+<li>Weight Matrix: $W^O$<ul>
+<li>Size $(d_{model}, d_{model})$</li>
+</ul>
+</li>
+<li>Final Output ($Z'$): $Z' = W^O Z_{concat}$<ul>
+<li>Size $(T, d_{model})$</li>
+</ul>
+</li>
+</ul>
 <img alt="No description has been provided for this image" src="https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff406d55e-990a-4e3b-be82-d966eb74a3e7_1766x1154.png" width="700"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
-<p>Then, a linear transformation is applied to project this concatenated output, $Z$, back to the model’s embedding size $d_{model}$, where</p>
-<p>$$Z' = Concat(z_0, z_1, ..., z_{h-1}) W_o = Z W_o$$</p>
-<p>$W_o$: a learned linear mapping that maps Z to have the size dimension of the word embedding</p>
-<p>Finally, this proposed change will be added to the original embedding to obtain one refined embedding, $X'$, where</p>
-<p>$$X' = X + Z'$$</p>
-<p>Multihead attention is powerful because it</p>
-<ol>
-<li>enables the model to capture multiple relationships within the sequence, improving its ability to focus on different parts of the data.</li>
-<li>allows better representation of complex dependencies and context.</li>
-</ol>
-<p>In Transformer architectures, we use multiple layers of multi-head attention because the refined word embeddings may reveal new relationships that were not apparent in earlier layers. By iteratively applying multi-head attention, the model progressively enhances its understanding of contextual dependencies and word meanings to improve the overall performance</p>
-<p>After each attention layer, the updated word embeddings can be processed in parallel because all dependencies, contextual relationships, and relative positions between words have already been captured and encoded within them</p>
+<p>Multi-head attention is powerful because it keeps the total computational cost similar to single-head attention while dramatically increasing the model's ability to represent complex dependencies. By reducing the latent dimension per head to $d_{model}/h$, we force each head to learn a compressed, specialized "feature" of the text, which is then re-integrated in the final linear layer.</p>
 <h2 id="5.-Cross-attention">5. Cross attention<a class="anchor-link" href="#5.-Cross-attention">¶</a></h2><p>Cross-Attention is a mechanism built upon self-attention and is commonly used in encoder-decoder architectures. Unlike self-attention, which applies attention in only one input sequence, cross-attention allows one sequence to attend to another sequence, capturing dependencies between them.</p>
 <p>Self-attention captures dependencies within a single sequence by allowing each token to attend to all other tokens in the sequence. Cross-attention, on the other hand, captures dependencies between two sequences, enabling one sequence (e.g., the target sentence being generated) to attend to another sequence (e.g., the source sentence). Essentially, it servers as a connection between the encoder and decoder</p>
 <h3 id="Use-cases">Use cases<a class="anchor-link" href="#Use-cases">¶</a></h3><p>For traditional sequence generation tasks, self-attention/multihead attention is sufficient since there is no dependies between sources (only one source). Cross-attention is useful when the output sequence depends on an external context, such as in:</p>
@@ -8556,7 +8596,7 @@ The encoder outputs <strong>context-aware representations</strong> of each input
 <p>While <code>&lt;pad&gt;</code> tokens may still compute attention to real tokens, their influence is negligible since their outputs are not used during loss calculation or decoding. Keeping them in the computation slightly increases the cost, but it allows for efficient parallelization using fixed-size tensors — which makes the overall training process faster and simpler.</p>
 <h4 id="5.-Decoder-Processing-with-Teacher-Forcing">5. <strong>Decoder Processing with Teacher Forcing</strong><a class="anchor-link" href="#5.-Decoder-Processing-with-Teacher-Forcing">¶</a></h4><p>During training, the target sequence embeddings (from the ground truth) are passed into the <strong>decoder</strong> using <strong>teacher forcing</strong>.<br/>
 This means we input the full target sequence (shifted by one token) into the decoder, rather than using the model’s previous predictions.</p>
-<p>The decoder uses a <strong>masked (causal) self-attention layer</strong>, where a triangular mask ensures that each token can only attend to itself and previous tokens — not future ones. This enforces autoregressive behavior.</p>
+<p>The decoder uses a <strong>masked (causal) self-attention layer</strong>, where a triangular mask ensures that each token can only attend to itself and previous tokens — not future ones. This enforces autoregressive behavior because each token can only refine its embedding based on previous tokens, which is strictly causal. This is the same as inference because during inference, the next token does not exist at the current timestep.</p>
 <blockquote>
 <p><strong>Example:</strong><br/>
 In the attention mask matrix below, each row shows which tokens a particular position can attend to:</p>
