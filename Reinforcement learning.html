@@ -7714,6 +7714,17 @@ where $r_{t+1}$ represents the reward after $t$th action is taken followed by $n
 </div>
 </div>
 </div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d16ce44e">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Algorithm-Summary">Algorithm Summary<a class="anchor-link" href="#Algorithm-Summary">¶</a></h1><img alt="No description has been provided for this image" src="https://miro.medium.com/1*itmyDvkBatuB-1Zw6zWL6A.jpeg"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+</div>
+</div>
+</div>
+</div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4d34d7ee">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -8504,6 +8515,62 @@ $$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \, q(S_{t+
 </li>
 </ol>
 <p>Note: MC methods update only after an episode finishes. If an agent becomes trapped in a state (or a loop), the episode may never end, preventing any learning from occurring. In contrast, online learning methods such as SARSA update their estimates during the episode at every timestep. This allows the agent to quickly recognize that a policy leading to such traps is poor and adjust its behavior before the episode is over.</p>
+<p>However, SARSA makes one update to one state-action pair per timestep, this means that the policy barely changes in each iteration because only one entry of the $q$ function changes, making it slow to convergence. To solve this problem, we can use TD($\lambda$) with eligibility tracing instead of TD(0), which gives SARSA($\lambda$).</p>
+<h3 id="SARSA($%5Clambda$)-Algorithm">SARSA($\lambda$) Algorithm<a class="anchor-link" href="#SARSA($%5Clambda$)-Algorithm">¶</a></h3><ol>
+<li><p>Given:</p>
+<ul>
+<li>Initial policy $\pi$ (e.g., $\epsilon$-greedy)</li>
+<li>Learning rate $\alpha \in (0, 1]$</li>
+<li>Discount factor $\gamma \in [0, 1]$</li>
+<li>Trace decay rate $\lambda \in [0, 1]$</li>
+</ul>
+</li>
+<li><p>Initialize:</p>
+<ul>
+<li>$q(s, a)$ arbitrarily for all $s \in \mathcal{S}$, $a \in \mathcal{A}$</li>
+<li>$E(s, a) = 0$ for all $s \in \mathcal{S}$, $a \in \mathcal{A}$</li>
+</ul>
+</li>
+<li><p>Repeat (for each episode):</p>
+<ul>
+<li><p>Initialize starting state $S$</p>
+</li>
+<li><p>Choose action $A \sim \pi(\cdot \mid S)$</p>
+</li>
+<li><p>Reset eligibility traces: $E(s, a) = 0$ for all $s, a$</p>
+</li>
+<li><p>For each timestep (until $S$ is terminal):</p>
+<ul>
+<li><p>Take action $A$, observe the reward $R$ and the next state $S'$</p>
+</li>
+<li><p>Choose the next action according to the current policy $A' \sim \pi(\cdot \mid S')$</p>
+</li>
+<li><p>Calculate TD Error:
+$$\delta \leftarrow R + \gamma q(S', A') - q(S, A)$$</p>
+</li>
+<li><p>Increment Eligibility Trace for current pair:
+$$E(S, A) \leftarrow E(S, A) + 1$$</p>
+</li>
+<li><p>Update ALL state-action pairs:
+For all $s \in \mathcal{S}, a \in \mathcal{A}$:
+$$q(s, a) \leftarrow q(s, a) + \alpha \cdot \delta \cdot E(s, a)$$
+$$E(s, a) \leftarrow \gamma \lambda E(s, a)$$</p>
+</li>
+<li><p>Transition:
+$$S \leftarrow S'$$
+$$A \leftarrow A'$$</p>
+</li>
+<li><p>Update $\pi$ (Implicitly updated via changes in $q$)</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Repeat until convergence.</p>
+</li>
+</ol>
+<p>Note: since we need to track the eligibility of all state-action pairs, the dimension of $E$ is $(S, A)$</p>
+<p>For SARSA($\lambda$), all previously visited states-action pairs will be updated in each iteration due to eligibility tracing. Therefore, it leads to faster convergence than SARSA.</p>
 <h2 id="Q-Learning">Q-Learning<a class="anchor-link" href="#Q-Learning">¶</a></h2><p>Q-learning is an off-policy TD control algorithm that directly learns the optimal action-value function $q_*$, rather than the action-value function of the current policy $q_\pi$. This differs from SARSA (on-policy), which learns $q_\pi$ for the policy being followed. The Q-learning update rule is</p>
 <p>$$q(S_t, A_t) \leftarrow q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \max_a q(S_{t+1}, a) - q(S_t, A_t) \right]$$</p>
 <ul>
