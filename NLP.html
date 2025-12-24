@@ -8664,6 +8664,61 @@ This process applies only to the <strong>encoder</strong>, since there is no gro
 </div>
 </div>
 </div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f2f9f72d">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Supervised-Fine-Tuning-(SFT)">Supervised Fine-Tuning (SFT)<a class="anchor-link" href="#Supervised-Fine-Tuning-(SFT)">¶</a></h1><p>During pre-training, a model learns the statistical structure of language by predicting the next token in a sequence. While this makes the model "knowledgeable," its primary instinct is to simply complete a document. If you give a pre-trained model the prompt "Write a poem about the sea," it might respond with "and then write a poem about the mountains," because it thinks it only knows how to complete the sentence in a reasonable manner.</p>
+<p>Supervised Fine-Tuning (SFT) is the process of narrowing this broad capability into specific behaviors. It transforms a "document completer" into a task-specific model, like question-answering.</p>
+<p>SFT works by training the pre-trained model on a smaller, high-quality dataset of demonstrations. Each data point consists of an input (a prompt or instruction) and a ground-truth output (the desired response). To help the model distinguish between instructions and responses, the data is usually formatted using a specific chat template with special tokens:</p>
+<p><code>&lt;SOS&gt; {Instruction/Task} &lt;DELIMITE&gt; {Correct Response} &lt;EOS&gt;</code></p>
+<ul>
+<li><code>&lt;SOS&gt;</code> (Start of Sequence): Indicates the beginning of a new task.</li>
+<li><code>&lt;DELIMITER&gt;</code>: A separator that marks the boundary where the instruction ends and the model should start generating.</li>
+<li><code>&lt;EOS&gt;</code> (End of Sequence): Teaches the model exactly when the task is complete so it knows when to stop generating.</li>
+</ul>
+<p>During training, we feed the model the input part of the pair (<code>&lt;SOS&gt; Instruction &lt;DELIMITER&gt;</code>). The model generates a sequence, and we calculate the loss by comparing its output to the "ground-truth" answer provided in the dataset.  Using Backpropagation, the model's internal weights are updated to maximize the probability of producing that exact ground-truth response. Over thousands of examples, the model learns the structural pattern to provide the answers in the specific format given by the dataset.</p>
+<p>While Question-Answering is the most famous example, SFT is used to teach a wide variety of tasks, like summarization, code generation, safefy alignment, etc.</p>
+<p>Once the model is fine-tuned, it becomes an Instruction-Following model. At inference time, when it receives a prompt formatted with the same special tokens, it no longer tries to complete the text. It recognizes the pattern and naturally provides the response expected by the user.</p>
+<h2 id="Types-of-Fine-Tuning">Types of Fine-Tuning<a class="anchor-link" href="#Types-of-Fine-Tuning">¶</a></h2><p>Fine-tuning strategies are generally categorized by how many of the model's internal parameters are modified during the training process</p>
+<ol>
+<li><p>Full Fine-Tuning (FFT):
+In this approach, backpropagation is allowed to update all parameters across every layer of the model. While this results in a model that is highly specialized for the new task, it is computationally expensive and requires significant memory.</p>
+</li>
+<li><p>Selective Fine-Tuning:
+In this approach, only a specific subset of parameters or layers is updated while the rest of the model remains frozen (untrainable).</p>
+</li>
+</ol>
+<p>While effective, updating the model’s original parameters directly introduces two major challenges:</p>
+<ol>
+<li>Prohibitive Cost: Modern LLMs contain billions of parameters. Performing full backpropagation requires lots of time and resources.</li>
+<li>Catastrophic Forgetting: When a model is aggressively tuned on a narrow, specific dataset, it may "overwrite" the broad general knowledge it acquired during pre-training. This causes the model to lose its versatility and perform poorly on tasks outside the fine-tuning data.</li>
+</ol>
+<p>To solve these issues, researchers often use Parameter-Efficient Fine-Tuning (PEFT), such as LoRA.</p>
+<h2 id="Low-Rank-Adaptation-(LoRA)">Low Rank Adaptation (LoRA)<a class="anchor-link" href="#Low-Rank-Adaptation-(LoRA)">¶</a></h2><p>LoRA is a fine tuning method that does not modify the original paramters of the model directly. Rather, it addes two new low rank, trainable matrices $A$, $B$ to a desired layer, and the output from $A \mul B$ is added to the output from the original weight matrix $W$. The new rank matrices are adaptors, and they modify the output slightly so that the model's output ...</p>
+<p>LoRA requires significantly less resources while achieving similar perfoamnce as normal SFT. Also, LoRA does not modify the base model but only the adaptors. Therefore, we can train adaptors for different tasks while preserving the same base model. At inference time, we can easily swithc adaptors according to different tasks.</p>
+<h2 id="Low-Rank-Adaptation-(LoRA)">Low-Rank Adaptation (LoRA)<a class="anchor-link" href="#Low-Rank-Adaptation-(LoRA)">¶</a></h2><p>Low-Rank Adaptation (LoRA) is a Parameter-Efficient Fine-Tuning (PEFT) method that avoids the high cost of modifying a model's original parameters directly. Instead of updating the massive weight matrices of the pre-trained model, LoRA keeps the original weights frozen and introduces small, trainable adapter matrices.</p>
+<p>For a given pre-trained weight matrix $W$, LoRA represents the weight update as the product of two smaller, low-rank matrices, $A$ and $B$. If the original matrix $W$ has dimensions $d \times k$, LoRA injects:</p>
+<ul>
+<li>Matrix $A$: Dimensions $d \times r$</li>
+<li>Matrix $B$: Dimensions $r \times k$</li>
+</ul>
+<p>Here, $r$ (the rank) is a very small number (e.g., 4, 8, or 16). During training, only $A$ and $B$ are updated via backpropagation. The final output of a layer is calculated as:</p>
+<p>$$Output = (xW) + (xAB)$$</p>
+<p>The product $(AB)$ acts as a delta (an adjustment) that shifts the model's behavior toward the specific fine-tuning task without altering the underlying knowledge stored in $W$.</p>
+<img alt="No description has been provided for this image" src="https://miro.medium.com/v2/resize:fit:1046/0*Dz3jnTjO6E7XP944.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<h3 id="Key-Advantages-of-LoRA">Key Advantages of LoRA<a class="anchor-link" href="#Key-Advantages-of-LoRA">¶</a></h3><ol>
+<li>Drastic Resource Reduction: Because the rank $r$ is so small, the number of trainable parameters is reduced significantly to save required training time and resources.</li>
+<li>Prevention of Catastrophic Forgetting: Since the base weights ($W$) remain frozen, the model’s original general knowledge is perfectly preserved. The adapters simply layer new task-specific behaviors on top.</li>
+<li>Modular Portability: LoRA does not merge into the base model during training. This means we can train multiple sets of adapters for different tasks (e.g., one for coding, one for creative writing) and swap them in and out of the same base model at inference time.</li>
+<li>Efficiency at Inference: At the time of deployment, the adapter weights $(AB)$ can be mathematically merged back into the original $W$. This ensures that there is zero additional latency during inference compared to a standard fine-tuned model.</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ba799d5d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
