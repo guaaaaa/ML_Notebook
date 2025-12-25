@@ -168,7 +168,7 @@
 </style>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Naive bayes</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>Data Generation</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -7677,6 +7677,30 @@ a.anchor-link {
 <body><div class="glass-container">
 <main>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=931305d6">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="The-Data-Generation-Problem">The Data Generation Problem<a class="anchor-link" href="#The-Data-Generation-Problem">¶</a></h1><p>Data comes in many modalities, such as text, images, audio, and video. We denote a generic data sample by the mathematical object $x$.</p>
+<h3 id="Data-Space">Data Space<a class="anchor-link" href="#Data-Space">¶</a></h3><p>A data sample $x$ belongs to a known data space, denoted as $\mathcal{X}$ (i.e., $x \in \mathcal{X}$). Essentially, the data space is defined as a high dimensional space that contains all possible value combinations of the raw data representation. However, not all points within this high-dimensional space represent valid or meaningful data.</p>
+<p><strong>Example:</strong>
+Consider a dataset of $5 \times 5$ black &amp; white images of digits. If each pixel can take a binary value $\{0, 1\}$, the data space is $\mathcal{X} = \{0, 1\}^{5 \times 5}$. This space contains $2^{25}$ possible combinations. However, the vast majority of these points look like random noise; only a tiny subset actually forms coherent, recognizable digits, which are what we considered as valid data points.</p>
+<h3 id="Data-Distribution">Data Distribution<a class="anchor-link" href="#Data-Distribution">¶</a></h3><p>The data distribution, denoted as $p(x)$, describes the probability of observing a specific sample $x$ from the space $\mathcal{X}$. This distribution is the key to differentiating meaningful data from noise in the data space</p>
+<ul>
+<li>Valid/Meaningful samples are assigned high probability.</li>
+<li>Invalid samples are assigned a probability near or equal to zero.</li>
+</ul>
+<p>In essence, $p(x)$ mathematically represents the hidden patterns and structure governing the data.</p>
+<h3 id="Dataset">Dataset<a class="anchor-link" href="#Dataset">¶</a></h3><p>A dataset is a finite collection of samples $\{x_1, x_2, ..., x_n\}$ that have been drawn (sampled) from the underlying data distribution $p(x)$.</p>
+<p>Data spaces are typically high-dimensional and mathematically intractable. It is impossible to capture or enumerate every point in the space because the volume is too vast. However, valid data usually occupies a very small, concentrated region within this vast space (often referred to as a "manifold"). By modeling the data distribution $p(x)$, we can focus purely on these high-probability regions and ignore the massive regions of the data space that contain invalid noise.</p>
+<h3 id="Goal-of-Generation">Goal of Generation<a class="anchor-link" href="#Goal-of-Generation">¶</a></h3><p>In generative modeling, the goal is to learn a target data distribution $p(x)$, either explicitly (learning the density function) or implicitly (learning a mechanism to generate samples).</p>
+<p>We aim to construct a model that, after observing a limited training dataset, learns to sample new, unique data points that look as if they were drawn from the original distribution $p(x)$, although the original distribution is unknown.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b3ec25dd">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
