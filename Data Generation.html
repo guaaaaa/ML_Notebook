@@ -7700,6 +7700,50 @@ Consider a dataset of $5 \times 5$ black &amp; white images of digits. If each p
 </div>
 </div>
 </div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=34e4d2e8">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Discriminative-and-Generative-Models">Discriminative and Generative Models<a class="anchor-link" href="#Discriminative-and-Generative-Models">¶</a></h1><h3 id="Discriminative-Models">Discriminative Models<a class="anchor-link" href="#Discriminative-Models">¶</a></h3><p>For supervised learning tasks with data $(x, y)$, a discriminative model learns to directly estimate the conditional probability $P(y|x)$. This approach learns a decision boundary between different data points, which is effectively a direct mapping from an input to an output. Because they focus solely on the boundary, discriminative models do not explicitly model the underlying distribution of the input data, meaning they simply learn how to separate classes to minimize the loss but do not understand what the data actually looks like.</p>
+<h3 id="Generative-Models">Generative Models<a class="anchor-link" href="#Generative-Models">¶</a></h3><p>A generative model aims to learn the complete data distribution. For a dataset without labels, it learns the distribution $P(x)$, and for a labelled dataset, it learns the joint distribution $P(x, y)$. This is often understood through the factorization $P(x|y)P(y)$, meaning the model learns "what the data looks like" (the likelihood $P(x|y)$) given a specific label.</p>
+<p>This understanding allows generative models to perform both types of tasks:</p>
+<ul>
+<li>Generative Task: For a desired label $y$, the model can generate new synthetic features $x$ by sampling from $P(x|y)$.</li>
+<li>Discriminative Task: To classify a new input $x$, the model uses Bayes' Rule to calculate the posterior probability $P(y|x) \propto P(x|y)P(y)$, allowing it to determine the most likely label.</li>
+</ul>
+<img alt="No description has been provided for this image" src="https://cdn.prod.website-files.com/65d8ee5f025f02594c614c17/66d088d78f87048868f94fee_66d085ede64cc943387d4695_1.webp" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=dd979150">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Bayes'-Theorem-in-Machine-Learning">Bayes' Theorem in Machine Learning<a class="anchor-link" href="#Bayes'-Theorem-in-Machine-Learning">¶</a></h1><p>Given labelled data $(x, y)$:</p>
+<p>$$P(y|x) = \frac{P(x|y)P(y)}{P(x)} = \frac{P(x|y)P(y)}{\sum_{k} P(x|y_k)P(y_k)}$$</p>
+<ul>
+<li><strong>$P(x|y)$ (Likelihood):</strong> The probability of observing feature $x$ given that it belongs to class $y$. This is what the generative model explicitly learns (the distribution of the data for each class). This model can be learned either statistically or through a neural network.</li>
+<li><strong>$P(y)$ (Prior):</strong> The probability of a class $y$ occurring before seeing any specific data. This represents our prior belief or assumption. It is often easy to compute by calculating the frequency of each class in the dataset.</li>
+<li><strong>$P(x)$ (Evidence / Marginal):</strong> The total probability of observing feature $x$ regardless of the class.<ul>
+<li>Calculated as $\sum_{k} P(x|y_k)P(y_k)$ (summing the weighted likelihoods over all possible classes).</li>
+<li>In classification, this acts as a normalization constant to ensure the posterior probabilities sum to 1.</li>
+<li><em>Note:</em> While easy to compute in simple classification tasks with few classes, calculating $P(x)$ becomes computationally intractable in complex generative models with high-dimensional or continuous latent variables. Therefore, in classification tasks, we can simply ignore it and find the prediction by
+$$ \text{Prediction} = \arg\max_y \big( P(x|y)P(y) \big)$$
+In generative tasks, we will have to approximate it.</li>
+</ul>
+</li>
+<li><strong>$P(y|x)$ (Posterior):</strong> The probability that the data belongs to class $y$ given the observed feature $x$. This is the final prediction we want to make.</li>
+</ul>
+<p>In discriminative approach, the model learns $P(y|x)$ directly (the mapping from input to class) without modeling the underlying data distribution. In generative approach, the model learns the likelihood $P(x|y)$ (the data distribution per class) and the prior $P(y)$, then combines them using Bayes' rule to compute the posterior $P(y|x)$ for classification.</p>
+</div>
+</div>
+</div>
+</div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b3ec25dd">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -7708,9 +7752,6 @@ Consider a dataset of $5 \times 5$ black &amp; white images of digits. If each p
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="Naive-bayes">Naive bayes<a class="anchor-link" href="#Naive-bayes">¶</a></h1><p>Naive bayes is an algorithm that can be used for classification tasks based on the Bayes' theorem. It is used on a variety of datasets, including text data, image data, and numerical data</p>
 <p>The naive bayes algorithm works by calculating the conditional probability of each class given the input features as conditions. The class with the highest probability is then predicted as the output</p>
-<h1 id="Bayes'-theorem">Bayes' theorem<a class="anchor-link" href="#Bayes'-theorem">¶</a></h1><p>$$P(A|B) = \frac{P(B|A)P(A)}{P(B)} = \frac{\text{True positives}}{\text{True positives + False positives}}$$</p>
-<p>Interpretations: the probability of event B to occur given the occurrence of event A</p>
-<p>Assumptions: the bayes' theorem assumes that the input features are conditionally independent from each other</p>
 <h1 id="ML-version">ML version<a class="anchor-link" href="#ML-version">¶</a></h1><p>$$P(y_k|X) = \frac{P(X|y_k)P(y)}{P(X)} = \frac{P(x_1|y-k)\cdot P(x_2|y_k)\cdots \dot P(x_n|y_k)\cdot P(y_k)}{P(X)} = \frac{P(y_k)\cdot \Pi^{n}_{i=1}P(x_i|y_k)}{P(X)}$$</p>
 <p>where</p>
 <p>$$P(y_k) = \frac{\sum^{m}_{i=1}(y_i=y_k)}{m}$$</p>
