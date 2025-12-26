@@ -8264,45 +8264,51 @@ $$\rho_t = \frac{\pi(a_t \mid s_t)}{b(a_t \mid s_t)}$$</p>
 <li>$N$: the total number of trajectories sampled from the behaviour policy $b$.</li>
 </ul>
 <p>So if we have multiple trajectories, we compute the adjusted return for each using $\rho^{(i)} G^{(i)}$, and then average them to estimate the expected return under the target policy.</p>
-<h2 id="Off-Policy-Monte-Carlo-Method">Off-Policy Monte Carlo Method<a class="anchor-link" href="#Off-Policy-Monte-Carlo-Method">¶</a></h2><p>Off-policy Monte Carlo learning enables us to evaluate and improve a target policy $\pi$ using episodes generated from a different behaviour policy $b$. Both policies can be either deterministic or stochastic. The only essential requirement is the coverage condition as discussed before, where</p>
+<h2 id="Off-Policy-Monte-Carlo-Method">Off-Policy Monte Carlo Method<a class="anchor-link" href="#Off-Policy-Monte-Carlo-Method">¶</a></h2><p>Off-policy Monte Carlo learning enables us to evaluate and improve a target policy $\pi$ using episodes generated from a different behaviour policy $b$. The target policy can be either deterministic or stochastic, but the behavior policy must be stochastic. The only essential requirement is the coverage condition as discussed before, where</p>
 <p>$$\text{If } \pi(a \mid s) &gt; 0, \text{ then } b(a \mid s) &gt; 0$$</p>
+<p>However, a key issue is that the importance sampling ratio may have extremely high variance if $\rho_{t:T-1}$ is large. This will cause an extremely large update to the estimation, which is undesirable. Therefore, we use a weighted version of importance sampling, where $v_\pi(s) \approx \frac{\sum_{i=1}^N \rho^{(i)} G^{(i)}}{\sum_{i=1}^N \rho^{(i)}}$. This updates will cause more bias in the estimation because we normalize by the sum of weights to reduce variance and prevent the estimated value from explosion. In practice, we use $c(s, a)$ to track the sum of the ratios of each state-action pair.</p>
 <h3 id="Algorithm-Steps">Algorithm Steps<a class="anchor-link" href="#Algorithm-Steps">¶</a></h3><ol>
 <li><p>Initialize:</p>
 <ul>
-<li>Initialize a target policy $\pi$ (can be random).</li>
-<li>Initialize the action-value function $q(s, a)$ arbitrarily.</li>
+<li>$q(s, a) \in \mathbb{R}$ arbitrarily for all $s, a$</li>
+<li>$c(s, a) = 0$ (Cumulative denominator weight) for all $s, a$</li>
+<li>Target policy $\pi(s)$ is the greedy policy with respect to $q$</li>
 </ul>
 </li>
-<li><p>Generate an Episode:</p>
+<li><p>Loop (for each episode):</p>
 <ul>
-<li>Follow the behaviour policy $b$ to generate an episode.</li>
-<li>Record the sequence of transitions: $(s_0, a_0, r_1), (s_1, a_1, r_2), \dots, (s_T, \_)$</li>
-</ul>
+<li><p>Generate Episode:
+Generate an episode using behavior policy $b$ (e.g., $\epsilon$-soft):
+$S_0, A_0, R_1, \dots, S_{T-1}, A_{T-1}, R_T$</p>
 </li>
-<li><p>Policy Evaluation (via Importance Sampling):</p>
-<ul>
-<li>For each timestep $t$ in the episode, process in reverse from $T-1$ to $t$:<ul>
-<li>Compute the return $G_t$ from time $t$ onward: $G_t = r_{t+1} + \gamma r_{t+2} + \gamma^2 r_{t+3} + \dots$</li>
-<li>Compute the cumulative importance sampling ratio: $\rho_{t:T-1} = \prod_{k=t}^{T-1} \frac{\pi(a_k \mid s_k)}{b(a_k \mid s_k)}$</li>
-<li>Estimate the reweighted return: $v_\pi(s_t) \approx \rho_{t:T-1} \cdot G_t$</li>
-<li>Use this to update the estimate of $q(s_t, a_t)$</li>
-<li>Average over multiple episodes (if applicable): $v_\pi(s) \approx \frac{1}{N} \sum_{i=1}^N \rho^{(i)} G^{(i)}$</li>
-</ul>
+<li><p>Initialize Weight:
+$w \leftarrow 1.0$
+$G \leftarrow 0$</p>
 </li>
-</ul>
+<li><p>Loop backward (from $t = T-1$ down to $0$):</p>
+<ol>
+<li><p>Update Return:
+$G \leftarrow \gamma G + R_{t+1}$</p>
 </li>
-<li><p>Policy Improvement:</p>
-<ul>
-<li>For every state $s$ visited in the episode:<ul>
-<li>Improve the policy using a greedy or $\varepsilon$-greedy update:
-$$\pi(s) = \arg\max_a q(s, a) \quad \text{or} \quad \varepsilon\text{-greedy}(q(s, a))$$</li>
-</ul>
+<li><p>Update Cumulative Weight:
+$c(S_t, A_t) \leftarrow c(S_t, A_t) + w$</p>
 </li>
-</ul>
+<li><p>Update Q-Value (Incremental Weighted Average):
+$$q(S_t, A_t) \leftarrow q(S_t, A_t) + \frac{w}{c(S_t, A_t)} \big(G - q(S_t, A_t) \big)$$</p>
 </li>
-<li><p>Repeat:</p>
-<ul>
-<li>Go back to Step 2 and repeat the process until the policy converges or is "good enough."</li>
+<li><p>Policy Improvement (Implicit):
+$\pi(S_t) \leftarrow \arg\max_a q(S_t, a)$</p>
+</li>
+<li><p>Exit Condition:
+If $A_t \neq \pi(S_t)$:
+Break loop (Weight becomes 0, so no past steps learn from this because this action will never happens in the greedy case). This causes lots of waste in data.</p>
+</li>
+<li><p>Update Importance Sampling Weight:
+$$w \leftarrow w \cdot \frac{\pi(A_t|S_t)}{b(A_t|S_t)}$$
+<em>(Note: Since $\pi$ is deterministic, $\pi(A_t|S_t)$ is either 1 or 0. If we didn't break in Step 5, it is 1).</em></p>
+</li>
+</ol>
+</li>
 </ul>
 </li>
 </ol>
