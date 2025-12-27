@@ -7750,16 +7750,48 @@ In generative tasks, we will have to approximate it.</li>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Naive-bayes">Naive bayes<a class="anchor-link" href="#Naive-bayes">¶</a></h1><p>Naive bayes is an algorithm that can be used for classification tasks based on the Bayes' theorem. It is used on a variety of datasets, including text data, image data, and numerical data</p>
-<p>The naive bayes algorithm works by calculating the conditional probability of each class given the input features as conditions. The class with the highest probability is then predicted as the output</p>
-<h1 id="ML-version">ML version<a class="anchor-link" href="#ML-version">¶</a></h1><p>$$P(y_k|X) = \frac{P(X|y_k)P(y)}{P(X)} = \frac{P(x_1|y-k)\cdot P(x_2|y_k)\cdots \dot P(x_n|y_k)\cdot P(y_k)}{P(X)} = \frac{P(y_k)\cdot \Pi^{n}_{i=1}P(x_i|y_k)}{P(X)}$$</p>
-<p>where</p>
-<p>$$P(y_k) = \frac{\sum^{m}_{i=1}(y_i=y_k)}{m}$$</p>
-<p>$$P(x_i = a_j|y_k) = \frac{\sum^{m}_{i=1}(x_i=a_j \text{&amp;} y_i=y_k)}{\sum^{m}_{i=1}(y_i=y_k)}$$</p>
-<p>$P(y_k|X)$: the probability of the $k$th class, $y_k$, given the input features, $X$, which contains $n$ features ($x_1, x_2, \cdots, x_n$)</p>
-<p>$P(y_k)$: the probability of the $k$th class (Prior probability), which equals the frequency of the $k$th class appears in all training examples, $m$</p>
-<p>$P(x_i|y_k)$: the probaility of feature, $x_i$ given $y_k$ as the condition (conditioinal proability), which equals the number of cases when $x_i$ equals to $a_j$ and $y_i$ equals to $y_k$ divided by the number of cases when $y_i$ equals to $y_k$</p>
-<p>To make predictions, we select the class with the highest probability, $P(y_k|X)$</p>
+<h1 id="Naive-bayes">Naive bayes<a class="anchor-link" href="#Naive-bayes">¶</a></h1><p>In normal Bayes rule, the joint distribution represents all features occurring together given the class, but the hidden depdencies between features are usually difficult to compute. Therefore, we use Naive bayes to simplify the model by assuming all features are conditionally independent, meaning knowing one feature will not give any inofrmation about any other features. This is formalized by</p>
+<p>$$P(x|y) = P(x_1, x_2, \dots, x_n | y) = \Pi_{i=1}^{n}P(x_i | y)$$</p>
+<p>This is a huge assumption as the features are pretty much nenver independent in reality.</p>
+<p>Ususally, naive bayes can be used as a statistical method so that it learns the distribution of data through counting. This is fast but rather unreliable way of learning.</p>
+<h3 id="Example">Example<a class="anchor-link" href="#Example">¶</a></h3><p>For a binary classification problem with the dataset $({x_1, x_2}, y)$, we want to make classification given a new sample, which is $P(y| x_1=a, x_2=b)$
+...</p>
+<h1 id="Naive-Bayes">Naive Bayes<a class="anchor-link" href="#Naive-Bayes">¶</a></h1><p>In the standard application of Bayes' rule, the likelihood term $P(x_1, x_2, \dots, x_n | y)$ represents the joint probability of all features occurring together given the class. Computing this is difficult because features often have complex correlations (dependencies), requiring a massive amount of data to model accurately.</p>
+<p>Therefore, Naive Bayes simplifies the model by introducing the assumption of conditional independence. This assumes that, <em>given the class label</em>, knowing the value of one feature provides no information about the value of any other feature.</p>
+<p>This assumption allows us to decompose the complex joint likelihood into a simple product of individual probabilities:</p>
+<p>$$P(x|y) = P(x_1, x_2, \dots, x_n | y) \approx \prod_{i=1}^{n}P(x_i | y)$$</p>
+<p>Consequently, the posterior probability for a class $y$ is proportional to:</p>
+<p>$$P(y|x) \propto P(y) \cdot \prod_{i=1}^{n}P(x_i | y)$$</p>
+<p>Note on Reality: This is a strong, naive assumption because real-world features are rarely independent. However, despite this theoretical flaw, Naive Bayes is computationally efficient and often performs surprisingly well as a baseline classifier. While its probability estimates might be inaccurate due to the assumption, its classification decisions are often correct.</p>
+<h3 id="Example">Example<a class="anchor-link" href="#Example">¶</a></h3><p><strong>Scenario:</strong>
+We have a binary classification problem where the class $y$ can be either <strong>Spam (1)</strong> or <strong>Not Spam (0)</strong>. Our data has two features, $x_1$ and $x_2$.</p>
+<p>We want to classify a new sample where $x_1=a$ and $x_2=b$. To do this, we calculate the posterior probability for both classes and pick the highest one.</p>
+<p><strong>Step 1: Setup the equation for Class 1 (Spam)</strong>
+Using the Naive Bayes assumption, we expand the formula:
+$$P(y=1 | x_1=a, x_2=b) \propto P(y=1) \cdot P(x_1=a | y=1) \cdot P(x_2=b | y=1)$$</p>
+<p><strong>Step 2: "Learning" by Counting</strong>
+We estimate these values directly from our training data frequencies:</p>
+<ul>
+<li>$P(y=1)$: How frequent is Spam overall? (Prior)</li>
+<li>$P(x_1=a | y=1)$: In Spam messages, how often does feature $x_1$ equal $a$? (Likelihood 1)</li>
+<li>$P(x_2=b | y=1)$: In Spam messages, how often does feature $x_2$ equal $b$? (Likelihood 2)</li>
+</ul>
+<p><strong>Step 3: Comparison</strong>
+We repeat the calculation for <strong>Class 0 (Not Spam)</strong>:
+$$P(y=0 | x_1=a, x_2=b) \propto P(y=0) \cdot P(x_1=a | y=0) \cdot P(x_2=b | y=0)$$</p>
+<p><strong>Step 4: Decision</strong>
+We compare the two resulting scores.</p>
+<ul>
+<li>If Score(Spam) &gt; Score(Not Spam), we classify the sample as Spam.</li>
+</ul>
+<p>The key distinction lies in how we treat the features $x_1$ and $x_2$. Without the Naive assumption, we must treat the features as a coupled pair $(x_1, x_2)$. To calculate the likelihood $P(x_1=a, x_2=b | y)$, we would need to count how often the exact combination <strong>"a AND b"</strong> appears together in the training data. However, if the specific pair $(a, b)$ never appeared in the training set (sparsity), the probability becomes 0, and the model fails to make a prediction.</p>
+<p>Naive Bayes assumes $x_1$ and $x_2$ are independent given the class. We treat them separately</p>
+<ol>
+<li>Calculate $P(x_1=a | y)$ by looking only at the $x_1$ column.</li>
+<li>Calculate $P(x_2=b | y)$ by looking only at the $x_2$ column.</li>
+<li>Multiply the results.</li>
+</ol>
+<p>This allows the model to predict the probability of a combination $(a, b)$ even if it has never physically seen those two features appear together in history.</p>
 </div>
 </div>
 </div>
