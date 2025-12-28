@@ -7750,19 +7750,13 @@ In generative tasks, we will have to approximate it.</li>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Naive-bayes">Naive bayes<a class="anchor-link" href="#Naive-bayes">¶</a></h1><p>In normal Bayes rule, the joint distribution represents all features occurring together given the class, but the hidden depdencies between features are usually difficult to compute. Therefore, we use Naive bayes to simplify the model by assuming all features are conditionally independent, meaning knowing one feature will not give any inofrmation about any other features. This is formalized by</p>
-<p>$$P(x|y) = P(x_1, x_2, \dots, x_n | y) = \Pi_{i=1}^{n}P(x_i | y)$$</p>
-<p>This is a huge assumption as the features are pretty much nenver independent in reality.</p>
-<p>Ususally, naive bayes can be used as a statistical method so that it learns the distribution of data through counting. This is fast but rather unreliable way of learning.</p>
-<h3 id="Example">Example<a class="anchor-link" href="#Example">¶</a></h3><p>For a binary classification problem with the dataset $({x_1, x_2}, y)$, we want to make classification given a new sample, which is $P(y| x_1=a, x_2=b)$
-...</p>
 <h1 id="Naive-Bayes">Naive Bayes<a class="anchor-link" href="#Naive-Bayes">¶</a></h1><p>In the standard application of Bayes' rule, the likelihood term $P(x_1, x_2, \dots, x_n | y)$ represents the joint probability of all features occurring together given the class. Computing this is difficult because features often have complex correlations (dependencies), requiring a massive amount of data to model accurately.</p>
 <p>Therefore, Naive Bayes simplifies the model by introducing the assumption of conditional independence. This assumes that, <em>given the class label</em>, knowing the value of one feature provides no information about the value of any other feature.</p>
 <p>This assumption allows us to decompose the complex joint likelihood into a simple product of individual probabilities:</p>
 <p>$$P(x|y) = P(x_1, x_2, \dots, x_n | y) \approx \prod_{i=1}^{n}P(x_i | y)$$</p>
 <p>Consequently, the posterior probability for a class $y$ is proportional to:</p>
 <p>$$P(y|x) \propto P(y) \cdot \prod_{i=1}^{n}P(x_i | y)$$</p>
-<p>Note on Reality: This is a strong, naive assumption because real-world features are rarely independent. However, despite this theoretical flaw, Naive Bayes is computationally efficient and often performs surprisingly well as a baseline classifier. While its probability estimates might be inaccurate due to the assumption, its classification decisions are often correct.</p>
+<p>Note: This is a strong, naive assumption because real-world features are rarely independent. However, despite this theoretical flaw, Naive Bayes is computationally efficient and often performs surprisingly well as a baseline classifier. While its probability estimates might be inaccurate due to the assumption, its classification decisions are often correct.</p>
 <h3 id="Example">Example<a class="anchor-link" href="#Example">¶</a></h3><p><strong>Scenario:</strong>
 We have a binary classification problem where the class $y$ can be either <strong>Spam (1)</strong> or <strong>Not Spam (0)</strong>. Our data has two features, $x_1$ and $x_2$.</p>
 <p>We want to classify a new sample where $x_1=a$ and $x_2=b$. To do this, we calculate the posterior probability for both classes and pick the highest one.</p>
@@ -7795,7 +7789,64 @@ We compare the two resulting scores.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=40b19145">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=41c9faa2">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Maximum-Likelihood-Estimation-(MLE)">Maximum Likelihood Estimation (MLE)<a class="anchor-link" href="#Maximum-Likelihood-Estimation-(MLE)">¶</a></h1><p>In the context of generative modeling, our goal is to approximate an unknown underlying data distribution $P_{data}(\mathbf{x})$ using a parametric model $P_{\theta}(\mathbf{x})$, where $\theta$ represents the model parameters.</p>
+<h3 id="Definition-of-Likelihood">Definition of Likelihood<a class="anchor-link" href="#Definition-of-Likelihood">¶</a></h3><p>Before defining the estimator, we must define the <strong>Likelihood Function</strong>. Given a set of observed data, the likelihood function $\mathcal{L}(\theta)$ measures how well a model (specific parameter set $\theta$) explains the observed data.</p>
+<blockquote>
+<p><strong>Definition:</strong> Let $\mathcal{D} = \{\mathbf{x}^{(1)}, \mathbf{x}^{(2)}, \dots, \mathbf{x}^{(n)}\}$ be a dataset. The likelihood function $L(\theta; \mathcal{D})$ is defined as the joint probability (or joint density) of the observed data viewed as a function of the parameters $\theta$, which is the probablity of observing all data samples together based on the given model:
+$$L(\theta; \mathcal{D}) = P(\mathbf{x}^{(1)}, \mathbf{x}^{(2)}, \dots, \mathbf{x}^{(n)} | \theta)$$</p>
+</blockquote>
+<p>To make the computation of the joint probability tractable, we typically assume the data points are <strong>independent and identically distributed (i.i.d.)</strong>. Under this assumption, we treat each sample individually, so the joint probability factorizes into the product of marginal probabilities:
+$$L(\theta; \mathcal{D}) = \prod_{i=1}^{n} P_{\theta}(\mathbf{x}^{(i)})$$</p>
+<h2 id="Log-Likelihood">Log-Likelihood<a class="anchor-link" href="#Log-Likelihood">¶</a></h2><p>In practice, we work with the <strong>Log-Likelihood</strong> $\ell(\theta)$ because the product of many small probabilities leads to numerical underflow. Since the logarithm is a monotonically increasing function, maximizing the likelihood is equivalent to maximizing the log-likelihood:
+$$\ell(\theta) = \log \left( \prod_{i=1}^{n} P_{\theta}(\mathbf{x}^{(i)}) \right) = \sum_{i=1}^{n} \log P_{\theta}(\mathbf{x}^{(i)})$$</p>
+<h2 id="MLE-Intuition">MLE Intuition<a class="anchor-link" href="#MLE-Intuition">¶</a></h2><p>The data-space for high-dimensional inputs (e.g., $1024 \times 1024$ RGB images) is unimaginably vast, with dimensions in the millions. However, meaningful data (like images of cats) does not exist uniformly across this space; instead, it concentrates on a low-dimensional subset called a <strong>manifold</strong>.</p>
+<p>The intuition behind MLE is built on two observations:</p>
+<ol>
+<li><strong>Sparsity of Observations:</strong> Out of all possible configurations in the high-dimensional space, our collected samples $\mathcal{D}$ represent the "realized" events. Because these specific points were observed, they must have a high density under the true probability distribution $P_{data}$.</li>
+<li><strong>The Optimization Goal:</strong> We want our model $P_{\theta}$ to mimic this true distribution. We achieve this by adjusting the parameters $\theta$ so that the model "shifts" its probability mass away from the "empty" noise regions and concentrates it on the specific coordinates of our observed samples.</li>
+</ol>
+<p>For example, in a dataset of cat images, the model should learn that a specific arrangement of pixels forming a "cat" is highly probable, while a random arrangement of "static" noise, despite being in the same high-dimensional pixel space, has a probability near zero.</p>
+<p>Therefore, the training objective is to find the best model that assigns the highest possible probability to the observed data (the dataset). In other words, it maximize the likelihood or log-likelihood of the observed data.</p>
+<p>$$\theta_{MLE} = \arg \max_{\theta} \sum_{i=1}^{n} \log P_{\theta}(\mathbf{x}^{(i)})$$</p>
+<h1 id="Kullback-Leibler-(KL)-Divergence">Kullback-Leibler (KL) Divergence<a class="anchor-link" href="#Kullback-Leibler-(KL)-Divergence">¶</a></h1><p>The KL Divergence is a measure of how one probability distribution $Q$ diverges from a second, reference probability distribution $P$. In machine learning, we often use it to measure the distance between the true data distribution $P_{data}$ and our model $P_{\theta}$.</p>
+<blockquote>
+<p><strong>Definition:</strong> For two distributions $P$ and $Q$ defined on the same probability space, the KL Divergence is defined as:
+$$D_{KL}(P \parallel Q) = \int_{-\infty}^{\infty} p(x) \log \frac{p(x)}{q(x)} dx$$
+Or in expectation form:
+$$D_{KL}(P \parallel Q) = \mathbb{E}_{x \sim P} \left[ \log \frac{P(x)}{Q(x)} \right] = \mathbb{E}_{x \sim P} [\log P(x) - \log Q(x)]$$</p>
+</blockquote>
+<h2 id="Properties">Properties<a class="anchor-link" href="#Properties">¶</a></h2><ol>
+<li><strong>Distance</strong>: The more different the two distributions are, the larger the divergence will be.</li>
+<li><strong>Identity:</strong> $D_{KL}(P \parallel P) = 0$. A distribution has zero divergence from itself because they are the exact same.</li>
+<li><strong>Non-negativity:</strong> $D_{KL}(P \parallel Q) \geq 0$ for any $P, Q$ (via Jensen's Inequality).</li>
+<li><strong>Asymmetry:</strong> $D_{KL}(P \parallel Q) \neq D_{KL}(Q \parallel P)$.</li>
+</ol>
+<h2 id="MLE-as-Divergence-Minimization">MLE as Divergence Minimization<a class="anchor-link" href="#MLE-as-Divergence-Minimization">¶</a></h2><p>In generative models, the objective is the minimize the divergence between the true data distribution $P_{data}$ and our model $P_{\theta}$ so that the model provides a good approximation for the true distribution. We show that the objective of minimizing the KL divergence is eqavelent to maximizing the likelihood.</p>
+<h2 id="The-Mathematical-Equivalence">The Mathematical Equivalence<a class="anchor-link" href="#The-Mathematical-Equivalence">¶</a></h2><p>We can prove that minimizing the KL divergence between the data and the model is mathematically equivalent to maximizing the log-likelihood of the dataset.</p>
+<p>Given the definition of KL Divergence:
+$$D_{KL}(P_{data} \parallel P_{\theta}) = \mathbb{E}_{\mathbf{x} \sim P_{data}} [\log P_{data}(\mathbf{x}) - \log P_{\theta}(\mathbf{x})]$$</p>
+<p>Using the linearity of expectation, we can split this into two distinct terms:
+$$D_{KL}(P_{data} \parallel P_{\theta}) = \underbrace{\mathbb{E}_{\mathbf{x} \sim P_{data}} [\log P_{data}(\mathbf{x})]}_{\text{Negative Entropy } -H(P_{data})} - \underbrace{\mathbb{E}_{\mathbf{x} \sim P_{data}} [\log P_{\theta}(\mathbf{x})]}_{\text{Cross-Entropy Term}}$$</p>
+<p>When we minimizing the divergence with respect to the model parameters $\theta$, we notice the following:</p>
+<ul>
+<li><strong>The Entropy Term:</strong> $\mathbb{E}_{\mathbf{x} \sim P_{data}} [\log P_{data}(\mathbf{x})]$ depends only on the true data. It is a constant with respect to $\theta$ and does not change during training.</li>
+<li><strong>The Empirical Estimate:</strong> Since we don't know $P_{data}$ exactly, we estimate the second term using our samples $\mathcal{D}$ because we know the data points are sampled from the true distribution:
+$$\mathbb{E}_{\mathbf{x} \sim P_{data}} [\log P_{\theta}(\mathbf{x})] \approx \frac{1}{n} \sum_{i=1}^{n} \log P_{\theta}(\mathbf{x}^{(i)})$$</li>
+</ul>
+<p>Therefore, minimizing the divergence is equivalent to maximizing the average log-likelihood:
+$$\arg \min_{\theta} D_{KL}(P_{data} \parallel P_{\theta}) = \arg \max_{\theta} \sum_{i=1}^{n} \log P_{\theta}(\mathbf{x}^{(i)})$$</p>
+<h2 id="The-Lower-Bound-(Data-Entropy)">The Lower Bound (Data Entropy)<a class="anchor-link" href="#The-Lower-Bound-(Data-Entropy)">¶</a></h2><p>Note that even in a "perfect" training scenario where the model perfectly matches the empirical data, the log-likelihood does not necessarily reach zero. It is bounded by the <strong>Entropy of the data</strong>, $H(P_{data})$. This represents the inherent "noise" or uncertainty in the data that no model can eliminate.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=96176061">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
