@@ -8487,6 +8487,7 @@ $$v(s) \leftarrow v(s) + \alpha \cdot \delta_t \cdot E_t(s)$$</p>
 <li>$(S_{t+1}, A_{t+1})$: next state-action pair chosen according to the current policy</li>
 </ul>
 <p>Because SARSA uses $A_{t+1}$ from the current policy, it learns the value of the policy as it is being followed (on-policy learning). After each update, the policy can be improved by making it greedy or $\epsilon$-greedy with respect to the updated $q(s, a)$.</p>
+<p>For the estimation return, SARSA uses $R_{t+1} + \gamma \, q(S_{t+1}, A_{t+1})$ instead of $R_{t+1} + \gamma \, v(S_{t+1})$ because $q(S_{t+1}, A_{t+1})$ is a random sample of the average return By the law of large numbers, if we sample from the policy enough times, the average of your updates will converge to the true $v(s)$</p>
 <h3 id="SARSA-Algorithm">SARSA Algorithm<a class="anchor-link" href="#SARSA-Algorithm">¶</a></h3><ol>
 <li><p>Given:</p>
 <ul>
@@ -8962,6 +8963,24 @@ $$\nabla_w \hat{v}(s; w) = x(s)$$</p>
 <li>$\bar{VE}(w_{MC})$: the achievable global minimum by the linear Monte Carlo method</li>
 </ul>
 <p>This inequality guarantees that the asymptotic error of TD will be no more than $\frac{1}{1 - \gamma}$ times the minimal error. In practice, when $\gamma$ is small (far from 1), the bound is tight, and TD performs close to optimal; when $\gamma$ is near 1 (long-term planning problems), the bound becomes large, meaning TD could potentially be much worse than the Monte Carlo solution. Thus, while TD methods are often preferred due to their online learning capability and lower variance, there is a trade-off in asymptotic performance. In problems with very high discount factors, it is important to carefully consider whether Monte Carlo or TD is more appropriate for the desired level of convergence.</p>
+<h3 id="Function-Approximation-for-Action-Values">Function Approximation for Action Values<a class="anchor-link" href="#Function-Approximation-for-Action-Values">¶</a></h3><p>Similarly, function approximation can be used to predict action values. The objective is to minimize the Mean Squared Value Error ($\bar{VE}$), which averages the squared error over both states and actions, weighted by the state distribution $\mu(s)$ and the policy $\pi(a|s)$:</p>
+<p>$$
+\bar{VE}(\mathbf{w}) = \sum_{s \in \mathcal{S}} \mu(s) \sum_{a \in \mathcal{A}} \pi(a|s) \big( q_{\pi}(s, a) - \hat{q}(s, a; \mathbf{w}) \big)^2
+$$</p>
+<p>The weight update is derived using Stochastic Gradient Descent (SGD). We sample a state-action pair $(S_t, A_t)$ and update the weights in the direction that reduces the error for that example:</p>
+<p>$$
+\mathbf{w}_{t+1} \leftarrow \mathbf{w}_t + \alpha \big[G_t - \hat{q}(S_t, A_t; \mathbf{w}_t) \big] \nabla \hat{q}(S_t, A_t; \mathbf{w}_t)
+$$</p>
+<p>Where:</p>
+<ul>
+<li>$\alpha$ is the step-size (learning rate).</li>
+<li>$\nabla \hat{q}(S_t, A_t; \mathbf{w}_t)$ is the gradient of the value function with respect to the weights.</li>
+<li>$G_t$ is the <strong>target</strong> value. Since the true value $q_{\pi}$ is unknown, we substitute it with a bootstrapping estimate:<ul>
+<li><strong>For SARSA (TD):</strong> $G_t = R_{t+1} + \gamma \hat{q}(S_{t+1}, A_{t+1}; \mathbf{w}_t)$</li>
+<li><strong>For Q-Learning:</strong> $G_t = R_{t+1} + \gamma \max_{a} \hat{q}(S_{t+1}, a; \mathbf{w}_t)$</li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 </div>
