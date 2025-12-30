@@ -168,7 +168,7 @@
 </style>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Data Generation</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>Explicit Distribution Learning</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -7837,16 +7837,81 @@ $$D_{KL}(P_{data} \parallel P_{\theta}) = \underbrace{\mathbb{E}_{\mathbf{x} \si
 <p>When we minimizing the divergence with respect to the model parameters $\theta$, we notice the following:</p>
 <ul>
 <li><strong>The Entropy Term:</strong> $\mathbb{E}_{\mathbf{x} \sim P_{data}} [\log P_{data}(\mathbf{x})]$ depends only on the true data. It is a constant with respect to $\theta$ and does not change during training.</li>
-<li><strong>The Empirical Estimate:</strong> Since we don't know $P_{data}$ exactly, we estimate the second term using our samples $\mathcal{D}$ because we know the data points are sampled from the true distribution:
+<li><strong>The Empirical Estimate:</strong> Since we don't know $P_{data}$ exactly, we estimate the second term using our samples $\mathcal{D}$ because we know the data points are sampled from the true distribution.
 $$\mathbb{E}_{\mathbf{x} \sim P_{data}} [\log P_{\theta}(\mathbf{x})] \approx \frac{1}{n} \sum_{i=1}^{n} \log P_{\theta}(\mathbf{x}^{(i)})$$</li>
 </ul>
 <p>Therefore, minimizing the divergence is equivalent to maximizing the average log-likelihood:
 $$\arg \min_{\theta} D_{KL}(P_{data} \parallel P_{\theta}) = \arg \max_{\theta} \sum_{i=1}^{n} \log P_{\theta}(\mathbf{x}^{(i)})$$</p>
+<p>Here, we assume each of our $n$ samples was sampled uniformly from the distribution, meaning each has a probability mass of $1/n$. However, the true probablity is not necessarily $1/n$ for each individual sample, making the entire objective of MLE or minimizing KL divergence only an estimate.</p>
 <h2 id="The-Lower-Bound-(Data-Entropy)">The Lower Bound (Data Entropy)<a class="anchor-link" href="#The-Lower-Bound-(Data-Entropy)">¶</a></h2><p>Note that even in a "perfect" training scenario where the model perfectly matches the empirical data, the log-likelihood does not necessarily reach zero. It is bounded by the <strong>Entropy of the data</strong>, $H(P_{data})$. This represents the inherent "noise" or uncertainty in the data that no model can eliminate.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=96176061">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b9e55612">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Explicit-Distribution-Learning">Explicit Distribution Learning<a class="anchor-link" href="#Explicit-Distribution-Learning">¶</a></h1><p>Explicit distribution learning means that we learn the distribution and have a clear expression for it (through a neural network). Clearly, modeling data distribution as a whole is computationally infeasible because the model needs to cover an exponentially large data-space and direct sampling could be exponentially hard. Therefore, we use methods like MLE and minimizing KL divergence to estimate the distribution. The objective can be achieved through 3 different modelling apporaches</p>
+<ol>
+<li>Autoregressive Modelling</li>
+<li>Energy-based Modeling</li>
+<li>Flow-based Modeling</li>
+</ol>
+<h1 id="Explicit-Distribution-Learning">Explicit Distribution Learning<a class="anchor-link" href="#Explicit-Distribution-Learning">¶</a></h1><p>Explicit distribution learning involves the construction of a generative model that provides an explicit functional form for the probability density function (or mass function), denoted as $p_{\theta}(\mathbf{x})$. Unlike implicit models (e.g., GANs), which only provide a mechanism to sample data, explicit models allow for the direct evaluation of the likelihood of a given observation.</p>
+<h2 id="The-Fundamental-Challenge:-Intractability-and-Normalization">The Fundamental Challenge: Intractability and Normalization<a class="anchor-link" href="#The-Fundamental-Challenge:-Intractability-and-Normalization">¶</a></h2><p>Modeling a high-dimensional data distribution $p_{data}(\mathbf{x})$ (where $\mathbf{x} \in \mathbb{R}^D$) is computationally intensive due to the <strong>curse of dimensionality</strong>. A valid probability distribution must satisfy the normalization constraint:
+$$\int_{\mathbf{x}} p_{\theta}(\mathbf{x}) d\mathbf{x} = 1$$
+In high-dimensional spaces, calculating the denominator (the partition function) required to normalize a neural network's output is usually exponentially hard. Consequently, explicit modeling focuses on architectures that either bypass, simplify, or approximate this normalization while maintaining a clear expression for the density.</p>
+<p>The standard approach to estimate the distribution based through methods like MLE (minimizing KL divergence). In practice, the MLE objective is ususally implemented through 3 different modelling apporaches</p>
+<ol>
+<li>Autoregressive Modelling</li>
+<li>Energy-based Modeling</li>
+<li>Flow-based Modeling</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=bccceb15">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="Autoregressive-(AR)-Modeling">Autoregressive (AR) Modeling<a class="anchor-link" href="#Autoregressive-(AR)-Modeling">¶</a></h2><p>Autoregressive (AR) models belong to the class of <strong>explicit density generative models</strong>. They decompose the high-dimensional joint probability distribution of a data point into a sequence of conditional distributions. This structure allows for exact likelihood computation and stable training via MLE.</p>
+<p>The core principle of AR modeling is the application of the <strong>Probability Chain Rule</strong>. A $d$-dimensional data sample $\mathbf{x} = (x_1, x_2, \dots, x_d)$ is represented as a product of $d$ univariate conditional distributions.</p>
+<p>For any specific component $x_i$ within a sample, the model predicts the probability of that component given all preceding components:
+$$p(x_i | \mathbf{x}_{&lt;i}) = p(x_i | x_1, x_2, \dots, x_{i-1})$$</p>
+<p>The entire sample's probability is the product of these conditionals:
+$$p(\mathbf{x}) = \prod_{i=1}^{d} p(x_i | \mathbf{x}_{&lt;i})$$
+By converting a complex $d$-dimensional joint distribution into $d$ one-dimensional distributions, the model simplifies the learning task while maintaining an <strong>explicit</strong> representation of the distributions for the sample.</p>
+<p>AR models assume a fixed ordering of dimensions (e.g., raster scan for images, left-to-right for text). The model assumes that $x_i$ depends only on the observed values $\mathbf{x}_{&lt;i}$, satisfying the <strong>causal constraint</strong>.</p>
+<h3 id="Architectural-Pipeline">Architectural Pipeline<a class="anchor-link" href="#Architectural-Pipeline">¶</a></h3><p>The transformation from input to probability follows this general flow:</p>
+<ol>
+<li><strong>Input Context:</strong> Previous elements $\mathbf{x}_{&lt;i}$ are fed into the model.</li>
+<li><strong>Neural Network Feature Extractor:</strong> A backbone architecture (e.g., RNN, LSTM, Transformer, or Causal CNN) processes the sequence to produce a hidden representation $h_i$.</li>
+<li><strong>Output Head:</strong><ul>
+<li><strong>Discrete Data (e.g., Text):</strong> A Softmax layer over a vocabulary.</li>
+<li><strong>Continuous Data (e.g., Audio/Images):</strong> A parametric distribution, such as a <strong>Gaussian Mixture Model (GMM)</strong> or a discretized logistic distribution, where the network predicts parameters $\mu_i$ and $\sigma_i$.</li>
+</ul>
+</li>
+<li><strong>Sampling:</strong> A value is sampled from $p(x_i | \mathbf{x}_{&lt;i})$ and appended to the context for the next step $i+1$. The first value $p(x_0)$ is sampled from the prior after training.</li>
+</ol>
+<h3 id="MLE-Objective-and-Loss-Function">MLE Objective and Loss Function<a class="anchor-link" href="#MLE-Objective-and-Loss-Function">¶</a></h3><p>AR models are trained by maximizing the log-likelihood of the training data $\mathcal{D}$. This is equivalent to minimizing the <strong>Cross-Entropy Loss</strong>:
+$$\mathcal{L}(\theta) = -\sum_{\mathbf{x} \in \mathcal{D}} \sum_{i=1}^{d} \log p_{\theta}(x_i | \mathbf{x}_{&lt;i})$$</p>
+<h3 id="Teacher-Forcing">Teacher Forcing<a class="anchor-link" href="#Teacher-Forcing">¶</a></h3><p>During training, we use <strong>Teacher Forcing</strong>. Instead of feeding the model's own (potentially erroneous) predictions from step $i-1$ into step $i$, we provide the <strong>ground truth</strong> values from the training set. This allows for parallelization during training (especially in Transformers and Causal CNNs) because all $x_i$ conditionals can be computed simultaneously, which also leads to faster convergence.</p>
+<h3 id="Challenges">Challenges<a class="anchor-link" href="#Challenges">¶</a></h3><ol>
+<li><p><strong>Exposure Bias</strong>: A significant drawback of Teacher Forcing is <strong>Exposure Bias</strong>. During training, the model only sees ground truth context. During inference (generation), it sees its own generated (noisy) samples. Errors accumulate over time, leading to a divergence between the training and testing distributions.</p>
+</li>
+<li><p><strong>Sampling Bottleneck</strong>: While training of AR models can be parallelized, <strong>inference is inherently sequential and recursive</strong> since any future data depends on the past data. To generate $x_{100}$, the model must first generate and process $x_1$ through $x_{99}$. The computational complexity of sampling a single sequence is $O(d)$, where $d$ is the number of dimensions/tokens. This makes AR models significantly slower at test-time compared to parallel generative models like GANs or non-autoregressive Flows.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=252a9932">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
