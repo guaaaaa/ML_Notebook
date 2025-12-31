@@ -8487,7 +8487,7 @@ $$v(s) \leftarrow v(s) + \alpha \cdot \delta_t \cdot E_t(s)$$</p>
 <li>$(S_{t+1}, A_{t+1})$: next state-action pair chosen according to the current policy</li>
 </ul>
 <p>Because SARSA uses $A_{t+1}$ from the current policy, it learns the value of the policy as it is being followed (on-policy learning). After each update, the policy can be improved by making it greedy or $\epsilon$-greedy with respect to the updated $q(s, a)$.</p>
-<p>For the estimation return, SARSA uses $R_{t+1} + \gamma \, q(S_{t+1}, A_{t+1})$ instead of $R_{t+1} + \gamma \, v(S_{t+1})$ because $q(S_{t+1}, A_{t+1})$ is a random sample of the average return By the law of large numbers, if we sample from the policy enough times, the average of your updates will converge to the true $v(s)$</p>
+<p>For the estimation return, SARSA uses $R_{t+1} + \gamma \, q(S_{t+1}, A_{t+1})$ instead of $R_{t+1} + \gamma \, v(S_{t+1})$ because $q(S_{t+1}, A_{t+1})$ is a random sample of the average return By the law of large numbers, if we sample from the policy enough times, the average of your updates will converge to the true value for $v(s)$.</p>
 <h3 id="SARSA-Algorithm">SARSA Algorithm<a class="anchor-link" href="#SARSA-Algorithm">¶</a></h3><ol>
 <li><p>Given:</p>
 <ul>
@@ -8981,6 +8981,7 @@ $$</p>
 </ul>
 </li>
 </ul>
+<p>The network for predicting the action-value is called the deep Q network (DQN).</p>
 </div>
 </div>
 </div>
@@ -9075,6 +9076,10 @@ It extends the tabular SARSA method by replacing the table of Q-values with a pa
 <p>The weight update rule is similar to the semi-gradient TD update, but instead of using the estimated state value $v(s)$, we use the esimated action-value $\hat{q}(s, a; w)$, where</p>
 <p>$$w \leftarrow w + \alpha \big[ R_{t+1} + \gamma \hat{q}(S_{t+1}, A_{t+1}; w) - \hat{q}(S_t, A_t; w) \big] \nabla_w \hat{q}(S_t, A_t; w)$$</p>
 <p>For a fixed policy, this method converges in the same way as TD(0).</p>
+<p>In this architecture, instead of taking both the state and action $(s, a)$ as inputs to output a single action value for that particular state-action pair, the network is designed to accept only the state $s$ as input. It then outputs a vector containing the action-values $q(s, a)$ for <em>every</em> possible action simultaneously.</p>
+<p>This structure allows us to retrieve all Q-values for a given state in a single forward pass, making it computationally efficient to calculate $\max_{a} q(s, a)$ for Q-learning or to derive an $\epsilon$-greedy policy.</p>
+<p>However, this approach is strictly limited to <strong>discrete action spaces</strong>. It cannot be used for continuous action spaces, where the number of possible actions is infinite. For continuous control tasks, we must use alternative methods, such as discretizing the action space or employing Actor-Critic algorithms.</p>
+<img alt="No description has been provided for this image" src="https://cdn.prod.website-files.com/64c83cc4e824393ef4e8c4d0/667f20fed58bea3843bc341e_1*wfKvMsVMkUhEGz1YH7kCQA.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h3 id="Episodic-Semi-Gradient-SARSA-Algorithm">Episodic Semi-Gradient SARSA Algorithm<a class="anchor-link" href="#Episodic-Semi-Gradient-SARSA-Algorithm">¶</a></h3><ol>
 <li><p>Given:</p>
 <ul>
