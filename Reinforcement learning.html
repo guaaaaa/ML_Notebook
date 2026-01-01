@@ -9080,6 +9080,7 @@ It extends the tabular SARSA method by replacing the table of Q-values with a pa
 <p>This structure allows us to retrieve all Q-values for a given state in a single forward pass, making it computationally efficient to calculate $\max_{a} q(s, a)$ for Q-learning or to derive an $\epsilon$-greedy policy.</p>
 <p>However, this approach is strictly limited to <strong>discrete action spaces</strong>. It cannot be used for continuous action spaces, where the number of possible actions is infinite. For continuous control tasks, we must use alternative methods, such as discretizing the action space or employing Actor-Critic algorithms.</p>
 <img alt="No description has been provided for this image" src="https://cdn.prod.website-files.com/64c83cc4e824393ef4e8c4d0/667f20fed58bea3843bc341e_1*wfKvMsVMkUhEGz1YH7kCQA.png" width="500"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
+<p>Note: the policy update step is usually not included in the actual implementation because after the action-value function is updated, in the next iteration, we can simply plug in the current state to retrive all possible action values and select action with $\epsilon$-greedy.</p>
 <h3 id="Episodic-Semi-Gradient-SARSA-Algorithm">Episodic Semi-Gradient SARSA Algorithm<a class="anchor-link" href="#Episodic-Semi-Gradient-SARSA-Algorithm">¶</a></h3><ol>
 <li><p>Given:</p>
 <ul>
@@ -9119,12 +9120,62 @@ $$w \leftarrow w + \alpha \big[ R_{t+1} + \gamma \hat{q}(S_{t+1}, A_{t+1}; w) - 
 <p>$$w \leftarrow w + \alpha \big[ R_{t+1} + \gamma \max_{a'} \hat{q}(S_{t+1}, a'; w) - \hat{q}(S_t, A_t; w) \big] \nabla_w \hat{q}(S_t, A_t; w)$$</p>
 <h4 id="2.-Semi-Gradient-Expected-SARSA">2. Semi-Gradient Expected SARSA<a class="anchor-link" href="#2.-Semi-Gradient-Expected-SARSA">¶</a></h4><p>Expected SARSA is a generalization of SARSA that uses the expected action-value under the current policy at the next state instead of relying on a single sampled action. The update rule is</p>
 <p>$$w \leftarrow w + \alpha \big[ R_{t+1} + \gamma \sum_{a'} \pi(a'|S_{t+1}) \hat{q}(S_{t+1}, a'; w) - \hat{q}(S_t, A_t; w) \big] \nabla_w \hat{q}(S_t, A_t; w)$$</p>
-<h2 id="Systematic-Exploration-In-Functional-Approximation">Systematic Exploration In Functional Approximation<a class="anchor-link" href="#Systematic-Exploration-In-Functional-Approximation">¶</a></h2><p>Systematic exploration is critical in functional approximation as it forces the agent to explore and therefore obtain a better knowledge of the full environment. One way of encouraging systematic exploration is through optimisic initialization, which is done by initializing all the estimated state-values or action values to be higher than the actual ones. Similar to the tabular case, this makes the agent optimistic about all the states or state-action pairs so it will explore them in the beginning and gradually update the estimation to it's true values. However, this is not as simple as the tabular case due to two issues.</p>
+<h2 id="Experience-Reply">Experience Reply<a class="anchor-link" href="#Experience-Reply">¶</a></h2><p>In vallina DQN, there are two problems</p>
 <ol>
-<li>We can only intiailize our optimistic initial values by initializing the weights $w$ of the function approximator. However in if the function approximator is a complex, non-linear function, like a neural network. We cannot gaurenteen that we can initialize the weights so the predicted value is always optimistic for all possible inputs</li>
-<li>Function approximation uses generalization for faster learning, but it also causes problems for exploration because the agent can think optimistically for one states and visit it and updates its estimation based on the observed return and transitions. However, the nearby states' values will also be updated due to the generalization, and therefore their updated values may not be optimistic any more although the state itself is not yet visited.</li>
+<li>sample inefficient</li>
+<li>close by samples (states are close) have high correlation. we want more diverse samples</li>
 </ol>
-<p>$\epsilon$-greedy is another way that enforces exploration since the agent is foreced to taken a random choice of action from time to time. $\epsilon$-greedy works for all cases of function approximation because it only depends on the final estimated values from the function approximator and therefore not impacted by generalization. However, the issue with $\epsilon$-greedy is that its exploration purely depends on randomness, which is not systematic.</p>
+<p>Experience reply solves the problem by storing previous examples and reuse it.</p>
+<p>sample construction and converting into a supervised learning problem</p>
+<p>still online algorithm. update the network after each step</p>
+<p>off policy nature</p>
+<p>initial sample collection phase</p>
+<h2 id="Experience-Replay-in-Deep-Q-Networks-(DQN)">Experience Replay in Deep Q-Networks (DQN)<a class="anchor-link" href="#Experience-Replay-in-Deep-Q-Networks-(DQN)">¶</a></h2><p>In vanilla Deep Q-Learning, training a neural network directly on the stream of experiences as they occur introduces two significant problems: <strong>sample inefficiency</strong> and <strong>data correlation</strong>. When an agent learns sequentially from the environment (i.e., receives $(S_t, A_t, R_{t+1}, S_{t+1})$, updates immediately, and discards the data), two issues arise:</p>
+<ol>
+<li><p><strong>Sample Inefficiency</strong>: an agent learns from a sample once and then discards it, which wastes valuable information.</p>
+</li>
+<li><p><strong>High Correlation</strong>: In a continuous episode, successive states are highly correlated. If we train the network on these sequential samples, the gradient updates will consistently push the weights in the same direction for long periods. This causes the network to <strong>overfit</strong> to the current local situation, and the samples are not diverse enough.</p>
+</li>
+</ol>
+<p>Experience Replay addresses these problems by decoupling <strong>data collection</strong> from <strong>training</strong>. Instead of learning from the current moment, the agent stores the past samples and will reuse them for training in the future.</p>
+<h3 id="Mechanism">Mechanism<a class="anchor-link" href="#Mechanism">¶</a></h3><p>To implement experience reply, the agent maintains a <strong>Replay Buffer</strong> $\mathcal{D}$ (a fixed-size queue, e.g., size $10^6$) that stores the past experiences instead of discards them immediately after use.</p>
+<ol>
+<li><strong>Store:</strong> As the agent interacts with the environment, every transition is stored in the buffer as a tuple:
+$$e_t = (S_t, A_t, R_{t+1}, S_{t+1}, \text{Done})$$</li>
+<li><strong>Training:</strong> To training the Q-network, we add the current transition into the buffer and sample a <strong>random minibatch</strong> of $N$ past transitions uniformly from $\mathcal{D}$.
+$$(S, A, R, S') \sim U(\mathcal{D})$$</li>
+</ol>
+<p>By sampling from the buffer, we effectively convert the unstable RL problem into a standard Supervised Learning task.</p>
+<ul>
+<li><strong>Inputs:</strong> The batch of States $S$.</li>
+<li><strong>Targets:</strong> The calculated TD Targets ($y_i = R + \gamma \max_{a'} q(S', a'; w)$).</li>
+<li><strong>Update:</strong> We update the network's parameters $w$ by minimizing the MSE loss over a random mini-batch of $N$ transitions. We calculate the gradient of the loss for each sample in the batch, average them to ensure a stable direction, and perform a Stochastic Gradient Descent (SGD) step.</li>
+</ul>
+<p>$$
+w \leftarrow w + \alpha \cdot \frac{1}{N} \sum_{i=1}^{N} \left( \underbrace{y_i - q(S_i, A_i; w)}_{\text{TD Error } \delta_i} \right) \nabla_{w} q(S_i, A_i; w)
+$$</p>
+<p>Where:</p>
+<ul>
+<li>$\alpha$ is the learning rate.</li>
+<li>$N$ is the batch size.</li>
+<li>$y_i$ is the target value: $y_i = R_{i+1} + \gamma \max_{a'} q(S'_{i+1}, a'; w)$.</li>
+<li>$\nabla_{w} q(S_i, A_i; w)$ is the gradient of the Q-value with respect to the weights.</li>
+</ul>
+<p>Despite using past samples, DQN with Experience Replay is technically an <strong>Online Off-Policy</strong> algorithm.</p>
+<ul>
+<li><strong>Online:</strong> The agent is interacting with the environment and updating its policy <em>during</em> the episode. The algorithm typically alternates between interacting with the environment and training: take one step in the world, then perform one gradient update.</li>
+<li><strong>Off-Policy:</strong> The data in the buffer was generated by older versions of the policy (the behavior policy $b$), while the network is trying to learn the optimal greedy policy $\pi^*$ (the target policy). This discrepancy is allowed because Q-Learning is an off-policy algorithm (it uses $R + \gamma \max Q$, which does not depend on the actual action taken in the next state).</li>
+</ul>
+<p>At the very beginning of training ($t=0$), the replay buffer is empty. We cannot sample a batch to train the network.</p>
+<ul>
+<li><strong>Solution:</strong> We implement a <strong>"Learning Starts"</strong> phase (e.g., first 1,000 steps).</li>
+<li><strong>Action:</strong> The agent acts purely randomly to populate the buffer with diverse initial data.</li>
+<li><strong>Training:</strong> No gradient updates occur during this phase. Training commences only once <code>buffer_size &gt; batch_size</code>.</li>
+</ul>
+<h3 id="Summary-of-Benefits">Summary of Benefits<a class="anchor-link" href="#Summary-of-Benefits">¶</a></h3><ol>
+<li><strong>Data Efficiency:</strong> Experience Replay allows each transition to be reused in multiple updates, allowing the agent to learn more than once from the each sample.</li>
+<li><strong>Stability (Correlation Breaking):</strong> By sampling a random minibatch, we obtained diverse samples with in batch, breaking the temporal correlation between samples. The resulting gradient is an <strong>average</strong> over many diverse samples, pointing in a direction that improves the policy globally rather than just locally.</li>
+</ol>
 <h2 id="Systematic-Exploration-in-Function-Approximation">Systematic Exploration in Function Approximation<a class="anchor-link" href="#Systematic-Exploration-in-Function-Approximation">¶</a></h2><p>Systematic exploration is critical in reinforcement learning with function approximation because it ensures that the agent explores different parts of the environment instead of getting stuck in a small subset of states or actions. This broader exploration helps the agent build a more accurate understanding of the environment and improves the quality of the learned policy.</p>
 <h3 id="Optimistic-Initialization">Optimistic Initialization<a class="anchor-link" href="#Optimistic-Initialization">¶</a></h3><p>One common way to encourage exploration is through optimistic initialization, where the initial value estimates for all states or state-action pairs are set higher than their true values. This makes the agent initially optimistic about every unexplored state or action, motivating it to try them out in the beginning. Over time, as the agent gathers real experience, these optimistic estimates are gradually corrected toward their true values.</p>
 <p>While optimistic initialization works well in tabular methods, it becomes more challenging with function approximation due to two main issues:</p>
