@@ -7842,7 +7842,7 @@ $$\mathbb{E}_{\mathbf{x} \sim P_{data}} [\log P_{\theta}(\mathbf{x})] \approx \f
 </ul>
 <p>Therefore, minimizing the divergence is equivalent to maximizing the average log-likelihood:
 $$\arg \min_{\theta} D_{KL}(P_{data} \parallel P_{\theta}) = \arg \max_{\theta} \sum_{i=1}^{n} \log P_{\theta}(\mathbf{x}^{(i)})$$</p>
-<p>Here, we assume each of our $n$ samples was sampled uniformly from the distribution, meaning each has a probability mass of $1/n$. However, the true probablity is not necessarily $1/n$ for each individual sample, making the entire objective of MLE or minimizing KL divergence only an estimate.</p>
+<p>Here, we assume each of our $n$ samples was sampled uniformly from the distribution, meaning each has a probability mass of $1/n$. However, the true probability is not necessarily $1/n$ for each individual sample, making the entire objective of MLE or minimizing KL divergence only an estimate.</p>
 <h2 id="The-Lower-Bound-(Data-Entropy)">The Lower Bound (Data Entropy)<a class="anchor-link" href="#The-Lower-Bound-(Data-Entropy)">¶</a></h2><p>Note that even in a "perfect" training scenario where the model perfectly matches the empirical data, the log-likelihood does not necessarily reach zero. It is bounded by the <strong>Entropy of the data</strong>, $H(P_{data})$. This represents the inherent "noise" or uncertainty in the data that no model can eliminate.</p>
 </div>
 </div>
@@ -7854,12 +7854,6 @@ $$\arg \min_{\theta} D_{KL}(P_{data} \parallel P_{\theta}) = \arg \max_{\theta} 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Explicit-Distribution-Learning">Explicit Distribution Learning<a class="anchor-link" href="#Explicit-Distribution-Learning">¶</a></h1><p>Explicit distribution learning means that we learn the distribution and have a clear expression for it (through a neural network). Clearly, modeling data distribution as a whole is computationally infeasible because the model needs to cover an exponentially large data-space and direct sampling could be exponentially hard. Therefore, we use methods like MLE and minimizing KL divergence to estimate the distribution. The objective can be achieved through 3 different modelling apporaches</p>
-<ol>
-<li>Autoregressive Modelling</li>
-<li>Energy-based Modeling</li>
-<li>Flow-based Modeling</li>
-</ol>
 <h1 id="Explicit-Distribution-Learning">Explicit Distribution Learning<a class="anchor-link" href="#Explicit-Distribution-Learning">¶</a></h1><p>Explicit distribution learning involves the construction of a generative model that provides an explicit functional form for the probability density function (or mass function), denoted as $p_{\theta}(\mathbf{x})$. Unlike implicit models (e.g., GANs), which only provide a mechanism to sample data, explicit models allow for the direct evaluation of the likelihood of a given observation.</p>
 <h2 id="The-Fundamental-Challenge:-Intractability-and-Normalization">The Fundamental Challenge: Intractability and Normalization<a class="anchor-link" href="#The-Fundamental-Challenge:-Intractability-and-Normalization">¶</a></h2><p>Modeling a high-dimensional data distribution $p_{data}(\mathbf{x})$ (where $\mathbf{x} \in \mathbb{R}^D$) is computationally intensive due to the <strong>curse of dimensionality</strong>. A valid probability distribution must satisfy the normalization constraint:
 $$\int_{\mathbf{x}} p_{\theta}(\mathbf{x}) d\mathbf{x} = 1$$
@@ -7911,7 +7905,48 @@ $$\mathcal{L}(\theta) = -\sum_{\mathbf{x} \in \mathcal{D}} \sum_{i=1}^{d} \log p
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=252a9932">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e27b2816">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="Energy-Based-Model-(EBM)">Energy-Based Model (EBM)<a class="anchor-link" href="#Energy-Based-Model-(EBM)">¶</a></h2><p>Energy-Based Model (EBM) represents a fundamental shift from directly modeling probabilities to modeling the energy of a data point. Then, we convert the energies of data points into a valid distribution.</p>
+<p>Instead of trying to design a neural network that explicitly outputs a normalized probability distribution (which must sum to 1), we design a model that outputs a single scalar value called <strong>energy</strong> for a given input $x$. Borrowing from statistical physics, energy represents the state of a system. Low energy implies a stable, likely state. High energy implies an unstable, unlikely state.</p>
+<p>The Role of the Model: We define an energy function $E_\theta(x)$, parameterized by a neural network, which maps an input $x$ to a scalar energy value:
+$$E_\theta(x): \mathbb{R}^D \rightarrow \mathbb{R}$$</p>
+<p>Ideally, the observed data (Real) should be assigned <strong>low energy</strong>, and noise/unobserved data (Fake) should be assigned <strong>high energy</strong>.</p>
+<h3 id="The-Boltzmann-Distribution">The Boltzmann Distribution<a class="anchor-link" href="#The-Boltzmann-Distribution">¶</a></h3><p>To utilize the energy function for generative tasks, we must convert the energy (scalar output) of the neural network into a valid probability distribution. We achieve this using the <strong>Boltzmann Distribution</strong></p>
+<p>Given an energy function $E_\theta(x)$, the probability density function $p_\theta(x)$ is defined as:</p>
+<p>$$p_\theta(x) = \frac{\exp\left(-E_\theta(x)\right)}{Z(\theta)}$$</p>
+<ul>
+<li><strong>The Gibbs Measure ($\exp(-E_\theta(x))$):</strong> This term converts the energy into a non-negative value. Because of the negative sign, lower energy results in a higher unnormalized probability score.</li>
+<li><strong>The Partition Function ($Z(\theta)$):</strong> This is the normalization constant required to ensure the probability distribution sums to 1.</li>
+</ul>
+<p>The core difficulty in EBMs lies in the partition function $Z(\theta)$. It is obtained by <strong>marginalizing</strong> (integrating or summing) the unnormalized probabilities over the entire data space, which can be extremely difficult for high dimensional data space.</p>
+<p>$$Z(\theta) = \int_{x \in \mathcal{X}} \exp\left(-E_\theta(x)\right) dx$$</p>
+<ul>
+<li><strong>Independence from Samples:</strong> Note that $Z(\theta)$ is a function of the model parameters $\theta$, but it does <strong>not</strong> depend on any specific data point $x$ because it always sum over the entire data space.</li>
+</ul>
+<h3 id="Universality-of-Boltzmann-Distribution">Universality of Boltzmann Distribution<a class="anchor-link" href="#Universality-of-Boltzmann-Distribution">¶</a></h3><p>Instead of modelling the distribution directly, the reason we go through the two step process of first defining energy of data and then converting it into a distribution is because of the <strong>Universality of the Boltzmann Distribution</strong>.</p>
+<p>For almost any well-defined, strictly positive probability density $Q(x)$, there exists an energy function $f(x)$ such that $Q$ can be expressed as a Boltzmann distribution.</p>
+<p>This implies that EBMs are extremely expressive and can be applied to almost any data. By learning an appropriate energy function $E_\theta(x)$, a neural network can theoretically approximate any complex distribution of data, without being restricted by specific architectural constraints required to ensure normalization (like in Autoregressive models or Flow-based models).</p>
+<blockquote>
+<p>Note: Softmax, Gaussian, Bernulli, etc, are all spcecial cases of the Boltzmann distribution.</p>
+</blockquote>
+<h3 id="Data-$%5Cto$-Energy-$%5Cto$-Explicit-Distribution">Data $\to$ Energy $\to$ Explicit Distribution<a class="anchor-link" href="#Data-$%5Cto$-Energy-$%5Cto$-Explicit-Distribution">¶</a></h3><p>The ultimate workflow of learning an Energy-Based Model can be summarized as follows:</p>
+<ol>
+<li><strong>The Objective:</strong> We want to learn the true underlying distribution of a dataset, $p_{data}(x)$.</li>
+<li><strong>The Proxy:</strong> We define a parameterized energy model $f_\theta(x)$ (usually a deep neural network).</li>
+<li><strong>The Transformation:</strong> We convert this energy model into an explicit distribution using the Boltzmann equation.</li>
+<li><strong>The Learning Process:</strong> We adjust $\theta$ to assign <strong>low</strong> energy for real samples and high energy for other points in the space ($x_{fake}$).
+$$\text{Data } x \xrightarrow{\text{Learn } f_\theta} \text{Energy } E(x) \xrightarrow{\text{Boltzmann}} \text{Distribution } p(x)$$</li>
+</ol>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=ab8d6ada">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
