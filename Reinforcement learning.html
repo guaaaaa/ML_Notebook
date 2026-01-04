@@ -9241,6 +9241,30 @@ $$w \leftarrow w + \alpha \frac{1}{B} \sum_{j=1}^{B} \left[ y_j - \hat{q}(S_j, A
 </ul>
 </li>
 </ol>
+<h2 id="Double-DQN">Double DQN<a class="anchor-link" href="#Double-DQN">¶</a></h2><p>The DQN algorithm usually have high bias due to the max operation since it always picks the maximum noisy estiamtion, which is an overestiamtion of the true action value, and the positive bias accumulate overtime</p>
+<p>Although reducing the bias does not necessarily means to achieve a more optimal policy if the relative order of all action values are maintained, this highly depends on the nature of the estimate (variance/noisiness).</p>
+<p>Double DQN by keeping two independent experience sets, we use one to select the max action, but use the value of the other one, which is not necessarily the maximum anymore. Overtime, the average will converge closer to the true action value (lower bias)</p>
+<h2 id="Double-DQN">Double DQN<a class="anchor-link" href="#Double-DQN">¶</a></h2><p>The standard DQN algorithm usually have high postive bias due to the use of the <code>max</code> operator, meaning the netowrk action value estimations are always an over estimate. This is because when obtaining the target, its value $Y_t$ is calculated as:
+$$Y_t^{\text{DQN}} = R_{t+1} + \gamma \max_{a} Q(S_{t+1}, a; w_t^-)$$</p>
+<p>The use of <code>max</code> operator will inherently select the action with the highest positive noise, meaning the algorithm systematically overestimates the value of the next state. Because bootstrapping is used, this positive error accumulates and propagates backward through the states, leading to over estimates.</p>
+<p>Although reducing the bias does not necessarily means to achieve a more optimal policy if all values are overestimated equally such that the relative ranking of actions remains preserved, in practice, the bias are almost always <strong>non-uniform</strong>.</p>
+<p>To solve this, we must decouple <strong>Action Selection</strong> (choosing the "best" action) from <strong>Action Evaluation</strong> (estimating its value).</p>
+<h3 id="Tabular-Case-of-Double-DQN">Tabular Case of Double DQN<a class="anchor-link" href="#Tabular-Case-of-Double-DQN">¶</a></h3><p>The original theoretical solution maintaining two independent estimators, $Q_A$ and $Q_B$, trained on separate experience sets.</p>
+<ul>
+<li><strong>Selection:</strong> Use $Q_A$ to find the best action: $a^* = \text{argmax}_a Q_A(s, a)$.</li>
+<li><strong>Evaluation:</strong> Use $Q_B$ to estimate the value of that action: Value $= Q_B(s, a^*)$.</li>
+</ul>
+<p>Since $Q_A$ and $Q_B$ are independent, $E[Q_B(s, \text{argmax} Q_A)] = Q(s, a^*)$. The overestimation is eliminated because the noise in $Q_B$ is uncorrelated with the selection made by $Q_A$.</p>
+<h3 id="Function-Approximation-Case-of-Double-DQN">Function Approximation Case of Double DQN<a class="anchor-link" href="#Function-Approximation-Case-of-Double-DQN">¶</a></h3><p>Splitting data into two sets is data-inefficient for Deep RL. Instead, Double DQN utilizes the <strong>Target Network</strong> directly as the second network.</p>
+<p>We use the Online Network to <strong>select</strong> the action (greedy policy) and the Target Network to <strong>evaluate</strong> it.</p>
+<p><strong>The Double DQN Update Equation:</strong></p>
+<p>$$Y_t^{\text{DoubleDQN}} = R_{t+1} + \gamma \underbrace{Q(S_{t+1}, \overbrace{\text{argmax}_{a} Q(S_{t+1}, a; w_t)}^{\text{Selection (Online Net)}}; w_t')}_{\text{Evaluation (Target Net)}}$$</p>
+<ol>
+<li><strong>Selection:</strong> The Online network ($w$) determines <em>which</em> action is the best.</li>
+<li><strong>Evaluation:</strong> The Target network ($w'$) calculates the Q-value of <em>that specific action</em>.</li>
+</ol>
+<p>By using the Target network for evaluation, the value we update toward is not necessarily the maximum value in the Target network, but rather the value of the action chosen by the Online network. This means the action value used for calculating the target is not always the overestimation, and with many samples, the action value estimation will converge closer to the true value (significantly lower bias).</p>
+<img alt="No description has been provided for this image" src="https://www.researchgate.net/profile/Jingjing-Jiang-13/publication/365209751/figure/fig5/AS:11431281095620697@1667964716227/Double-DQN-algorithm-structure-Han-et-al-used-Double-DQN-to-train-a-HTEV-based-EMS.ppm" width="700"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h2 id="Systematic-Exploration-in-Function-Approximation">Systematic Exploration in Function Approximation<a class="anchor-link" href="#Systematic-Exploration-in-Function-Approximation">¶</a></h2><p>Systematic exploration is critical in reinforcement learning with function approximation because it ensures that the agent explores different parts of the environment instead of getting stuck in a small subset of states or actions. This broader exploration helps the agent build a more accurate understanding of the environment and improves the quality of the learned policy.</p>
 <h3 id="Optimistic-Initialization">Optimistic Initialization<a class="anchor-link" href="#Optimistic-Initialization">¶</a></h3><p>One common way to encourage exploration is through optimistic initialization, where the initial value estimates for all states or state-action pairs are set higher than their true values. This makes the agent initially optimistic about every unexplored state or action, motivating it to try them out in the beginning. Over time, as the agent gathers real experience, these optimistic estimates are gradually corrected toward their true values.</p>
 <p>While optimistic initialization works well in tabular methods, it becomes more challenging with function approximation due to two main issues:</p>
