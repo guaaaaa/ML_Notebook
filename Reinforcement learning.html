@@ -9241,29 +9241,26 @@ $$w \leftarrow w + \alpha \frac{1}{B} \sum_{j=1}^{B} \left[ y_j - \hat{q}(S_j, A
 </ul>
 </li>
 </ol>
-<h2 id="Double-DQN">Double DQN<a class="anchor-link" href="#Double-DQN">¶</a></h2><p>The DQN algorithm usually have high bias due to the max operation since it always picks the maximum noisy estiamtion, which is an overestiamtion of the true action value, and the positive bias accumulate overtime</p>
-<p>Although reducing the bias does not necessarily means to achieve a more optimal policy if the relative order of all action values are maintained, this highly depends on the nature of the estimate (variance/noisiness).</p>
-<p>Double DQN by keeping two independent experience sets, we use one to select the max action, but use the value of the other one, which is not necessarily the maximum anymore. Overtime, the average will converge closer to the true action value (lower bias)</p>
 <h2 id="Double-DQN">Double DQN<a class="anchor-link" href="#Double-DQN">¶</a></h2><p>The standard DQN algorithm usually have high postive bias due to the use of the <code>max</code> operator, meaning the netowrk action value estimations are always an over estimate. This is because when obtaining the target, its value $Y_t$ is calculated as:
-$$Y_t^{\text{DQN}} = R_{t+1} + \gamma \max_{a} Q(S_{t+1}, a; w_t^-)$$</p>
+$$Y_t^{\text{DQN}} = R_{t+1} + \gamma \max_{a} q(S_{t+1}, a; w_t^-)$$</p>
 <p>The use of <code>max</code> operator will inherently select the action with the highest positive noise, meaning the algorithm systematically overestimates the value of the next state. Because bootstrapping is used, this positive error accumulates and propagates backward through the states, leading to over estimates.</p>
-<p>Although reducing the bias does not necessarily means to achieve a more optimal policy if all values are overestimated equally such that the relative ranking of actions remains preserved, in practice, the bias are almost always <strong>non-uniform</strong>.</p>
+<p>Although reducing the bias does not necessarily means to achieve a more optimal policy if all values are overestimated equally such that the relative ranking of actions remains preserved, in practice, the bias are almost always <strong>non-uniform</strong>, meaning the action ranking will be different.</p>
 <p>To solve this, we must decouple <strong>Action Selection</strong> (choosing the "best" action) from <strong>Action Evaluation</strong> (estimating its value).</p>
-<h3 id="Tabular-Case-of-Double-DQN">Tabular Case of Double DQN<a class="anchor-link" href="#Tabular-Case-of-Double-DQN">¶</a></h3><p>The original theoretical solution maintaining two independent estimators, $Q_A$ and $Q_B$, trained on separate experience sets.</p>
+<h3 id="Tabular-Case-of-Double-DQN">Tabular Case of Double DQN<a class="anchor-link" href="#Tabular-Case-of-Double-DQN">¶</a></h3><p>The original theoretical solution maintaining two independent estimators, $q_A$ and $q_B$, trained on separate experience sets.</p>
 <ul>
-<li><strong>Selection:</strong> Use $Q_A$ to find the best action: $a^* = \text{argmax}_a Q_A(s, a)$.</li>
-<li><strong>Evaluation:</strong> Use $Q_B$ to estimate the value of that action: Value $= Q_B(s, a^*)$.</li>
+<li><strong>Selection:</strong> Use $q_A$ to find the best action: $a^* = \text{argmax}_a q_A(s, a)$.</li>
+<li><strong>Evaluation:</strong> Use $q_B$ to estimate the value of that action: Value $= q_B(s, a^*)$.</li>
 </ul>
-<p>Since $Q_A$ and $Q_B$ are independent, $E[Q_B(s, \text{argmax} Q_A)] = Q(s, a^*)$. The overestimation is eliminated because the noise in $Q_B$ is uncorrelated with the selection made by $Q_A$.</p>
+<p>Since $q_A$ and $q_B$ are independent, $E[q_B(s, \text{argmax} q_A)] = q(s, a^*)$. The overestimation is eliminated because the noise in $q_B$ is uncorrelated with the selection made by $q_A$.</p>
 <h3 id="Function-Approximation-Case-of-Double-DQN">Function Approximation Case of Double DQN<a class="anchor-link" href="#Function-Approximation-Case-of-Double-DQN">¶</a></h3><p>Splitting data into two sets is data-inefficient for Deep RL. Instead, Double DQN utilizes the <strong>Target Network</strong> directly as the second network.</p>
 <p>We use the Online Network to <strong>select</strong> the action (greedy policy) and the Target Network to <strong>evaluate</strong> it.</p>
 <p><strong>The Double DQN Update Equation:</strong></p>
-<p>$$Y_t^{\text{DoubleDQN}} = R_{t+1} + \gamma \underbrace{Q(S_{t+1}, \overbrace{\text{argmax}_{a} Q(S_{t+1}, a; w_t)}^{\text{Selection (Online Net)}}; w_t')}_{\text{Evaluation (Target Net)}}$$</p>
+<p>$$Y_t^{\text{DoubleDQN}} = R_{t+1} + \gamma \underbrace{q(S_{t+1}, \overbrace{\text{argmax}_{a} q(S_{t+1}, a; w_t)}^{\text{Selection (Online Net)}}; w_t')}_{\text{Evaluation (Target Net)}}$$</p>
 <ol>
 <li><strong>Selection:</strong> The Online network ($w$) determines <em>which</em> action is the best.</li>
 <li><strong>Evaluation:</strong> The Target network ($w'$) calculates the Q-value of <em>that specific action</em>.</li>
 </ol>
-<p>By using the Target network for evaluation, the value we update toward is not necessarily the maximum value in the Target network, but rather the value of the action chosen by the Online network. This means the action value used for calculating the target is not always the overestimation, and with many samples, the action value estimation will converge closer to the true value (significantly lower bias).</p>
+<p>By using the Target network for evaluation, the value we update toward is not necessarily the maximum value in the Target network, but rather the value of the action chosen by the Online network. This means the action value used for calculating the target is not always an overestimation, and with many samples, the action value estimation will converge closer to the true value (significantly lower bias).</p>
 <img alt="No description has been provided for this image" src="https://www.researchgate.net/profile/Jingjing-Jiang-13/publication/365209751/figure/fig5/AS:11431281095620697@1667964716227/Double-DQN-algorithm-structure-Han-et-al-used-Double-DQN-to-train-a-HTEV-based-EMS.ppm" width="700"/ style="display: block; margin: 1.5rem auto; max-width: 90%; border-radius: 0.5rem;">
 <h2 id="Systematic-Exploration-in-Function-Approximation">Systematic Exploration in Function Approximation<a class="anchor-link" href="#Systematic-Exploration-in-Function-Approximation">¶</a></h2><p>Systematic exploration is critical in reinforcement learning with function approximation because it ensures that the agent explores different parts of the environment instead of getting stuck in a small subset of states or actions. This broader exploration helps the agent build a more accurate understanding of the environment and improves the quality of the learned policy.</p>
 <h3 id="Optimistic-Initialization">Optimistic Initialization<a class="anchor-link" href="#Optimistic-Initialization">¶</a></h3><p>One common way to encourage exploration is through optimistic initialization, where the initial value estimates for all states or state-action pairs are set higher than their true values. This makes the agent initially optimistic about every unexplored state or action, motivating it to try them out in the beginning. Over time, as the agent gathers real experience, these optimistic estimates are gradually corrected toward their true values.</p>
@@ -9299,7 +9296,7 @@ $$</p>
 <p>By subtracting the average reward, the updates center the rewards around zero, which keeps the learning process stable and focuses the agent on relative improvements over the long-term steady-state performance rather than absolute return.</p>
 <p>In addition to updating the action-value function, we must also update the estimate of the average reward after each state–action–reward pair. This is because each new interaction with the environment provides new information about the overall performance of the policy. The update rule for the average reward is</p>
 <p>$$r(\pi) \leftarrow r(\pi) + \beta \big(R_{t+1} - r(\pi)\big)$$</p>
-<p>$\beta$ is a small step-size parameter. A smaller \beta ensures that the estimate of the average reward changes gradually, preventing instability or large fluctuations due to single, noisy samples.</p>
+<p>$\beta$ is a small step-size parameter. A smaller $\beta$ ensures that the estimate of the average reward changes gradually, preventing instability or large fluctuations due to single, noisy samples.</p>
 </div>
 </div>
 </div>
@@ -9310,8 +9307,28 @@ $$</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Policy-Gradient-Method">Policy Gradient Method<a class="anchor-link" href="#Policy-Gradient-Method">¶</a></h1><p>So far, all the methods we have introduced are value-based learning methods. In these methods, the agent first learns value functions, such as the state-value function $v(s)$ or the action-value function $q(s, a)$ from experience. Then, the agent selects actions based on these value estimates, and the policy is indirectly derived from the learned value functions. In other words, the value functions act as a bridge between the agent’s current state and its decision-making policy.</p>
-<p>Instead of learning value functions and deriving a policy from them, we can directly learn the policy as a parameterized function and optimize it. This method is called the policy gradient method. We represent the policy by $\pi(a \mid s, \theta)$, which gives the probability of selecting action a given state $s$ and parameters $\theta$. Here, $\theta$ represents the learnable parameters of the policy.</p>
+<h1 id="Policy-Based-Learning">Policy Based Learning<a class="anchor-link" href="#Policy-Based-Learning">¶</a></h1><p>So far, all the methods we have introduced are value-based learning methods. In these methods, the agent first learns value functions, such as the state-value function $v(s)$ or the action-value function $q(s, a)$ from experience. Then, the agent selects actions based on these value estimates, and the policy is indirectly derived from the learned value functions. In other words, the value functions act as a bridge between the agent’s current state and its decision-making policy.</p>
+<p>However, value-based methods, such as DQN, struggle with <strong>continuous actions</strong> space because the network typically outputs a discrete value for every possible action to easily compute $\max_{a} q(s, a)$, and if the action space is continuous (infinite possibilities), we cannot output a vector of infinite length. Alternatively, if we feed the action as an input (i.e., $q(s, a)$), finding the greedy action becomes an optimization problem: we must solve $\arg\max_{a} q(s, a)$ at every single time step, which is computationally too expensive for training.</p>
+<p>To solve this, we typically use <strong>Policy-Based</strong> approaches:</p>
+<ol>
+<li><p><strong>Policy Gradient :</strong></p>
+<ul>
+<li>We train a single <strong>Policy Network</strong> that takes the <strong>State</strong> as input and outputs a <strong>probability distribution</strong> over actions (e.g., the mean and variance of a Gaussian) to sample from.</li>
+<li>The network is updated directly using the gradient of the expected return, gradually shifting the distribution probabilities toward optimal actions.</li>
+</ul>
+</li>
+<li><p><strong>Actor-Critic Method:</strong></p>
+<ul>
+<li>We train <strong>two separate networks</strong>:<ul>
+<li><strong>Actor (Policy):</strong> Takes State $\to$ Outputs Action. It learns to select the best action directly.</li>
+<li><strong>Critic (Value):</strong> Takes State (and sometimes Action) $\to$ Outputs Value. It evaluates how good the Actor's selection was.</li>
+</ul>
+</li>
+<li>The Critic provides a low-variance feedback signal (the "score") to train the Actor more efficiently than raw returns.</li>
+</ul>
+</li>
+</ol>
+<h2 id="Policy-Gradient-Method">Policy Gradient Method<a class="anchor-link" href="#Policy-Gradient-Method">¶</a></h2><p>Instead of learning value functions and deriving a policy from them, we can directly learn the policy as a parameterized function and optimize it. This method is called the policy gradient method. We represent the policy by $\pi(a \mid s, \theta)$, which gives the probability of selecting action a given state $s$ and parameters $\theta$. Here, $\theta$ represents the learnable parameters of the policy.</p>
 <p>For $\pi(a \mid s, \theta)$ to be a valid probability distribution, it must satisfy two constraints:</p>
 <ol>
 <li><p>Non-negativity: $\pi(a \mid s, \theta) \geq 0 \quad \forall a \in \mathcal{A}, , s \in \mathcal{S}$</p>
@@ -9323,7 +9340,7 @@ $$</p>
 <p>To satisfy these constraints, we first define a real-valued function called the action preference, denoted as $h(s, a, \theta)$. The action preference represents how desirable it is to take action a in state s under parameters $\theta$. Since $h(s, a, \theta)$ can take any real value, we convert it into a valid probability distribution using the softmax function, where</p>
 <p>$$\pi(a \mid s, \theta) = \frac{e^{h(s, a, \theta)}}{\sum_{a’} e^{h(s, a’, \theta)}}$$</p>
 <p>After the softmax function, the probability distribution for all actiosn under every states is now valid.</p>
-<h2 id="Advanages-of-Policy-Gradient-Method">Advanages of Policy Gradient Method<a class="anchor-link" href="#Advanages-of-Policy-Gradient-Method">¶</a></h2><p>The optimal policy for a given problem can be deterministic or stochastic. In value-based methods, improving the policy usually involves making it greedy or $\epsilon$-greedy with respect to the current action-value estimates.</p>
+<h3 id="Advanages-of-Policy-Gradient-Method">Advanages of Policy Gradient Method<a class="anchor-link" href="#Advanages-of-Policy-Gradient-Method">¶</a></h3><p>The optimal policy for a given problem can be deterministic or stochastic. In value-based methods, improving the policy usually involves making it greedy or $\epsilon$-greedy with respect to the current action-value estimates.</p>
 <p>However, this approach has two major limitations:</p>
 <ol>
 <li><p>Difficulty in Learning Stochastic Policies: in many problems, the optimal policy is stochastic, meaning the agent must randomize its actions to perform well (e.g., Rock-Paper-Scissors, exploration in partially observable environments). Value-based methods struggle here because they force a near-deterministic improvement step by greedily selecting the best action or occasionally exploring using $\epsilon$-greedy. This makes it difficult for the agent to naturally converge to a well-calibrated stochastic policy, as the randomness is artificially imposed instead of being learned.</p>
@@ -9333,7 +9350,7 @@ $$</p>
 </ol>
 <p>Policy gradient methods directly parameterize and optimize the policy. This allows them to adapt naturally to the type of policy required. If the optimal policy is deterministic, the learned policy will gradually converge to a pure deterministic form without requiring artificial exploration like $\epsilon$-greedy. If the optimal policy is stochastic, the method will self-adjust and discover the correct distribution of actions through experience. This flexibility makes policy gradient methods more expressive and often more suitable for complex or uncertain environments.</p>
 <p>Also, in some problems, the value function can be extremely complex, while the policy itself is simple. In such cases, directly learning the policy is more efficient and practical than learning a full value function and deriving the policy indirectly. However, this is problem-dependent as there are also situations where value-based methods are simpler and more stable.</p>
-<h2 id="Policy-Gradient-Objective">Policy Gradient Objective<a class="anchor-link" href="#Policy-Gradient-Objective">¶</a></h2><p>The goal of reinforcement learning is to find a policy that maximizes the agent’s cumulative rewards. For policy gradient methods, we directly optimize a parameterized policy $\pi(a \mid s, \theta)$. The objective function for this approach can be defined as the average reward under a given policy, where</p>
+<h3 id="Policy-Gradient-Objective">Policy Gradient Objective<a class="anchor-link" href="#Policy-Gradient-Objective">¶</a></h3><p>The goal of reinforcement learning is to find a policy that maximizes the agent’s cumulative rewards. For policy gradient methods, we directly optimize a parameterized policy $\pi(a \mid s, \theta)$. The objective function for this approach can be defined as the average reward under a given policy, where</p>
 <p>$$r(\pi) = \sum_{s \in \mathcal{S}} \mu_{\pi}(s) \sum_{a \in \mathcal{A}} \pi(a \mid s) \sum_{s’, r} p(s’, r \mid s, a) , r$$</p>
 <ul>
 <li>$\sum_{s’, r} p(s’, r \mid s, a) r$: the expected immediate reward for taking action a in state s.</li>
@@ -9344,7 +9361,7 @@ $$</p>
 <p>By maximizing $r(\pi)$ with respect to the policy parameters $\theta$, the agent gradually adjusts its behavior to favor actions and states that yield higher rewards.</p>
 <p>Formally, the optimization problem is:</p>
 <p>$$\theta^* = \arg \max_\theta r(\pi_\theta)$$</p>
-<h2 id="Policy-Gradient-Theorem">Policy Gradient Theorem<a class="anchor-link" href="#Policy-Gradient-Theorem">¶</a></h2><p>Once we define the learning objective, our next step is to optimize it by adjusting the policy parameters $\theta$. Since our goal is to maximize the objective, we use gradient ascent to update the parameters in the direction of increasing performance. The gradient of the average reward objective is</p>
+<h3 id="Policy-Gradient-Theorem">Policy Gradient Theorem<a class="anchor-link" href="#Policy-Gradient-Theorem">¶</a></h3><p>Once we define the learning objective, our next step is to optimize it by adjusting the policy parameters $\theta$. Since our goal is to maximize the objective, we use gradient ascent to update the parameters in the direction of increasing performance. The gradient of the average reward objective is</p>
 <p>$$
 \nabla_{\theta} r(\pi) = \nabla_{\theta} \sum_{s \in \mathcal{S}} \mu_{\pi}(s) \sum_{a \in \mathcal{A}} \pi(a \mid s) \sum_{s’, r} p(s’, r \mid s, a) , r
 $$</p>
@@ -9371,7 +9388,7 @@ $$</p>
 <p>Thus, with the two term together, the policy gradient theorem naturally pushes the policy toward actions that yield higher rewards, improving the agent’s behavior over time.</p>
 <p>The update rule is given by</p>
 <p>$$\theta_{t+1} = \theta_t + \alpha \sum_{s \in \mathcal{S}} \mu_{\pi}(s) \sum_{a \in \mathcal{A}} \nabla_{\theta} \pi(a \mid s) , q_{\pi}(s, a)$$</p>
-<h2 id="Stochastic-Policy-Gradient">Stochastic Policy Gradient<a class="anchor-link" href="#Stochastic-Policy-Gradient">¶</a></h2><p>In the current policy gradient expression, it requires summing over all possible state action pairs to computes the full gradient, which is inpractical since the state action space is often very large.
+<h3 id="Stochastic-Policy-Gradient">Stochastic Policy Gradient<a class="anchor-link" href="#Stochastic-Policy-Gradient">¶</a></h3><p>In the current policy gradient expression, it requires summing over all possible state action pairs to computes the full gradient, which is inpractical since the state action space is often very large.
 $$\nabla_{\theta} r(\pi) = \sum_{s \in \mathcal{S}} \mu_{\pi}(s) \sum_{a \in \mathcal{A}} \nabla_{\theta} \pi(a \mid s) , q_{\pi}(s, a)$$</p>
 <p>Therefore, we can simplify the gradient computation by computing a stochastic gradient of only based on only one samples. This can be done by replacing $s$ and $a$ with an observed state action pair $(S_t, A_t)$.</p>
 <p>$$\nabla_{\theta} r(\pi) \approx \frac{\nabla_{\theta} \pi(A_t \mid S_t)}{\pi(A_t \mid S_t)} q_{\pi}(S_t, A_t) = \nabla_{\theta} \ln{\pi(A_t \mid S_t)}q_{\pi}(S_t, A_t)$$</p>

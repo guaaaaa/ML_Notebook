@@ -7943,6 +7943,11 @@ $$E_\theta(x): \mathbb{R}^D \rightarrow \mathbb{R}$$</p>
 <li><strong>The Learning Process:</strong> We adjust $\theta$ to assign <strong>low</strong> energy for real samples and high energy for other points in the space ($x_{fake}$).
 $$\text{Data } x \xrightarrow{\text{Learn } f_\theta} \text{Energy } E(x) \xrightarrow{\text{Boltzmann}} \text{Distribution } p(x)$$</li>
 </ol>
+<h3 id="EBM-Training">EBM Training<a class="anchor-link" href="#EBM-Training">¶</a></h3><p>log likelihood formula of the boltzman distribution and manipulation</p>
+<p>empirical expectation of the energy model, where the dataset is sampled from the data distribution P, but this is an estimate because we assume each sample has equal probability 1/n</p>
+<p>calculating the partition function is intractable because it requires to sum or integrate over the entire data space.</p>
+<p>manipulate the derivative of log of the partition function, and convert into expectation form sampling from the model distribution</p>
+<p>final MLE objective in expectation format. show that we want to give low energy to the sample from the real distribution and high energy to samples from the model distribution Pw. This forces the model to shift its distribution closer to the real distribution so that the model cannot distinguish.</p>
 </div>
 </div>
 </div>
