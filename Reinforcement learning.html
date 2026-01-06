@@ -9274,8 +9274,8 @@ $$Y_t^{\text{DQN}} = R_{t+1} + \gamma \max_{a} q(S_{t+1}, a; w_t^-)$$</p>
 <h3 id="$%5Cepsilon$-Greedy-Exploration">$\epsilon$-Greedy Exploration<a class="anchor-link" href="#$%5Cepsilon$-Greedy-Exploration">¶</a></h3><p>An alternative approach is $\epsilon$-greedy exploration since it does not depend on optimistic initialization or how the weights are set. It only relies on the final outputs of the function approximator, making it robust to generalization issues. However, the $\epsilon$-greedy explorations is random, not systematic.</p>
 <h2 id="Average-Reward">Average Reward<a class="anchor-link" href="#Average-Reward">¶</a></h2><p>Average reward is another way of formalizing a continuing task without using discounting, which stabilizes the return and focuses on long-term steady-state performance. Instead of reducing the value of future rewards with a discount factor $\gamma$, we evaluate a policy based on the average reward per time step that the agent receives when following that policy indefinitely. The average reward of a policy $\pi$ is defined as</p>
 <p>$$r(\pi) = \sum_{s \in \mathcal{S}} \mu_{\pi}(s) \sum_{a \in \mathcal{A}} \pi(a|s) \, \mathbb{E}[R_{t+1} \mid S_t = s, A_t = a]$$</p>
-<p>$\mu_{\pi}(s)$ is the stationary distribution of states under policy $\pi$, representing how frequently each state is visited in the long run. By weighting rewards using $\mu_{\pi}(s)$, states that are visited more often have greater influence on the average reward.</p>
-<p>The average reward of a policy, $r(\pi)$ is a single scalar value. So, we can easily compares two policies by comparing their average reward, and the policy with the higher average reward is better. The optimal policy, $\pi_*$, is then the one that maximizes the average reward</p>
+<p>$\mu_{\pi}(s)$ is the stationary distribution of states under policy $\pi$, representing how frequently each state is visited in the long run. By weighting rewards using $\mu_{\pi}(s)$, states that are visited more often have greater influence on the average reward. We use the instantaneous reward $R_{t+1}$ instead of the return because the long term behaviour of the policy is encoded in $\mu(s)$. By knowing the frequency of agent ends up in each state and how good it is immediately $R_{t+1}$ (ignoring future discount), we can calculate the average rate of reward without needing to sum up a trajectory.</p>
+<p>Since the average reward of a policy, $r(\pi)$ is a single scalar value, we can easily compares two policies by comparing their average reward, and the policy with the higher average reward is better. The optimal policy, $\pi_*$, is then the one that maximizes the average reward</p>
 <p>$$\pi_* = \arg\max_\pi r(\pi)$$</p>
 <p>Since there is no discounting, we redefine returns using the differential return, which measures the cumulative difference between observed rewards and the average reward</p>
 <p>$$G_t = \sum_{k=0}^{\infty} \big( R_{t+k+1} - r(\pi) \big)$$</p>
@@ -9340,6 +9340,49 @@ $$</p>
 <p>To satisfy these constraints, we first define a real-valued function called the action preference, denoted as $h(s, a, \theta)$. The action preference represents how desirable it is to take action a in state s under parameters $\theta$. Since $h(s, a, \theta)$ can take any real value, we convert it into a valid probability distribution using the softmax function, where</p>
 <p>$$\pi(a \mid s, \theta) = \frac{e^{h(s, a, \theta)}}{\sum_{a’} e^{h(s, a’, \theta)}}$$</p>
 <p>After the softmax function, the probability distribution for all actiosn under every states is now valid.</p>
+<p>However, when dealing with infinite action space, it is impossbile to sum over all possible actions. Therefore, we can train the network to output a mean and a variance of the action space and sample from it.</p>
+<p>Typically, there are two formulations of policy gradient approach</p>
+<ol>
+<li>Episodic formulation: Similar to most RL algorithms, the goal of this approach it to maximize the total discounted return from the start state by sampling multiple trajectories from it.</li>
+<li>Average reward formulation: We deal with Maximize the average rate of reward per time step in the steady state. This approach is typically used when dealing with infinite horizon tasks.</li>
+</ol>
+<h2 id="Policy-Gradient-Method">Policy Gradient Method<a class="anchor-link" href="#Policy-Gradient-Method">¶</a></h2><p>Unlike value-based methods (like DQN) that learn value functions and derive a policy from them (e.g., via $\epsilon$-greedy), <strong>Policy Gradient methods</strong> learn the policy directly as a parameterized function $\pi(a \mid s, \theta)$. Here, $\theta$ represents the learnable parameters (weights) of the neural network.</p>
+<p>For $\pi(a \mid s, \theta)$ to be a valid probability distribution, it must satisfy two constraints:</p>
+<ol>
+<li><strong>Non-negativity:</strong> $\pi(a \mid s, \theta) \geq 0 \quad \forall a \in \mathcal{A}, s \in \mathcal{S}$</li>
+<li><strong>Normalization:</strong> $\sum_a \pi(a \mid s, \theta) = 1 \quad \forall s \in \mathcal{S}$</li>
+</ol>
+<p>These ensure that for any given state, the probabilities of all actions sum to 1. The way we parameterize the policy depends on whether the action space is Discrete or Continuous.</p>
+<p><strong>A. Discrete Action Space (Softmax Policy)</strong>
+We define a real-valued function called the <strong>action preference</strong>, denoted as $h(s, a, \theta)$. This represents the "unnormalized logit" or score for taking action $a$. To convert these scores into valid probabilities, we apply the <strong>Softmax function</strong>:</p>
+<p>$$\pi(a \mid s, \theta) = \frac{e^{h(s, a, \theta)}}{\sum_{b} e^{h(s, b, \theta)}}$$</p>
+<p><strong>B. Continuous Action Space (Gaussian Policy)</strong>
+When the action space is infinite (continuous), it is impossible to sum over all actions to compute the normalization term. Instead, we model the policy as a known continuous probability distribution, typically a <strong>Gaussian (Normal) distribution</strong>.</p>
+<p>The network is trained to output the <strong>mean</strong> ($\mu$) and <strong>variance</strong> ($\sigma^2$) of the distribution given the state:
+$$\pi(a \mid s, \theta) = \frac{1}{\sigma(s, \theta)\sqrt{2\pi}} \exp\left( -\frac{(a - \mu(s, \theta))^2}{2\sigma(s, \theta)^2} \right)$$
+The agent then samples an action from this distribution.</p>
+<h3 id="Objective-Formulations">Objective Formulations<a class="anchor-link" href="#Objective-Formulations">¶</a></h3><p>To optimize the policy parameters $\theta$, we must define a performance objective $J(\theta)$ to maximize. There are two primary formulations, depending on the nature of the task.</p>
+<ol>
+<li><p><strong>Episodic Formulation (Start-State Value)</strong></p>
+<ul>
+<li><strong>Use Case:</strong> Episodic tasks where the agent interacts in distinct episodes that eventually terminate (although we can also cut the trajectory after some steps when dealing with inifinte horizon tasks).</li>
+<li><strong>Goal:</strong> Maximize the expected total discounted return from the initial start state $S_0$. The agent cares about the cumulative sum of rewards for the specific path taken from start to finish.</li>
+<li><strong>Objective Function:</strong>
+$$J(\theta) = V_{\pi}(S_0) = \mathbb{E}_{\pi} \left[ \sum_{t=0}^{T} \gamma^t R_{t+1} \mid S_0 \right]$$</li>
+<li><strong>Method:</strong> We sample full trajectories (episodes) and use the return $G_t$ to estimate the gradient.</li>
+</ul>
+</li>
+<li><p><strong>Average Reward Formulation (Steady-State Value)</strong></p>
+<ul>
+<li><strong>Use Case:</strong> Continuing tasks where the agent runs indefinitely without a natural endpoint (Infinite Horizon).</li>
+<li><strong>Goal:</strong> Maximize the average <strong>rate</strong> of reward per time step over the long run. Since the task never ends, we look at the rewards obtained in the stationary distribution (where the agent spends its time eventually).</li>
+<li><strong>Objective Function:</strong>
+$$J(\theta) = r(\pi) = \sum_{s \in \mathcal{S}} \mu_{\pi}(s) \sum_{a \in \mathcal{A}} \pi(a|s, \theta) \mathbb{E}[R \mid s, a]$$
+<em>(Where $\mu_{\pi}(s)$ is the stationary distribution of states under policy $\pi$.)</em></li>
+<li><strong>Method:</strong> We rely on the ergodic property of the MDP, optimizing the policy to shift the stationary distribution $\mu(s)$ toward high-reward states.</li>
+</ul>
+</li>
+</ol>
 <h3 id="Advanages-of-Policy-Gradient-Method">Advanages of Policy Gradient Method<a class="anchor-link" href="#Advanages-of-Policy-Gradient-Method">¶</a></h3><p>The optimal policy for a given problem can be deterministic or stochastic. In value-based methods, improving the policy usually involves making it greedy or $\epsilon$-greedy with respect to the current action-value estimates.</p>
 <p>However, this approach has two major limitations:</p>
 <ol>
