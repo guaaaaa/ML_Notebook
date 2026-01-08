@@ -9314,7 +9314,7 @@ $$</p>
 <li><p><strong>Policy Gradient :</strong></p>
 <ul>
 <li>We train a single <strong>Policy Network</strong> that takes the <strong>State</strong> as input and outputs a <strong>probability distribution</strong> over actions (e.g., the mean and variance of a Gaussian) to sample from.</li>
-<li>The network is updated directly using the gradient of the expected return, gradually shifting the distribution probabilities toward optimal actions.</li>
+<li>The network is updated directly using the gradient of the expected return, gradually shifting the distribution probabilities toward optimal policy.</li>
 </ul>
 </li>
 <li><p><strong>Actor-Critic Method:</strong></p>
@@ -9327,24 +9327,6 @@ $$</p>
 <li>The Critic provides a low-variance feedback signal (the "score") to train the Actor more efficiently than raw returns.</li>
 </ul>
 </li>
-</ol>
-<h2 id="Policy-Gradient-Method">Policy Gradient Method<a class="anchor-link" href="#Policy-Gradient-Method">¶</a></h2><p>Instead of learning value functions and deriving a policy from them, we can directly learn the policy as a parameterized function and optimize it. This method is called the policy gradient method. We represent the policy by $\pi(a \mid s, \theta)$, which gives the probability of selecting action a given state $s$ and parameters $\theta$. Here, $\theta$ represents the learnable parameters of the policy.</p>
-<p>For $\pi(a \mid s, \theta)$ to be a valid probability distribution, it must satisfy two constraints:</p>
-<ol>
-<li><p>Non-negativity: $\pi(a \mid s, \theta) \geq 0 \quad \forall a \in \mathcal{A}, , s \in \mathcal{S}$</p>
-</li>
-<li><p>Normalization: $\sum_a \pi(a \mid s, \theta) = 1 \quad \forall s \in \mathcal{S}$</p>
-</li>
-</ol>
-<p>These ensure that for every state, the probability of each action is non-negative and the total probability over all actions equals 1.</p>
-<p>To satisfy these constraints, we first define a real-valued function called the action preference, denoted as $h(s, a, \theta)$. The action preference represents how desirable it is to take action a in state s under parameters $\theta$. Since $h(s, a, \theta)$ can take any real value, we convert it into a valid probability distribution using the softmax function, where</p>
-<p>$$\pi(a \mid s, \theta) = \frac{e^{h(s, a, \theta)}}{\sum_{a’} e^{h(s, a’, \theta)}}$$</p>
-<p>After the softmax function, the probability distribution for all actiosn under every states is now valid.</p>
-<p>However, when dealing with infinite action space, it is impossbile to sum over all possible actions. Therefore, we can train the network to output a mean and a variance of the action space and sample from it.</p>
-<p>Typically, there are two formulations of policy gradient approach</p>
-<ol>
-<li>Episodic formulation: Similar to most RL algorithms, the goal of this approach it to maximize the total discounted return from the start state by sampling multiple trajectories from it.</li>
-<li>Average reward formulation: We deal with Maximize the average rate of reward per time step in the steady state. This approach is typically used when dealing with infinite horizon tasks.</li>
 </ol>
 <h2 id="Policy-Gradient-Method">Policy Gradient Method<a class="anchor-link" href="#Policy-Gradient-Method">¶</a></h2><p>Unlike value-based methods (like DQN) that learn value functions and derive a policy from them (e.g., via $\epsilon$-greedy), <strong>Policy Gradient methods</strong> learn the policy directly as a parameterized function $\pi(a \mid s, \theta)$. Here, $\theta$ represents the learnable parameters (weights) of the neural network.</p>
 <p>For $\pi(a \mid s, \theta)$ to be a valid probability distribution, it must satisfy two constraints:</p>
@@ -9383,6 +9365,145 @@ $$J(\theta) = r(\pi) = \sum_{s \in \mathcal{S}} \mu_{\pi}(s) \sum_{a \in \mathca
 </ul>
 </li>
 </ol>
+<h3 id="Episodic-Formulation-in-Policy-Gradient-Methods">Episodic Formulation in Policy Gradient Methods<a class="anchor-link" href="#Episodic-Formulation-in-Policy-Gradient-Methods">¶</a></h3><p>The primary is to find an optimal policy $\pi_\theta$ that maximizes the expected cumulative reward. In the episodic formulation, this corresponds to <strong>maximizing</strong> the expected value over all possible states.</p>
+<p>We define the objective function $J(\theta)$ as the expected value of the state-value function $v_{\pi_\theta}(s)$ averaged over the state distribution $p(s)$. Mathematically, this is expressed as:</p>
+<p>$$
+J(\theta) = \int_{S} p(s) v_{\pi_\theta}(s) \, ds = \mathbb{E}_{s \sim p(s)} [v_{\pi_\theta}(s)]
+$$</p>
+<ul>
+<li>$p(s)$ is state distribution of the environment.</li>
+<li>$v_{\pi_\theta}(s)$ is the value of state $s$ and following policy $\pi_\theta$ thereafter.</li>
+</ul>
+<p>A key challenge here is that the true state distribution $p(s)$ is typically unknown. Therefore, we cannot calculate this integral analytically; instead, we must rely on sampling techniques to estimate it.</p>
+<p>To proceed, we first need a formal expression for the value of a single state $v_{\pi_\theta}(s_0)$. The value of a state is defined as the expected return obtained by following the policy $\pi_\theta$ starting from that state. Let a trajectory $\tau$ be a sequence of states, actions, and rewards: $\tau = (s_0, a_0, s_1, r_1, a_1, s_2, r_2, \dots, s_T, r_T)$. The probability of a specific trajectory occurring depends on both the policy (agent) and the dynamics (environment):</p>
+<p>$$
+P(\tau|\pi_\theta) = p(s_0) \prod_{t=0}^{T-1} \pi_\theta(a_t|s_t) p(s_{t+1}, r_{t+1}|s_t, a_t)
+$$</p>
+<p>The value function $v_{\pi_\theta}(s_0)$ can be written as the integral of the return $G(\tau)$ weighted by the probability of the trajectory occurring (integrate over all possbile trajectory starting from $s_0$), conditioned on starting at $s_0$:</p>
+<p>$$
+v_{\pi_\theta}(s_0) = \int_{\tau(s_0)} G(\tau(s_0)) \left( \prod_{t=0}^{T-1} \pi_\theta(a_t|s_t) p(s_{t+1}, r_{t+1}|s_t, a_t) \right) \, d\tau
+$$</p>
+<p>We can express this compactly as an expectation:</p>
+<p>$$
+v_{\pi_\theta}(s_0) = \mathbb{E}_{\tau \sim \pi_\theta} [G(\tau) | s_0]
+$$</p>
+<p>This equation is exactly the definition of the state value, which is the <strong>expected return of all possible trajectories starting from that state</strong>, and it depends on:</p>
+<ol>
+<li><strong>The Policy $\pi_\theta$:</strong> Determines the probability of actions.</li>
+<li><strong>The Environment $p$:</strong> Determines transition dynamics and rewards.</li>
+</ol>
+<p>Now we combine the state distribution $p(s)$ with the single-state value expression to reformulate the global objective $J(\theta)$. Substituting the definition of $v_{\pi_\theta}(s)$ back into our original objective:</p>
+<p>$$
+J(\theta) = \int_{S} p(s) \left( \int_{\tau(s)} G(\tau) P(\tau | s, \pi_\theta) \, d\tau \right) \, ds
+$$</p>
+<p>By combining the integral over all states $p(s)$ and the integral over trajectories starting from those states, we can unify this into a single expectation over the distribution of all full trajectories induced by the policy:</p>
+<p>$$
+J(\theta) = \int_{\tau} P(\tau|\pi_\theta) G(\tau) \, d\tau
+$$</p>
+<p>Or in expectation notation:</p>
+<p>$$
+J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} [G(\tau)]
+$$</p>
+<p>In other words, the objective is just to maximize the expected return over the distribution of all possible trajectory. Therefore, instead of finding the distribution $p(s)$, we can directly approximate the expected value by Monte Carlo sampling.</p>
+<h3 id="Training-Policy-Networks:-The-REINFORCE-Algorithm">Training Policy Networks: The REINFORCE Algorithm<a class="anchor-link" href="#Training-Policy-Networks:-The-REINFORCE-Algorithm">¶</a></h3><p>To maximize $J(\theta)$, we use <strong>Gradient Ascent</strong>. We need to compute the gradient of the objective with respect to the parameters, $\nabla_\theta J(\theta)$.</p>
+<p>Starting with the integral definition:
+$$
+\nabla_\theta J(\theta) = \nabla_\theta \int P(\tau|\theta) G(\tau) \, d\tau
+$$</p>
+<p>Assuming the return $G(\tau)$ is a scalar value determined by the trajectory (and not directly differentiable with respect to $\theta$), we move the gradient inside the integral:
+$$
+\nabla_\theta J(\theta) = \int \nabla_\theta P(\tau|\theta) G(\tau) \, d\tau
+$$</p>
+<p>We apply the identity $\nabla_\theta P(\tau|\theta) = P(\tau|\theta) \nabla_\theta \log P(\tau|\theta)$. This allows us to re-introduce the probability term $P(\tau|\theta)$ required to form an expectation:</p>
+<p>$$
+\nabla_\theta J(\theta) = \int P(\tau|\theta) \nabla_\theta \log P(\tau|\theta) G(\tau) \, d\tau = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \nabla_\theta \log P(\tau|\theta) G(\tau) \right]
+$$</p>
+<p>To compute $\nabla_\theta \log P(\tau|\theta)$, we expand the probability of a trajectory. A trajectory's probability is the product of the start state probability, the policy probabilities, and the transition dynamics:</p>
+<p>$$
+P(\tau|\theta) = p(s_0) \prod_{t=0}^{T-1} \pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t)
+$$</p>
+<p>Taking the log of both sides converts the product into a sum:
+$$
+\log P(\tau|\theta) = \log p(s_0) + \sum_{t=0}^{T-1} \log \pi_\theta(a_t|s_t) + \sum_{t=0}^{T-1} \log p(s_{t+1}|s_t, a_t)
+$$</p>
+<p>Now, we take the gradient with respect to $\theta$:</p>
+<ol>
+<li>$\nabla_\theta \log p(s_0) = 0$ (Initial state distribution does not depend on $\theta$).</li>
+<li>$\nabla_\theta \log p(s_{t+1}|s_t, a_t) = 0$ (Environment dynamics do not depend on $\theta$).</li>
+<li>The only term that remains is the policy term.</li>
+</ol>
+<p>Thus, the gradient of the log-probability of the trajectory simplifies to just the sum of the gradients of the policy:
+$$
+\nabla_\theta \log P(\tau|\theta) = \sum_{t=0}^{T-1} \nabla_\theta \log \pi_\theta(a_t|s_t)
+$$</p>
+<blockquote>
+<p>This derivation is crucial because it allows us to optimize the policy without needing a model of the environment dynamics $p(s'|s,a)$, and $\nabla_\theta \log \pi_\theta(a_t|s_t)$ can be computed easily using backpropgation.</p>
+</blockquote>
+<p>Substituting the decomposed log-probability back into our expectation, we get the final expression for the Policy Gradient:</p>
+<p>$$
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \left( \sum_{t=0}^{T-1} \nabla_\theta \log \pi_\theta(a_t|s_t) \right) G(\tau) \right]
+$$</p>
+<p>This equation states that the gradient is the expected value of the <strong>score function</strong> ($\nabla \log \pi$) scaled by the <strong>return</strong> $G(\tau)$.</p>
+<ul>
+<li>If $G(\tau)$ is high, we increase the probability of the actions taken in that trajectory.</li>
+<li>If $G(\tau)$ is low, we decrease their probability.</li>
+</ul>
+<p>We cannot compute the expectation over all trajectories analytically. Instead, we approximate it using <strong>Monte Carlo sampling</strong>. If we sample a single trajectory $\tau^{(i)}$ using the current policy $\pi_\theta$, we obtain an unbiased estimate of the gradient:
+$$
+\hat{g} = \left( \sum_{t=0}^{T-1} \nabla_\theta \log \pi_\theta(a_t|s_t) \right) G(\tau^{(i)})
+$$</p>
+<p>Using this estimate, we update the parameters $\theta$ using Stochastic Gradient Ascent (SGD):
+$$
+\theta \leftarrow \theta + \alpha \sum_{t=0}^{T-1} \nabla_\theta \log \pi_\theta(a_t|s_t) G(\tau^{(i)})
+$$</p>
+<p>This specific implementation using a full trajectory return $G(\tau)$ to estimate the value and updating via the score function is known as the <strong>REINFORCE</strong> algorithm.</p>
+<h3 id="REINFORCE-(Monte-Carlo-Policy-Gradient)-Algorithm">REINFORCE (Monte Carlo Policy Gradient) Algorithm<a class="anchor-link" href="#REINFORCE-(Monte-Carlo-Policy-Gradient)-Algorithm">¶</a></h3><ol>
+<li><p>Given:</p>
+<ul>
+<li>Learning rate $\alpha \in (0, 1]$</li>
+<li>Discount factor $\gamma \in [0, 1]$</li>
+<li>A parameterized differentiable policy function $\pi(a|s; \theta)$ (Policy Network)</li>
+</ul>
+</li>
+<li><p>Initialize:</p>
+<ul>
+<li>Weights $\theta$ arbitrarily.</li>
+</ul>
+</li>
+<li><p>Repeat (for each episode):</p>
+<ul>
+<li><p><strong>Generate Episode:</strong></p>
+<ul>
+<li>Initialize $S_0$.</li>
+<li>Generate a full trajectory $\tau = S_0, A_0, R_1, S_1, A_1, R_2, \dots, S_{T-1}, A_{T-1}, R_T$ by following policy $\pi(\cdot|\cdot; \theta)$ until a terminal state $S_T$ is reached.</li>
+</ul>
+</li>
+<li><p><strong>For each timestep $t = 0, 1, \dots, T-1$:</strong></p>
+<ul>
+<li><p>Calculate the return $G_t$ (cumulative discounted reward from step $t$ onwards):
+$$G_t = \sum_{k=t+1}^{T} \gamma^{k-t-1} R_k$$</p>
+</li>
+<li><p><strong>Policy Update Step:</strong></p>
+<ul>
+<li>Update weights $\theta$ by performing a stochastic gradient ascent step. Note this step is performed for average single timestep in a trajectory.
+$$\theta \leftarrow \theta + \alpha G_t \nabla_\theta \log \pi_\theta(A_t|S_t)$$</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Repeat until convergence:</p>
+<ul>
+<li>Continue running episodes until policy $\pi(a|s; \theta)$ stabilizes or average return is maximized.</li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<p>In practice, we often batch the gradient of an entire trajectory to perform one update only with
+$$\theta \leftarrow \theta + \alpha \sum_{t=0}^{T-1} \nabla_\theta \log \pi_\theta(a_t|s_t) G(\tau^{(i)})
+$$ The gradient here is the sum of gradient of all timestep of the trajectory. The two approach is exactly equivalent of each other, and this one is more efficient.</p>
+</blockquote>
 <h3 id="Advanages-of-Policy-Gradient-Method">Advanages of Policy Gradient Method<a class="anchor-link" href="#Advanages-of-Policy-Gradient-Method">¶</a></h3><p>The optimal policy for a given problem can be deterministic or stochastic. In value-based methods, improving the policy usually involves making it greedy or $\epsilon$-greedy with respect to the current action-value estimates.</p>
 <p>However, this approach has two major limitations:</p>
 <ol>
