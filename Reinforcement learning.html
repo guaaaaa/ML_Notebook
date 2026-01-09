@@ -9405,7 +9405,7 @@ $$</p>
 J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} [G(\tau)]
 $$</p>
 <p>In other words, the objective is just to maximize the expected return over the distribution of all possible trajectory. Therefore, instead of finding the distribution $p(s)$, we can directly approximate the expected value by Monte Carlo sampling.</p>
-<h3 id="Training-Policy-Networks:-The-REINFORCE-Algorithm">Training Policy Networks: The REINFORCE Algorithm<a class="anchor-link" href="#Training-Policy-Networks:-The-REINFORCE-Algorithm">¶</a></h3><p>To maximize $J(\theta)$, we use <strong>Gradient Ascent</strong>. We need to compute the gradient of the objective with respect to the parameters, $\nabla_\theta J(\theta)$.</p>
+<h3 id="Training-Policy-Networks">Training Policy Networks<a class="anchor-link" href="#Training-Policy-Networks">¶</a></h3><p>To maximize $J(\theta)$, we use <strong>Gradient Ascent</strong>. We need to compute the gradient of the objective with respect to the parameters, $\nabla_\theta J(\theta)$.</p>
 <p>Starting with the integral definition:
 $$
 \nabla_\theta J(\theta) = \nabla_\theta \int P(\tau|\theta) G(\tau) \, d\tau
@@ -9420,16 +9420,16 @@ $$</p>
 $$</p>
 <p>To compute $\nabla_\theta \log P(\tau|\theta)$, we expand the probability of a trajectory. A trajectory's probability is the product of the start state probability, the policy probabilities, and the transition dynamics:</p>
 <p>$$
-P(\tau|\theta) = p(s_0) \prod_{t=0}^{T-1} \pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t)
+P(\tau|\theta) = p(s_0) \prod_{t=0}^{T-1} \pi_\theta(a_t|s_t) p(s_{t+1}, r_{t+1}|s_t, a_t)
 $$</p>
 <p>Taking the log of both sides converts the product into a sum:
 $$
-\log P(\tau|\theta) = \log p(s_0) + \sum_{t=0}^{T-1} \log \pi_\theta(a_t|s_t) + \sum_{t=0}^{T-1} \log p(s_{t+1}|s_t, a_t)
+\log P(\tau|\theta) = \log p(s_0) + \sum_{t=0}^{T-1} \log \pi_\theta(a_t|s_t) + \sum_{t=0}^{T-1} \log p(s_{t+1}, r_{t+1}|s_t, a_t)
 $$</p>
 <p>Now, we take the gradient with respect to $\theta$:</p>
 <ol>
 <li>$\nabla_\theta \log p(s_0) = 0$ (Initial state distribution does not depend on $\theta$).</li>
-<li>$\nabla_\theta \log p(s_{t+1}|s_t, a_t) = 0$ (Environment dynamics do not depend on $\theta$).</li>
+<li>$\nabla_\theta \log p(s_{t+1}, r_{t+1}|s_t, a_t) = 0$ (Environment dynamics do not depend on $\theta$).</li>
 <li>The only term that remains is the policy term.</li>
 </ol>
 <p>Thus, the gradient of the log-probability of the trajectory simplifies to just the sum of the gradients of the policy:
@@ -9437,7 +9437,7 @@ $$
 \nabla_\theta \log P(\tau|\theta) = \sum_{t=0}^{T-1} \nabla_\theta \log \pi_\theta(a_t|s_t)
 $$</p>
 <blockquote>
-<p>This derivation is crucial because it allows us to optimize the policy without needing a model of the environment dynamics $p(s'|s,a)$, and $\nabla_\theta \log \pi_\theta(a_t|s_t)$ can be computed easily using backpropgation.</p>
+<p>This derivation is crucial because it allows us to optimize the policy without needing a model of the environment dynamics $p(s', r'|s,a)$, and $\nabla_\theta \log \pi_\theta(a_t|s_t)$ can be computed easily using backpropgation.</p>
 </blockquote>
 <p>Substituting the decomposed log-probability back into our expectation, we get the final expression for the Policy Gradient:</p>
 <p>$$
@@ -9485,7 +9485,7 @@ $$G_t = \sum_{k=t+1}^{T} \gamma^{k-t-1} R_k$$</p>
 </li>
 <li><p><strong>Policy Update Step:</strong></p>
 <ul>
-<li>Update weights $\theta$ by performing a stochastic gradient ascent step. Note this step is performed for average single timestep in a trajectory.
+<li>Update weights $\theta$ by performing a stochastic gradient ascent step. Note this step is performed for every single timestep in a trajectory.
 $$\theta \leftarrow \theta + \alpha G_t \nabla_\theta \log \pi_\theta(A_t|S_t)$$</li>
 </ul>
 </li>
@@ -9504,6 +9504,118 @@ $$\theta \leftarrow \theta + \alpha G_t \nabla_\theta \log \pi_\theta(A_t|S_t)$$
 $$\theta \leftarrow \theta + \alpha \sum_{t=0}^{T-1} \nabla_\theta \log \pi_\theta(a_t|s_t) G(\tau^{(i)})
 $$ The gradient here is the sum of gradient of all timestep of the trajectory. The two approach is exactly equivalent of each other, and this one is more efficient.</p>
 </blockquote>
+<h3 id="Average-Reward-Formulation-in-Policy-Gradient-Methods">Average Reward Formulation in Policy Gradient Methods<a class="anchor-link" href="#Average-Reward-Formulation-in-Policy-Gradient-Methods">¶</a></h3><h3 id="Policy-Gradient-Theorem">Policy Gradient Theorem<a class="anchor-link" href="#Policy-Gradient-Theorem">¶</a></h3><p>REINFORCE algorithm is a sample based implementation of the the general objective</p>
+<p>Objective function as to maximize the integral of state value over all state values. The gradient of this expectation is hard to compute as we do not have the true distribution over the state and we do not have the state value.</p>
+<p>REINFORCE estiamte the gradient of the objective by using samples of trajectory and its actual return
+Comparison of the two formula
+with large number of samples, the estimated gradient converges to the true gradient.</p>
+<p>However, we can generalize the gradient objective into computable format
+Formula of the gradient objective
+expand v(s) using q(s, a)
+expand the gradient of v(s) using chain rule
+one of the gradient with respect to the policy is easy to compute because we can do it using backpropogation
+for the other term, expand gradient of q(s, a) using the bellman equation and simplify</p>
+<p>define the marginal distribution and give the final expression</p>
+<p>give the expression in the trajectory as t -&gt; inf</p>
+<p>use log derivative trick to simply the expression and write the gradient objective in the expectation form.</p>
+<p>Final policy gradient theorm and expression</p>
+<h2 id="The-Policy-Gradient-Theorem">The Policy Gradient Theorem<a class="anchor-link" href="#The-Policy-Gradient-Theorem">¶</a></h2><p>The REINFORCE algorithm is effectively a <strong>sample-based implementation</strong> of the theoretical Policy Gradient goal. The general objective in RL is to maximize the expected value of states under the policy's state distribution:</p>
+<p>$$
+J(\theta) = \int_{\mathcal{S}} p(s) v_{\pi_\theta}(s) \, ds
+$$</p>
+<p>Computing the gradient of this objective, $\nabla_\theta J(\theta)$, analytically is intractable for two reasons:</p>
+<ol>
+<li><strong>Unknown State Distribution $p(s)$:</strong> We do not know the true distribution of states reachable by the policy, nor how that distribution shifts ($\nabla_\theta p(s)$) when the policy changes.</li>
+<li><strong>Unknown Value Function $v_{\pi_\theta}(s)$:</strong> We do not have the true value function; we only have samples of returns.</li>
+</ol>
+<p>REINFORCE bypasses these intractable integrals by using <strong>Monte Carlo sampling</strong>. It estimates the gradient using the <strong>actual return</strong> $G_t$ of a sampled trajectory as an unbiased estimator of $Q(s, a)$.</p>
+<p>$$
+\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=0}^{T} \nabla_\theta \log \pi(a_t|s_t) G_t
+$$</p>
+<p>By the Law of Large Numbers, as the number of sampled trajectories $N \to \infty$, this estimate converges to the true gradient derived by the Policy Gradient Theorem. In practice, we use a few samples to compute a stochastic gradient for the update.</p>
+<p>To justify why algorithms like REINFORCE work, we must derive a computable form of the gradient that eliminates the dependency on the unknown environment dynamics.</p>
+<p>We start by expanding the value of a single state $v_\pi(s)$ using the action-value function $q_\pi(s,a)$:</p>
+<p>$$
+v_\pi(s) = \int_{a} \pi_\theta(a|s) q_\pi(s, a)
+$$</p>
+<p>We take the gradient with respect to $\theta$. Using the product rule, this splits into two terms:</p>
+<p>$$
+\nabla_\theta v_\pi(s) = \underbrace{\int_{a} \nabla_\theta \pi_\theta(a|s) q_\pi(s, a)}_{\text{Term 1: Policy Change}} + \underbrace{\int_{a} \pi_\theta(a|s) \nabla_\theta q_\pi(s, a)}_{\text{Term 2: Q-Value Change}}
+$$</p>
+<ul>
+<li><strong>Term 1 (Known):</strong> Represents the change in value due to the policy selecting actions differently. This is computable (we know $\pi_\theta$) as long as we know $q$, and in practice, we estiamte $q$ with the actual return observed fromt the trajectory $G_t$.</li>
+<li><strong>Term 2 (Unknown):</strong> Represents the change in the Q-values themselves as the policy changes future interactions, which is unknown.</li>
+</ul>
+<p>To handle Term 2, we expand $\nabla_\theta q_\pi(s, a)$ using the Bellman equation:
+$$q_\pi(s, a) = \int_{s', r} p(s', r | s, a) [r + \gamma v_\pi(s')]$$</p>
+<p>Taking the gradient:
+$$
+\nabla_\theta q_\pi(s, a) = \int_{s', r} \underbrace{\nabla_\theta p(s', r | s, a)}_{0} [r + \gamma v_\pi(s')] + \int_{s', r} p(s', r | s, a) \underbrace{\nabla_\theta [r + \gamma v_\pi(s')]}_{\gamma \nabla_\theta v_\pi(s')}
+$$</p>
+<p><em>Note: The gradient of the environment dynamics $p(s'|s,a)$ and reward $r$ is <strong>zero</strong> because the environment does not depend on $\theta$.</em></p>
+<p>Substituting this back, we get a recursive relationship for the state-value gradient, so the gradient of the current state depends on the gradient of all possible next states:</p>
+<p>$$
+\nabla_\theta v_\pi(s) = \phi(s) + \gamma \int_{s'} P(s'|s, \pi) \nabla_\theta v_\pi(s')
+$$</p>
+<p>Where $\phi(s) = \int_{a} \nabla_\theta \pi_\theta(a|s) q_\pi(s, a)$.</p>
+<p>By repeatedly expanding the term $\nabla_\theta v_\pi(s')$ (the gradient of the next state), we can express the gradient as an infinite sum over time steps:</p>
+<p>$$
+\nabla_\theta v_\pi(s) = \phi(s) + \gamma \int_{s'} P(s'|s) (\phi(s') + \gamma \int_{s''} P(s''|s') \nabla_\theta v_\pi(s''))
+$$</p>
+<p>$$
+\nabla_\theta v_\pi(s) = \int_{x \in \mathcal{S}} \sum_{k=0}^{\infty} \gamma^k P(s \to x, k, \pi) \phi(x)
+$$</p>
+<ul>
+<li>$P(s \to x, k, \pi)$: The visitation probability. It asks, "If I start at state $s$, what is the probability I will land in state $x$ exactly $k$ steps later?"</li>
+</ul>
+<p>This equation states that the gradient of a state's value is the sum of $\phi(x)$ for all future states $x$, weighted by how likely we are to visit them ($P$).</p>
+<p>We substitute this into the gradient of the original objective function, which is the average value over all possible start states $s_0$:</p>
+<p>$$
+\nabla_\theta J(\theta) = \int_{s_0} p(s_0) \nabla_\theta v_\pi(s_0) \, ds_0
+$$</p>
+<p>$$
+\nabla_\theta J(\theta) = \int_{s_0} p(s_0) \left( \int_{x} \sum_{k=0}^{\infty} \gamma^k P(s_0 \to x, k, \pi) \phi(x) \, dx \right) ds_0
+$$</p>
+<p>We rearrange the integrals to group terms by the <strong>visited state</strong> $x$ rather than the start state $s_0$. This is the crucial step:</p>
+<p>$$
+\nabla_\theta J(\theta) = \int_{x} \phi(x) \underbrace{\left( \int_{s_0} p(s_0) \sum_{k=0}^{\infty} \gamma^k P(s_0 \to x, k, \pi) \, ds_0 \right)}_{\text{Total Discounted Visitation Density}} \, dx
+$$</p>
+<p>The term in the brackets represents the total discounted probability of visiting state $x$ (sometimes denoted $d^\pi(s)$). We define the <strong>normalized discounted state distribution</strong> $p(s)$ as:</p>
+<p>$$
+p(s) = \frac{1}{1-\gamma} \int_{s_0} p(s_0) \sum_{k=0}^{\infty} \gamma^k P(s_0 \to s, k, \pi) ds_0
+$$</p>
+<p>Substituting this definition back into our equation (absorbing the constant $1-\gamma$ into the proportionality or learning rate):</p>
+<p>$$
+\nabla_\theta J(\theta) \propto \int_{x} p(x) \phi(x) \, dx
+$$</p>
+<p>We expand $\phi(x)$ using the log-derivative trick: $\nabla \pi = \pi \nabla \ln \pi$.</p>
+<p>$$
+\phi(x) = \int_{a} \nabla_\theta \pi_\theta(a|x) q_\pi(x, a) \, da = \mathbb{E}_{a \sim \pi} [\nabla_\theta \ln \pi_\theta(a|x) q_\pi(x, a)]
+$$</p>
+<h3 id="Final-Policy-Gradient-Theorem">Final Policy Gradient Theorem<a class="anchor-link" href="#Final-Policy-Gradient-Theorem">¶</a></h3><p>Combining the state distribution $p(s)$ and the action expectation, we arrive at the final theorem:</p>
+<p>$$
+\nabla_\theta J(\theta) = \int_{\mathcal{S}} p(s) \left( \int_{a} \pi_\theta(a|s) \nabla_\theta \ln \pi_\theta(a|s) q_\pi(s, a) \, da \right) ds
+$$</p>
+<p>Written compactly as an expectation:</p>
+<p>$$
+\nabla_\theta J(\theta) = \mathbb{E}_{s \sim p, a \sim \pi} \left[ q^{\pi_\theta}(s, a) \nabla_\theta \ln \pi_\theta(a|s) \right]
+$$</p>
+<p><strong>Significance:</strong>
+This theorem proves that we can compute the gradient of the performance $J(\theta)$ <strong>without</strong> differentiating the state distribution or the environment dynamics. We only need:</p>
+<ol>
+<li><strong>$\nabla \ln \pi$:</strong> The gradient of the policy itself (computed via backpropagation).</li>
+<li><strong>$q(s,a)$:</strong> The estimated return (obtained via interaction/sampling from the environment).</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=73d28fae">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h3 id="Advanages-of-Policy-Gradient-Method">Advanages of Policy Gradient Method<a class="anchor-link" href="#Advanages-of-Policy-Gradient-Method">¶</a></h3><p>The optimal policy for a given problem can be deterministic or stochastic. In value-based methods, improving the policy usually involves making it greedy or $\epsilon$-greedy with respect to the current action-value estimates.</p>
 <p>However, this approach has two major limitations:</p>
 <ol>
