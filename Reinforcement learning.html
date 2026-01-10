@@ -9504,22 +9504,7 @@ $$\theta \leftarrow \theta + \alpha G_t \nabla_\theta \log \pi_\theta(A_t|S_t)$$
 $$\theta \leftarrow \theta + \alpha \sum_{t=0}^{T-1} \nabla_\theta \log \pi_\theta(a_t|s_t) G(\tau^{(i)})
 $$ The gradient here is the sum of gradient of all timestep of the trajectory. The two approach is exactly equivalent of each other, and this one is more efficient.</p>
 </blockquote>
-<h3 id="Average-Reward-Formulation-in-Policy-Gradient-Methods">Average Reward Formulation in Policy Gradient Methods<a class="anchor-link" href="#Average-Reward-Formulation-in-Policy-Gradient-Methods">¶</a></h3><h3 id="Policy-Gradient-Theorem">Policy Gradient Theorem<a class="anchor-link" href="#Policy-Gradient-Theorem">¶</a></h3><p>REINFORCE algorithm is a sample based implementation of the the general objective</p>
-<p>Objective function as to maximize the integral of state value over all state values. The gradient of this expectation is hard to compute as we do not have the true distribution over the state and we do not have the state value.</p>
-<p>REINFORCE estiamte the gradient of the objective by using samples of trajectory and its actual return
-Comparison of the two formula
-with large number of samples, the estimated gradient converges to the true gradient.</p>
-<p>However, we can generalize the gradient objective into computable format
-Formula of the gradient objective
-expand v(s) using q(s, a)
-expand the gradient of v(s) using chain rule
-one of the gradient with respect to the policy is easy to compute because we can do it using backpropogation
-for the other term, expand gradient of q(s, a) using the bellman equation and simplify</p>
-<p>define the marginal distribution and give the final expression</p>
-<p>give the expression in the trajectory as t -&gt; inf</p>
-<p>use log derivative trick to simply the expression and write the gradient objective in the expectation form.</p>
-<p>Final policy gradient theorm and expression</p>
-<h2 id="The-Policy-Gradient-Theorem">The Policy Gradient Theorem<a class="anchor-link" href="#The-Policy-Gradient-Theorem">¶</a></h2><p>The REINFORCE algorithm is effectively a <strong>sample-based implementation</strong> of the theoretical Policy Gradient goal. The general objective in RL is to maximize the expected value of states under the policy's state distribution:</p>
+<h3 id="Average-Reward-Formulation-in-Policy-Gradient-Methods">Average Reward Formulation in Policy Gradient Methods<a class="anchor-link" href="#Average-Reward-Formulation-in-Policy-Gradient-Methods">¶</a></h3><h2 id="The-Policy-Gradient-Theorem">The Policy Gradient Theorem<a class="anchor-link" href="#The-Policy-Gradient-Theorem">¶</a></h2><p>The REINFORCE algorithm is effectively a <strong>sample-based implementation</strong> of the theoretical Policy Gradient goal. The general objective in RL is to maximize the expected value of states under the policy's state distribution:</p>
 <p>$$
 J(\theta) = \int_{\mathcal{S}} p(s) v_{\pi_\theta}(s) \, ds
 $$</p>
@@ -9528,7 +9513,7 @@ $$</p>
 <li><strong>Unknown State Distribution $p(s)$:</strong> We do not know the true distribution of states reachable by the policy, nor how that distribution shifts ($\nabla_\theta p(s)$) when the policy changes.</li>
 <li><strong>Unknown Value Function $v_{\pi_\theta}(s)$:</strong> We do not have the true value function; we only have samples of returns.</li>
 </ol>
-<p>REINFORCE bypasses these intractable integrals by using <strong>Monte Carlo sampling</strong>. It estimates the gradient using the <strong>actual return</strong> $G_t$ of a sampled trajectory as an unbiased estimator of $Q(s, a)$.</p>
+<p>REINFORCE bypasses these intractable integrals by using <strong>Monte Carlo sampling</strong>. It estimates the gradient using the <strong>actual return</strong> $G_t$ of a sampled trajectory as an unbiased estimator of the state value and the average over $N$ trajectories as the estimation for the state distribution.</p>
 <p>$$
 \nabla_\theta J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=0}^{T} \nabla_\theta \log \pi(a_t|s_t) G_t
 $$</p>
@@ -9580,7 +9565,7 @@ $$</p>
 <p>$$
 \nabla_\theta J(\theta) = \int_{x} \phi(x) \underbrace{\left( \int_{s_0} p(s_0) \sum_{k=0}^{\infty} \gamma^k P(s_0 \to x, k, \pi) \, ds_0 \right)}_{\text{Total Discounted Visitation Density}} \, dx
 $$</p>
-<p>The term in the brackets represents the total discounted probability of visiting state $x$ (sometimes denoted $d^\pi(s)$). We define the <strong>normalized discounted state distribution</strong> $p(s)$ as:</p>
+<p>The term in the brackets represents the total discounted probability of visiting state $x$ (sometimes denoted $d^\pi(s)$). We define the <strong>normalized discounted state distribution</strong> $p(s)$, which represents the overall probablity of being in a <strong>single</strong> state under policy $\pi$. This term depends on both the policy and the environment dynamics.</p>
 <p>$$
 p(s) = \frac{1}{1-\gamma} \int_{s_0} p(s_0) \sum_{k=0}^{\infty} \gamma^k P(s_0 \to s, k, \pi) ds_0
 $$</p>
@@ -9598,7 +9583,7 @@ $$</p>
 $$</p>
 <p>Written compactly as an expectation:</p>
 <p>$$
-\nabla_\theta J(\theta) = \mathbb{E}_{s \sim p, a \sim \pi} \left[ q^{\pi_\theta}(s, a) \nabla_\theta \ln \pi_\theta(a|s) \right]
+\nabla_\theta J(\theta) = \mathbb{E}_{s \sim p, a \sim \pi} \left[ q_{\pi_\theta}(s, a) \nabla_\theta \ln \pi_\theta(a|s) \right]
 $$</p>
 <p><strong>Significance:</strong>
 This theorem proves that we can compute the gradient of the performance $J(\theta)$ <strong>without</strong> differentiating the state distribution or the environment dynamics. We only need:</p>
@@ -9606,6 +9591,122 @@ This theorem proves that we can compute the gradient of the performance $J(\thet
 <li><strong>$\nabla \ln \pi$:</strong> The gradient of the policy itself (computed via backpropagation).</li>
 <li><strong>$q(s,a)$:</strong> The estimated return (obtained via interaction/sampling from the environment).</li>
 </ol>
+<p>This provide us to a way to train the policy network.</p>
+<h2 id="Implementation-of-Policy-Gradient-Methods">Implementation of Policy Gradient Methods<a class="anchor-link" href="#Implementation-of-Policy-Gradient-Methods">¶</a></h2><p>There are three primary families of policy pradient implementations, categorized by how they estimate the return and stabilize the gradient:</p>
+<ol>
+<li><strong>Vanilla Version (REINFORCE)</strong></li>
+<li><strong>Baseline Version (Advantage)</strong></li>
+<li><strong>Trust Region Methods</strong> (e.g., TRPO, PPO, etc)</li>
+</ol>
+<h3 id="1.-Vanilla-Version-(REINFORCE)">1. Vanilla Version (REINFORCE)<a class="anchor-link" href="#1.-Vanilla-Version-(REINFORCE)">¶</a></h3><p>The Vanilla Policy Gradient algorithm (the REINFORCE algorithm), relies on <strong>Monte Carlo sampling</strong>. It uses the actual observed return $G_t$ from a complete trajectory as the unbiased estimator for the action-value $q(s_t, a_t)$.</p>
+<h4 id="Update-Formula">Update Formula<a class="anchor-link" href="#Update-Formula">¶</a></h4><p>For a trajectory $\tau$ consisting of steps $t=0 \dots T$, the parameters $\theta$ are updated via gradient ascent:</p>
+<p>$$\theta \leftarrow \theta + \alpha \sum_{t=0}^{T-1} \nabla_\theta \log \pi_\theta(a_t|s_t) G_t
+$$</p>
+<p>Where $G_t = \sum_{k=t}^{T} \gamma^{k-t} r_k$ is the discounted return from time $t$.</p>
+<p>While $G_t$ is an unbiased estimator of $q(s, a)$, this method suffers from severe <strong>High Variance</strong>.</p>
+<ul>
+<li><strong>Magnitude Sensitivity:</strong> The gradient update scales linearly with the magnitude of the rewards. If rewards are large (e.g., +1000 vs +1010), the gradient updates will be massive, leading to unstable training.</li>
+<li><strong>All-Positive Rewards:</strong> If all rewards are positive, the gradient tries to push the probabilities of <em>all</em> sampled actions up. The optimal action is only found because it is pushed up <em>slightly more</em> than the others. This "tug-of-war" slows down convergence significantly.
+Ideally, we want the target value to be centered around 0. This ensures that bad actions produce negative gradients (decreasing probability) and good actions produce positive gradients (increasing probability).</li>
+</ul>
+<h3 id="2.-Baseline-Version-(Advantage)">2. Baseline Version (Advantage)<a class="anchor-link" href="#2.-Baseline-Version-(Advantage)">¶</a></h3><p>To address the variance and magnitude issues, we introduce a <strong>Baseline</strong> $b(s)$. The goal is to center the return estimator by subtracting a value that depends on the state but <strong>not</strong> on the action in order to "access" the quality of the action.</p>
+<p>$$q'(s, a) = q(s, a) - b(s)$$</p>
+<p>Ideally, we want to give <strong>better-than-average</strong> actions a positive score and <strong>worse-than-average</strong> actions a negative score. Crucially, even if an action yields a positive absolute reward (e.g., +10), if it performs worse than other possible actions (e.g., average is +50), the baseline ensures it receives a negative advantage score, discouraging the agent from taking it.</p>
+<p>We can prove that subtracting a baseline $b(s)$ does not alter the true gradient of the objective. Starting with the expected gradient form where we introduce the baseline:
+$$
+\nabla J(\theta) = \mathbb{E}_{s \sim \pi} \left[ \int_{a} \nabla_\theta \pi_\theta(a|s) (q_\pi(s, a) - b(s)) \right]
+$$</p>
+<p>We expand the term using the distributive property:
+$$
+\nabla J(\theta) = \underbrace{\mathbb{E} \left[ \int_{a} \nabla_\theta \pi_\theta(a|s) q_\pi(s, a) \right]}_{\text{Original Policy Gradient}} - \underbrace{\mathbb{E} \left[ \int_{a} \nabla_\theta \pi_\theta(a|s) b(s) \right]}_{\text{Baseline Term}}
+$$</p>
+<p>Let's analyze the <strong>Baseline Term</strong>. Since $b(s)$ is constant with respect to the integral over actions $a$, we can move it outside the summation:
+$$
+\text{Baseline Term} = \mathbb{E}_{s} \left[ b(s) \int_{a} \nabla_\theta \pi_\theta(a|s) \right]
+$$</p>
+<p>Using the linearity of the derivative (since the integral is with respect to $a$ and the gradient is with respect to $\theta$), $\int \nabla = \nabla \int$:
+$$
+\int_{a} \nabla_\theta \pi_\theta(a|s) = \nabla_\theta \left( \int_{a} \pi_\theta(a|s) \right)
+$$</p>
+<p>Since probabilities distribution must integrate to 1 ($\int \pi = 1$), and the gradient of a constant is 0:
+$$
+\nabla_\theta (1) = 0
+$$</p>
+<p>The baseline term vanishes. Therefore, we can subtract any function $b(s)$ (as long as it does not depend on $a$) without introducing bias to the gradient estimation, where</p>
+<p>$$\nabla J(\theta) = \mathbb{E}_{s \sim \pi} \left[ \int_{a} \nabla_\theta \pi_\theta(a|s) (q_\pi(s, a) - b(s)) \right] =  \mathbb{E}_{s \sim \pi} \left[ \int_{a} \nabla_\theta \pi_\theta(a|s) q_\pi(s, a)\right] = \mathbb{E}_{s \sim p, a \sim \pi} \left[ q_{\pi_\theta}(s, a) \nabla_\theta \ln \pi_\theta(a|s) \right]$$</p>
+<h4 id="The-Advantage-Function">The Advantage Function<a class="anchor-link" href="#The-Advantage-Function">¶</a></h4><p>We select the baseline to be the <strong>value function</strong> of the state, $b(s) = v_\pi(s)$. This transforms our estimator into the <strong>advantage function</strong>:</p>
+<p>$$
+A_\pi(s, a) = q_\pi(s, a) - v_\pi(s)
+$$</p>
+<ul>
+<li><strong>Interpretation:</strong> The Advantage assesses how much better (or worse) the chosen action is compared to the <strong>average</strong> performance in that state, which is represented by $v_\pi(s)$.</li>
+<li><strong>Centering:</strong> If an action is average, $A \approx 0$. If it is effectively good, $A &gt; 0$. If poor, $A &lt; 0$. This stabilizes the gradient magnitude.</li>
+</ul>
+<h4 id="Computing-$v(s)$">Computing $v(s)$<a class="anchor-link" href="#Computing-$v(s)$">¶</a></h4><p>In practice, we do not know the true $v_\pi(s)$. We approximate it using <strong>Function Approximation</strong> with a seperate neural network:</p>
+<ol>
+<li>Initialize a separate neural network (Value Network) $v_\phi(s)$ with parameters $\phi$.</li>
+<li>Train this network using Mean Squared Error (MSE) regression against the actual observed returns $G_t$:
+$$L(\phi) = \frac{1}{N} \sum (G_t - v_\phi(s_t))^2$$</li>
+</ol>
+<h4 id="Final-Update-Formula">Final Update Formula<a class="anchor-link" href="#Final-Update-Formula">¶</a></h4><p>The Policy Gradient update using the Advantage estimate (where $G_t$ estimates $q$ and $v_\phi$ estimates baseline), which provides a more stable, low variance training.</p>
+<p>$$
+\theta \leftarrow \theta + \alpha \sum_{t=0}^{T} \nabla_\theta \ln \pi_\theta(a_t|s_t) \underbrace{(G_t - v_\phi(s_t))}_{\text{Advantage Estimate } \hat{A}_t}
+$$</p>
+<h3 id="Baseline-Algorithm-(Monte-Carlo-Policy-Gradient)">Baseline Algorithm (Monte Carlo Policy Gradient)<a class="anchor-link" href="#Baseline-Algorithm-(Monte-Carlo-Policy-Gradient)">¶</a></h3><ol>
+<li><p>Given:</p>
+<ul>
+<li>Learning rates $\alpha \in (0, 1]$ (for Policy) and $\beta \in (0, 1]$ (for Value)</li>
+<li>Discount factor $\gamma \in [0, 1]$</li>
+<li>A parameterized differentiable <strong>Policy function</strong> $\pi(a|s; \theta)$ (Policy Network)</li>
+<li>A parameterized differentiable <strong>State-Value function</strong> $\hat{v}(s; w)$ (Value Network)</li>
+</ul>
+</li>
+<li><p>Initialize:</p>
+<ul>
+<li>Policy weights $\theta$ and Value weights $w$ arbitrarily.</li>
+</ul>
+</li>
+<li><p>Repeat (for each episode):</p>
+<ul>
+<li><p><strong>Generate Episode:</strong></p>
+<ul>
+<li>Initialize $S_0$.</li>
+<li>Generate a full trajectory $\tau = S_0, A_0, R_1, S_1, A_1, R_2, \dots, S_{T-1}, A_{T-1}, R_T$ by following policy $\pi(\cdot|\cdot; \theta)$ until a terminal state $S_T$ is reached.</li>
+</ul>
+</li>
+<li><p><strong>For each timestep $t = 0, 1, \dots, T-1$:</strong></p>
+<ul>
+<li><p>Calculate the return $G_t$ (cumulative discounted reward from step $t$ onwards):
+$$G_t = \sum_{k=t+1}^{T} \gamma^{k-t-1} R_k$$</p>
+</li>
+<li><p>Calculate the <strong>Advantage / Prediction Error</strong> $\delta_t$ (the difference between actual return and the baseline prediction):
+$$\delta_t = G_t - \hat{v}(S_t; w)$$</p>
+</li>
+<li><p><strong>Value Network Update Step:</strong></p>
+<ul>
+<li>Update weights $w$ to minimize the Mean Squared Error between prediction $\hat{v}(S_t)$ and target $G_t$ (Stochastic Gradient Descent):
+$$w \leftarrow w + \beta \delta_t \nabla_w \hat{v}(S_t; w)$$</li>
+</ul>
+</li>
+<li><p><strong>Policy Update Step:</strong></p>
+<ul>
+<li>Update weights $\theta$ using the Advantage $\delta_t$ to scale the gradient (Stochastic Gradient Ascent):
+$$\theta \leftarrow \theta + \alpha \delta_t \nabla_\theta \log \pi(A_t|S_t; \theta)$$</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Repeat until convergence:</p>
+<ul>
+<li>Continue running episodes until policy stabilizes or average return is maximized.</li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<p>Note: This results in moving target, but the error is managable because the value network is always trained on unbiased estimation (observed return) unlike DQN, which is trained based on its own value estimates. Therefore, the training of the policy net will eventually converge as the value network gives more accurate prediction over time.</p>
+</blockquote>
 </div>
 </div>
 </div>
