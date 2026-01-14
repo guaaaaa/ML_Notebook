@@ -7858,9 +7858,9 @@ $$\arg \min_{\theta} D_{KL}(P_{data} \parallel P_{\theta}) = \arg \max_{\theta} 
 <h2 id="The-Fundamental-Challenge:-Intractability-and-Normalization">The Fundamental Challenge: Intractability and Normalization<a class="anchor-link" href="#The-Fundamental-Challenge:-Intractability-and-Normalization">¶</a></h2><p>Modeling a high-dimensional data distribution $p_{data}(\mathbf{x})$ (where $\mathbf{x} \in \mathbb{R}^D$) is computationally intensive due to the <strong>curse of dimensionality</strong>. A valid probability distribution must satisfy the normalization constraint:
 $$\int_{\mathbf{x}} p_{\theta}(\mathbf{x}) d\mathbf{x} = 1$$
 In high-dimensional spaces, calculating the denominator (the partition function) required to normalize a neural network's output is usually exponentially hard. Consequently, explicit modeling focuses on architectures that either bypass, simplify, or approximate this normalization while maintaining a clear expression for the density.</p>
-<p>The standard approach to estimate the distribution based through methods like MLE (minimizing KL divergence). In practice, the MLE objective is ususally implemented through 3 different modelling apporaches</p>
+<p>The standard approach to estimate the distribution based through methods like MLE (minimizing KL divergence). In practice, the MLE objective is ususally implemented through 3 different modeling apporaches</p>
 <ol>
-<li>Autoregressive Modelling</li>
+<li>Autoregressive Modeling</li>
 <li>Energy-based Modeling</li>
 <li>Flow-based Modeling</li>
 </ol>
@@ -7929,7 +7929,7 @@ $$E_\theta(x): \mathbb{R}^D \rightarrow \mathbb{R}$$</p>
 <ul>
 <li><strong>Independence from Samples:</strong> Note that $Z(\theta)$ is a function of the model parameters $\theta$, but it does <strong>not</strong> depend on any specific data point $x$ because it always sum over the entire data space.</li>
 </ul>
-<h3 id="Universality-of-Boltzmann-Distribution">Universality of Boltzmann Distribution<a class="anchor-link" href="#Universality-of-Boltzmann-Distribution">¶</a></h3><p>Instead of modelling the distribution directly, the reason we go through the two step process of first defining energy of data and then converting it into a distribution is because of the <strong>Universality of the Boltzmann Distribution</strong>.</p>
+<h3 id="Universality-of-Boltzmann-Distribution">Universality of Boltzmann Distribution<a class="anchor-link" href="#Universality-of-Boltzmann-Distribution">¶</a></h3><p>Instead of modeling the distribution directly, the reason we go through the two step process of first defining energy of data and then converting it into a distribution is because of the <strong>Universality of the Boltzmann Distribution</strong>.</p>
 <p>For almost any well-defined, strictly positive probability density $Q(x)$, there exists an energy function $f(x)$ such that $Q$ can be expressed as a Boltzmann distribution.</p>
 <p>This implies that EBMs are extremely expressive and can be applied to almost any data. By learning an appropriate energy function $E_\theta(x)$, a neural network can theoretically approximate any complex distribution of data, without being restricted by specific architectural constraints required to ensure normalization (like in Autoregressive models or Flow-based models).</p>
 <blockquote>
@@ -7943,19 +7943,19 @@ $$E_\theta(x): \mathbb{R}^D \rightarrow \mathbb{R}$$</p>
 <li><strong>The Learning Process:</strong> We adjust $\theta$ to assign <strong>low</strong> energy for real samples and high energy for other points in the space ($x_{fake}$).
 $$\text{Data } x \xrightarrow{\text{Learn } f_\theta} \text{Energy } E(x) \xrightarrow{\text{Boltzmann}} \text{Distribution } p(x)$$</li>
 </ol>
-<h3 id="EBM-Training">EBM Training<a class="anchor-link" href="#EBM-Training">¶</a></h3><p>To train an Energy-Based Model, our primary goal is to maximize the likelihood of the observed data. Given a dataset $\mathcal{D} = \{x^{(1)}, x^{(2)}, \dots, x^{(N)}\}$ sampled from the true data distribution $p_{data}(x)$, we wish to find parameters $\theta$ that maximize the log-likelihood:</p>
-<p>$$\mathcal{L}(\theta) = \sum_{i=1}^{N} \log p_\theta(x^{(i)})$$</p>
+<h3 id="EBM-Training">EBM Training<a class="anchor-link" href="#EBM-Training">¶</a></h3><p>To train an Energy-Based Model, our primary goal is to maximize the likelihood of the observed data. Given a dataset $\mathcal{D} = \{x^{(1)}, x^{(2)}, \dots, x^{(N)}\}$ sampled from the true data distribution $p_{data}(x)$, we wish to find parameters $\theta$ that maximize the log-likelihood objective (note that the objective of the formula is to maximize the likelihood not minimizing the loss):</p>
+<p>$$\log \mathcal{L}(\theta) = \frac{1}{N}\sum_{i=1}^{N} \log p_\theta(x^{(i)})$$</p>
 <p>Substituting the definition of the Boltzmann distribution $p_\theta(x) = \frac{\exp(-E_\theta(x))}{Z(\theta)}$, the objective function for a single data point becomes:</p>
 <p>$$\log p_\theta(x) = \log \left( \frac{\exp(-E_\theta(x))}{Z(\theta)} \right) = -E_\theta(x) - \log Z(\theta)$$</p>
 <p>Thus, the total log-likelihood we wish to maximize is:</p>
-<p>$$\mathcal{L}(\theta) = - \underbrace{\log Z(\theta)}_{\text{Partition Term}} - \sum_{i=1}^{N} \underbrace{E_\theta(x^{(i)})}_{\text{Energy Term}} $$</p>
-<p>The second term of the loss function represents the <strong>"average"</strong> energy to the real data points. We can rewrite this sum as an <strong>empirical (estimated) expectation</strong> from the true data distribution $p_{data}$, where</p>
+<p>$$\log \mathcal{L}(\theta) = - \underbrace{\log Z(\theta)}_{\text{Partition Term}} - \frac{1}{N}\sum_{i=1}^{N} \underbrace{E_\theta(x^{(i)})}_{\text{Energy Term}} $$</p>
+<p>The second term of the objective function represents the <strong>"average"</strong> energy to the real data points. We can rewrite this sum as an <strong>empirical (estimated) expectation</strong> from the true data distribution $p_{data}$, where</p>
 <p>$$\frac{1}{N} \sum_{i=1}^{N} E_\theta(x^{(i)}) \approx \mathbb{E}_{x \sim p_{data}} [E_\theta(x)]$$</p>
 <p>However, this expectation is estimated because, we do not have access to the infinite continuous distribution $p_{data}$. We only have a finite dataset and assume each sample in our dataset has an equal probability of $1/N$.</p>
 <p>The first term, $\log Z(\theta)$, ensures the distribution is normalized.
 $$Z(\theta) = \int_{x \in \mathcal{X}} \exp(-E_\theta(x)) \, dx$$</p>
-<p>Calculating this directly is <strong>intractable</strong> for high-dimensional data (e.g., images) because it requires integrating (or summing) over the entire data space. Consequently, we cannot easily evaluate the loss $\mathcal{L}(\theta)$ itself.</p>
-<p>However, for training via Gradient Descent, we do not need the value of the loss; we only need its <strong>gradient</strong> $\nabla_\theta \mathcal{L}$.</p>
+<p>Calculating this directly is <strong>intractable</strong> for high-dimensional data (e.g., images) because it requires integrating (or summing) over the entire data space. Consequently, we cannot easily evaluate the objective $\log \mathcal{L}(\theta)$ itself.</p>
+<p>However, for training via Gradient Descent, we do not need the value of the objective; we only need its <strong>gradient</strong> $\nabla_\theta \log \mathcal{L}$.</p>
 <p>For the <strong>Energy Term</strong>, the gradient is
 $$\nabla_\theta \mathbb{E}_{x \sim p_{data}} [E_\theta(x)] = \mathbb{E}_{x \sim p_{data}} [\nabla_\theta E_\theta(x)]$$
 This computation is easy because it is the gradient with respect to the energy model. Since the energy model is just the neural network, this gradient is can be easily calculated with backpropagation.</p>
@@ -7970,22 +7970,165 @@ $$\nabla_\theta Z(\theta) = \nabla_\theta \int \exp(-E_\theta(x)) \, dx = \int \
 <p>This integral is simply the definition of an expectation over the <strong>model distribution</strong> without the hard to compute partition function:</p>
 <p>$$\nabla_\theta \log Z(\theta) = \mathbb{E}_{x \sim p_\theta(\cdot)} [-\nabla_\theta E_\theta(x)]$$</p>
 <blockquote>
-<p>This term is the expectation of samples from the <strong>Current Model Distribution</strong>, meaning as long as we can sample from the current model, we are able to train the EBM. Sampling is also exponentially hard in high dimensional space, but we can apply tricke for it to work.</p>
+<p>This term is the expectation of samples from the <strong>Current Model Distribution</strong>, meaning as long as we can sample from the current model, we are able to train the EBM. Sampling is also exponentially hard in high dimensional space, but we can apply tricks for it to work.</p>
 </blockquote>
 <h3 id="Final-MLE-Gradient">Final MLE Gradient<a class="anchor-link" href="#Final-MLE-Gradient">¶</a></h3><p>Combining the derivatives of the <strong>Energy Term</strong> and the <strong>Partition Term</strong>, the final gradient of the log-likelihood is:</p>
 <p>$$\nabla_\theta \mathcal{L} = - \mathbb{E}_{x \sim p_{data}} [\nabla_\theta E_\theta(x)] + \mathbb{E}_{x \sim p_\theta} [\nabla_\theta E_\theta(x)]$$</p>
-<p>Therefore, the original loss function (by removing the gradient) can be written as</p>
+<p>Therefore, the original maximization objective (by removing the gradient) can be written as</p>
 <p>$$\mathcal{L} = - \mathbb{E}_{x \sim p_{data}} [E_\theta(x)] + \mathbb{E}_{x \sim p_\theta} [E_\theta(x)]$$</p>
-<p>This loss function dictates the training dynamics of an Energy-Based Model:</p>
+<p>This objective dictates the training dynamics of an Energy-Based Model:</p>
 <ol>
 <li><strong>Energy Term (Data):</strong> We want to <strong>decrease</strong> (minimize) the energy of real data points $x \sim p_{data}$. This pulls the energy manifold down at locations where data exists.</li>
 <li><strong>Partition Term (Model):</strong> We want to <strong>increase</strong> (maximize) the energy of samples generated by the current model $x \sim p_\theta$. This pushes the energy manifold up at locations where the model currently assigns high probability (hallucinations).</li>
 </ol>
-<p>Essentially, by minimizing the energy of real data and maximizing the energy of model samples ("fake" data), the model is forced to distinguish real and fake samples, and the graidnet pushes the model distribution $p_\theta$ to shift closer to the real distribution $p_{data}$. This forces the model to learn to generate samples more similar to the real sample. The training reaches equilibrium when the model samples match the real data statistics, meaning the model can no longer distinguish between the two. This is the <strong>Self-Adversarial Nature</strong> of EBM (different from GAN).</p>
+<p>Essentially, by minimizing the energy of real data and maximizing the energy of model samples ("fake" data), the model is forced to distinguish real and fake samples, and the gradient pushes the model distribution $p_\theta$ to shift closer to the real distribution $p_{data}$. This forces the model to learn to generate samples more similar to the real sample. The training reaches equilibrium when the model samples match the real data statistics, meaning the model can no longer distinguish between the two. This is the <strong>Self-Adversarial Nature</strong> of EBM (different from GAN).</p>
+<h3 id="Markov-Chain-Monte-Carlo-(MCMC)-Algorithm">Markov Chain Monte Carlo (MCMC) Algorithm<a class="anchor-link" href="#Markov-Chain-Monte-Carlo-(MCMC)-Algorithm">¶</a></h3><p>MCMC model the complex sampling process as a Markove chain. The goal of mcmc is to start from an simple distribution, like guassian, and gradually shifts it towards the target (model) distribution. The idea is that a direct shift in one step is too complicated, but we can break it down into many small approximation steps and with enough step, we will</p>
+<p>Markov chain &amp; formula</p>
+<p>There are different orders of MCMC method</p>
+<ul>
+<li>Zero order: use target distribution p_w(x) directly to build the Markov chain<ul>
+<li>Simple, but take long to converge</li>
+</ul>
+</li>
+<li>First order: use ∇ log P_w(x) to build the Markov chain<ul>
+<li>More computation is needed but converge faster</li>
+</ul>
+</li>
+<li>Higher order: too computationally expensive to consider</li>
+</ul>
+<h4 id="Zero-Order-MCMC-(Gibbs-Sampling)">Zero Order MCMC (Gibbs Sampling)<a class="anchor-link" href="#Zero-Order-MCMC-(Gibbs-Sampling)">¶</a></h4><p>Gibbs sampling is an implementation of zero order MCMC method.
+Instead of trying to sample the entire joint variables all at once from the distributation, it sample <strong>one variable at a time</strong>, conditioned on the values of all other variables.</p>
+<p>Suppose we want to sample a vector (e.g., an image with $D$ pixels) $x = (x_1, x_2, \dots, x_D)$ from a model distribution $p_w(x)$. Calculating $p_w(x)$ directly is hard (due to the partition function $Z$). However, the <strong>conditional distribution</strong> of one pixel given the rest is often tractable.</p>
+<p>The Gibbs Sampling algorithm updates the state iteratively:</p>
+<ol>
+<li><strong>Initialize:</strong> Start with a random state $x^{(0)}$ (like a Gaussian noise).</li>
+<li><strong>Loop:</strong> For each step $t$:
+<strong>Loop:</strong> For each varaible in $D$
+* Sample formula here</li>
+</ol>
+<p>This means we need to train the model to generate one pixel at a time conditioned on all other pixels, which is incredibly slow, but theortially feasible.</p>
+<h1 id="Markov-Chain-Mon">Markov Chain Mon<a class="anchor-link" href="#Markov-Chain-Mon">¶</a></h1><p>Markov Chain Monte Carlo (MCMC) is a class of algorithms used to sample from a complex probability distribution when direct sampling is intractable. In the context of generative modeling, we wish to sample from the model distribution $p_\theta(x) = \frac{\exp(-E_\theta(x))}{Z}$. Because the partition function $Z$ is unknown, we cannot directly sample from the model distribution.</p>
+<p>MCMC models the sampling process as a <strong>Markov Chain</strong>.</p>
+<ul>
+<li><strong>Initialization:</strong> We start from a tractable, simple distribution $\pi_0(x)$, such as a Gaussian noise distribution ($x^{(0)} \sim \mathcal{N}(0, I)$) or uniform noise.</li>
+<li><strong>Transition:</strong> We define a transition operator $T(x' | x)$ that shifts the current state slightly towards high-probability regions of the target distribution $p_\theta(x)$.</li>
+<li><strong>Convergence:</strong> The core idea is that a direct jump from noise to data is impossible , but breaking the journey into many small approximation steps through a Markov Chain isfeasible. As the number of steps $t \to \infty$, the distribution of the samples $\pi_t(x)$ converges to the target distribution $p_\theta(x)$.</li>
+</ul>
+<p>$$x^{(0)} \xrightarrow{T} x^{(1)} \xrightarrow{T} x^{(2)} \dots \xrightarrow{T} x^{(t)} \sim p_\theta(x)$$</p>
+<p>MCMC algorithms can be categorized by the amount of information they utilize about the geometry of the target distribution (specifically, whether they use derivatives).</p>
+<ul>
+<li><p>Zero-Order Methods: use the target distribution function $p_\theta(x)$ directly to accept or reject proposed moves. It is simple to implement but very slow in convergence in high-dimensional spaces.</p>
+</li>
+<li><p>First-Order Methods: use the gradient of the log-probability with respect to the input, $\nabla_x \log p_\theta(x)$ (or $-\nabla_x E_\theta(x)$). This allows for faster convergence, but requires more computations.</p>
+</li>
+<li><p>Higher-Order Methods: use second-order derivatives (Hessian matrix) to understand the curvature of the energy landscape. Generally, higher order methods are too computationally expensive for implementation.</p>
+</li>
+</ul>
+<h4 id="Zero-Order-MCMC:-Gibbs-Sampling">Zero-Order MCMC: Gibbs Sampling<a class="anchor-link" href="#Zero-Order-MCMC:-Gibbs-Sampling">¶</a></h4><p><strong>Gibbs Sampling</strong> is a canonical implementation of a zero-order MCMC method. It is particularly useful when the joint distribution $p(x_1, \dots, x_D)$ is complex, but the <strong>conditional distribution</strong> of a single variable given all others is simple and tractable. Instead of updating the entire vector $x$ at once (which is hard), Gibbs sampling updates <strong>one variable at a time</strong>, conditioned on the current values of all other variables.</p>
+<p>Let $x$ be a $D$-dimensional vector (e.g., an image with $D$ pixels). The algorithm proceeds as follows:</p>
+<ol>
+<li><p><strong>Initialize:</strong>
+Start with a random state vector $x^{(0)}$ (e.g., random noise).</p>
+</li>
+<li><p><strong>The Gibbs Loop:</strong>
+Repeat for $t = 1$ to $T$ (where $T$ is the number of steps needed to mix):</p>
+<ul>
+<li><p>Iterate through each dimension $j = 1$ to $D$:</p>
+<ul>
+<li>Sample a new value for component $x_j$ from its conditional distribution given all other current values $x_{&lt;j}^{(t)}, x_{&gt;j}^{t-1}$ (Notice for $x_{&lt;j}$ we use the new values at $t$, where for $x_{&gt;j}$ we have to use the value at $t-1$ since the new value is not yet avaliable):</li>
+</ul>
+<p>$$x_j^{(t)} \sim p_\theta(x_j \mid x_{&lt;j}^{(t)}, x_{&gt;j}^{t-1})$$</p>
+</li>
+</ul>
+</li>
+</ol>
+<p>By cycling through the variables, the state $x$ eventually converges to the joint distribution $p(x)$. The value $T$ here is arbitrary defined (e.g. $T=1000$), which is the amount of iteration required for the original distribution to converge to the target distribution.</p>
+<p>To compute the transition probablity $p_\theta(x_j \mid x_{&lt;j}, x_{&gt;j})$, we use Bayes rule, where</p>
+<p>$$
+p_\theta(x_j \mid x_{&lt;j}, x_{&gt;j}) = \frac{p_\theta(x_j, x_{&lt;j}, x_{&gt;j})}{p_\theta(x_{&lt;j}, x_{&gt;j})}
+$$</p>
+<p>Recall the definition of the Boltzmann distribution for the joint configuration:
+$$p_\theta(x) = \frac{1}{Z} \exp(-E(x))$$</p>
+<p>So, for the numerator (the joint probability of the specific state where pixel $j$ has value $x_j$):
+$$
+\text{Numerator} = \frac{1}{Z} \exp\left(-E(x_j, x_{&lt;j}, x_{&gt;j})\right) = \frac{1}{Z} \exp\left(-E(x)\right)
+$$</p>
+<p>The denominator is the marginal probability of the <em>other</em> pixels. We obtain this by summing the joint probability over all possible values $k$ that pixel $j$ could take (marginalization):
+$$
+\text{Denominator} = \sum_{k \in \mathcal{V}} p_\theta(x_j=k, x_{&lt;j}, x_{&gt;j})
+$$</p>
+<p>Substitute the Boltzmann definition again:
+$$
+\text{Denominator} = \sum_{k \in \mathcal{V}} \left( \frac{1}{Z} \exp\left(-E(x_j=k, x_{&lt;j}, x_{&gt;j})\right) \right)
+$$</p>
+<p>Now, putting everyting together</p>
+<p>$$
+p_\theta(x_j \mid x_{&lt;j}, x_{&gt;j}) = \frac{\frac{1}{Z} \exp\left(-E(x)\right)}{\sum_{k \in \mathcal{V}} \frac{1}{Z} \exp\left(-E(x_j=k, x_{&lt;j}, x_{&gt;j})\right)}
+$$</p>
+<p>Since $\frac{1}{Z}$ is a constant factor common to every term in the sum, we can factor it out of the denominator:</p>
+<p>$$
+p_\theta(x_j \mid x_{&lt;j}, x_{&gt;j}) = \frac{\frac{1}{Z} \exp\left(-E(x)\right)}{\frac{1}{Z} \left[ \sum_{k \in \mathcal{V}} \exp\left(-E(x_j=k, x_{&lt;j}, x_{&gt;j})\right) \right]}
+$$</p>
+<p>The $\frac{1}{Z}$ terms in the numerator and denominator cancel each other out perfectly. We are left with a tractable Softmax function that depends only on the energy values, which we can compute directly from the energy model:</p>
+<p>$$
+p_\theta(x_j \mid x_{&lt;j}, x_{&gt;j}) = \frac{\exp\left(-E(x_j, x_{&lt;j}, x_{&gt;j})\right)}{\sum_{k \in \mathcal{V}} \exp\left(-E(x_j=k, x_{&lt;j}, x_{&gt;j})\right)}
+$$</p>
+<p>Where $\mathcal{V}$ is the set of all possible values for pixel $x_j$ (e.g., $\{0, \dots, 255\}$).</p>
+<hr/>
+<h3 id="3.-The-Sampling-Step-(Important)">3. The Sampling Step (Important)<a class="anchor-link" href="#3.-The-Sampling-Step-(Important)">¶</a></h3><p>Once we calculate this probability distribution for the specific pixel $x_j$, we do <strong>not</strong> simply pick the value $k$ that yields the lowest energy (highest probability). Doing so would be greedy optimization, not sampling.</p>
+<p>Instead, we perform <strong>Weighted Random Selection</strong>:</p>
+<ol>
+<li>Compute the energy $E$ for every possible value $k$ that $x_j$ can take.</li>
+<li>Convert these energies into a probability distribution using the <strong>Softmax</strong> function (the equation derived above).</li>
+<li>Sample a value from this distribution.</li>
+</ol>
+<h3 id="4.-Computational-Implication">4. Computational Implication<a class="anchor-link" href="#4.-Computational-Implication">¶</a></h3><p>This derivation highlights the computational cost of Gibbs Sampling for high-dimensional, non-binary data:</p>
+<ul>
+<li>To update a <strong>single pixel</strong> $x_j$, we must evaluate the Energy Function $|\mathcal{V}|$ times (once for every possible value $k$ in the denominator sum).</li>
+<li>For a standard 8-bit image, $|\mathcal{V}| = 256$.</li>
+<li>Therefore, one full sweep over an image requires $256 \times D$ evaluations of the neural network.</li>
+</ul>
+<p>This cost is why Gibbs Sampling is rarely used for continuous or high-cardinality data in modern Deep Learning, and is typically replaced by <strong>Langevin Dynamics</strong> (which uses gradients to avoid checking every possible value).</p>
+<h3 id="The-Theoretical-Constraint-(Performance)">The Theoretical Constraint (Performance)<a class="anchor-link" href="#The-Theoretical-Constraint-(Performance)">¶</a></h3><p>While theoretically sound, standard Gibbs Sampling highlights a major computational bottleneck in high dimensions:</p>
+<ul>
+<li>To generate <strong>one</strong> full sample $x^{(t)}$ from $x^{(t-1)}$, we must perform $D$ separate sampling operations.</li>
+<li>If $x$ is a $32 \times 32$ image ($D=1024$), one Markov step requires 1024 distinct updates.</li>
+<li>The conditional dependency prevents parallelization: we cannot sample $x_2^{(t)}$ until we know $x_1^{(t)}$.</li>
+</ul>
+<p>This makes "pixel-by-pixel" Gibbs sampling incredibly slow for large images, often necessitating Block Gibbs Sampling (in RBMs) or First-Order Gradient methods (Langevin) for modern applications.</p>
+<h4 id="EBM-Training-by-Gibbs-Sampling">EBM Training by Gibbs Sampling<a class="anchor-link" href="#EBM-Training-by-Gibbs-Sampling">¶</a></h4>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=ab8d6ada">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=9d3d254f">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=1c0c11de">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
