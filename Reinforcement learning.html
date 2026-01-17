@@ -9792,13 +9792,154 @@ $$</p>
 <p>This constraint guarantees that the Importance Sampling ratio stays within a safe range, keeping the variance of the gradient update acceptable.</p>
 <p>Directly enforcing the KL constraint during optimization is computationally intractable for deep neural networks because the constraint is non-linear and highly complex. To solve this efficiently, we use <strong>Taylor Series approximations</strong> to simplify the problem into a form we can solve analytically. This yields the <strong>Natural Policy Gradient</strong> update rule:</p>
 <p>$$
-\theta_{new} = \theta_{old} + \alpha \cdot \mathbf{H}^{-1} \nabla_\theta L(\theta)
+\theta_{new} = \theta_{old} + \alpha \cdot \mathbf{H}^{-1} \nabla_\theta L(\theta) = \theta_{old} + \sqrt{\frac{2\delta}{\nabla_\theta L(\theta)^T \mathbf{H}^{-1} \nabla_\theta L(\theta)}} \cdot \mathbf{H}^{-1} \nabla_\theta L(\theta)
 $$</p>
 <ul>
 <li>$\mathbf{H}$ is the <strong>Hessian matrix</strong> of the KL divergence with respect to the parameters.</li>
+<li>$\alpha$ is the step size, which is dynamically calculated based on the trust region radius $\delta$:
+$$\alpha = \sqrt{\frac{2\delta}{\nabla_\theta L(\theta)^T \mathbf{H}^{-1} \nabla_\theta L(\theta)}}$$</li>
 </ul>
 <p>This method will reduce the variance in the gradient update significantly and force the policy to stay in a trusted region. However, this does not completely eliminate the deviate constraint because the gradient is also obtained through approximation, which can be inaccurate.</p>
 <p>While theoretically ideal, the Natural Policy Gradient method has a major practical flaw: <strong>Computational Complexity.</strong> For modern Deep Reinforcement Learning networks, computing and inverting the Hessian at every step is impossible.</p>
+<h3 id="Trust-Region-Policy-Optimization-(TRPO)">Trust Region Policy Optimization (TRPO)<a class="anchor-link" href="#Trust-Region-Policy-Optimization-(TRPO)">¶</a></h3><p>While Natural Policy Gradient (NPG) offers a mathematically superior update direction compared to standard gradient descent by accounting for the geometry of the parameter space, practical implementations suffer from two critical issues:</p>
+<h4 id="1.-Approximation-Error-and-Trust-Region-Violation">1. Approximation Error and Trust Region Violation<a class="anchor-link" href="#1.-Approximation-Error-and-Trust-Region-Violation">¶</a></h4><p>NPG aims to maximize an objective function $L(\theta)$ subject to a trust region constraint defined by the KL divergence:
+$$\max_{\theta} L(\theta) \quad \text{subject to} \quad D_{KL}(\pi_{\theta_{old}} || \pi_{\theta}) \le \delta$$</p>
+<p>To solve this, NPG approximates the constraint using a second-order Taylor expansion (a quadratic constraint). This leads to two specific failure modes:</p>
+<ol>
+<li><strong>Finite Step Violation:</strong> The quadratic approximation is only locally valid (infinitesimally close to $\theta_{old}$). When taking a finite step size (which is necessary for learning), the approximation error grows quadratically. A step size derived from the approximation often cause the gradient to have a magnitude larger than the trusted region radius, accidentally violating the trust region constraint $D_{KL} &gt; \delta$.</li>
+<li><strong>Directional Noise:</strong> The curvature matrix (Fisher Information Matrix, $F$) is estimated from finite batches of data. Sampling noise can result in an estimated $F$ that is ill-conditioned or singular. Inverting a noisy, near-singular matrix amplifies the noise, resulting in an update vector that may point in a suboptimal or unstable direction.</li>
+</ol>
+<h4 id="2.-Computational-Complexity">2. Computational Complexity<a class="anchor-link" href="#2.-Computational-Complexity">¶</a></h4><p>The NPG update rule requires the inverse of the Fisher Information Matrix (FIM), denoted here as $H$ (Hessian of the KL divergence):
+$$\Delta \theta = H^{-1} \nabla L$$
+For a neural network with $N$ parameters, $H$ is an $N \times N$ matrix.</p>
+<ul>
+<li><strong>Storage:</strong> Storing $H$ requires $O(N^2)$ memory, which is infeasible for deep networks</li>
+<li><strong>Inversion:</strong> Computing $H^{-1}$ requires $O(N^3)$ computational complexity.</li>
+</ul>
+<p>TRPO addresses these issues using two specific numerical techniques: <strong>Backtracking Line Search</strong> (for validity) and <strong>Conjugate Gradient</strong> (for scalability).</p>
+<h4 id="Backtracking-Line-Search">Backtracking Line Search<a class="anchor-link" href="#Backtracking-Line-Search">¶</a></h4><p>To strictly enforce the trust region constraint and ensure monotonic improvement, correcting the gradient magnitude overshoot caused by the Taylor approximation. While NPG calculates a full step size based on the quadratic model, TRPO treats this as a <em>proposed</em> maximum step. Before committing to the update, it verifies the proposal against the <em>actual</em> non-linear objective and constraint.</p>
+<p><strong>The Algorithm:</strong></p>
+<ol>
+<li>Compute the gradient $\sqrt{\frac{2\delta}{\nabla_\theta L(\theta)^T \mathbf{H}^{-1} \nabla_\theta L(\theta)}} \cdot \mathbf{H}^{-1} \nabla_\theta L(\theta)$</li>
+<li>Iterate through a decay coefficient $\alpha^j$ (where $0 &lt; \alpha &lt; 1$, typically $0.5$) for $j = 0, 1, 2, \dots$:<ul>
+<li>Tentative update: $\theta_{new} = \theta_{old} + \alpha^j \sqrt{\frac{2\delta}{\nabla_\theta L(\theta)^T \mathbf{H}^{-1} \nabla_\theta L(\theta)}} \cdot \mathbf{H}^{-1} \nabla_\theta L(\theta)$</li>
+<li><strong>Verification:</strong> Check if the following two conditions hold:<ol>
+<li><strong>Constraint:</strong> $D_{KL}(\pi_{\theta_{old}} || \pi_{\theta_{new}}) \le \delta$</li>
+<li><strong>Improvement:</strong> $J(\pi_{\theta_{new}}) \ge J(\pi_{\theta_{old}})$ (Surrogate loss improves)</li>
+</ol>
+</li>
+<li>If conditions are met, accept $\theta_{new}$ and terminate.</li>
+<li>If not, increment $j$ (shrink step) and retry.</li>
+</ul>
+</li>
+</ol>
+<p>Essentially, before every gradient update, the algorithm tentatively updates the policy and checks if the actual KL Divergence satisfies the constraint. If not, it decays the step size exponentially until the resulting policy falls inside the Trust Region radius. This guarantees that the update stays within the trust region regardless of the approximation error in the local model. Note that while this fixes the <em>magnitude</em> of the vector, it does not correct the <em>direction</em>.</p>
+<h4 id="Conjugate-Gradient-(CG)">Conjugate Gradient (CG)<a class="anchor-link" href="#Conjugate-Gradient-(CG)">¶</a></h4><p>Conjugate gradient is used to estimate the search direction $H^{-1} \nabla L$ without explicitly forming or inverting the massive Hessian matrix $H$. TRPO reformulates the inversion problem $\Delta \theta = H^{-1} \nabla L$ into a system of linear equations:
+$$H x = \nabla L$$
+where we solve for the vector $x$ (the search direction).</p>
+<p><strong>The Matrix-Free Approach:</strong>
+Conjugate Gradient is an iterative algorithm that can solve $Hx = \nabla L$ using only matrix-vector products ($Hv$). Critically, we can compute the product of the Hessian and an arbitrary vector $v$ without constructing $H$, using the <strong>Pearlmutter trick</strong> (second-order backpropagation):
+$$Hv = \nabla_{\theta} (\nabla_{\theta} D_{KL} \cdot v)$$</p>
+<p><strong>Algorithm Steps:</strong></p>
+<ol>
+<li><strong>Gradient:</strong> Compute the policy gradient estimator $g = \nabla L$.</li>
+<li><strong>Iterative Solve:</strong> Initialize $x_0 = 0$. iteratively refine $x_k$ to minimize the residual error $r = Hx - g$ using the conjugate direction.</li>
+<li><strong>Termination:</strong> Run for $k$ iterations (typically 10–15). This yields an approximation $\hat{x} \approx H^{-1} g$.</li>
+</ol>
+<p><strong>Handling Noise (CG Damping):</strong>
+To mitigate the "Noisy Direction" issue caused by singular (zero) eigenvalues in $H$, TRPO adds a damping term $\lambda$ (Conjugate Gradient Damping). We effectively solve for:
+$$(H + \lambda I)x = \nabla L$$
+This ensures numerical stability. If the curvature $H$ is very noisy or flat in a certain direction, the update reverts to the standard gradient descent direction.</p>
+<p>Combining both methods, the TRPO update is:</p>
+<p>$$\theta_{new} = \theta_{old} + \alpha^j \sqrt{\frac{2\delta}{\hat{x}^T H \hat{x}}} \hat{x}$$</p>
+<ul>
+<li>$\hat{x} \approx H^{-1} \nabla J$ is the direction estimated by <strong>Conjugate Gradient</strong>.</li>
+<li>$\alpha^j$ is the decay factor determined by <strong>Backtracking Line Search</strong>.</li>
+<li>$H$ is the Hessian matrix estimated through sampling</li>
+</ul>
+<h3 id="TRPO-Algorithm">TRPO Algorithm<a class="anchor-link" href="#TRPO-Algorithm">¶</a></h3><ol>
+<li><p><strong>Given:</strong></p>
+<ul>
+<li><strong>Hyperparameters:</strong><ul>
+<li>Trust region radius $\delta$ (e.g., 0.01)</li>
+<li>Discount factor $\gamma \in [0, 1]$</li>
+<li>GAE parameter $\lambda \in [0, 1]$ (optional, for Advantage estimation)</li>
+<li>Conjugate Gradient iterations $N_{CG}$ (e.g., 10)</li>
+<li>Backtracking line search coefficient $\alpha \in (0, 1)$ and max attempts $K$.</li>
+</ul>
+</li>
+<li><strong>Models:</strong><ul>
+<li>A parameterized stochastic policy $\pi(a|s; \theta)$ (Actor)</li>
+<li>A parameterized value function $V(s; \phi)$ (Critic/Baseline)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Initialize:</strong></p>
+<ul>
+<li>Policy weights $\theta$ and Value weights $\phi$ arbitrarily.</li>
+</ul>
+</li>
+<li><p><strong>Repeat (for each iteration):</strong></p>
+<ul>
+<li><p><strong>1. Data Collection:</strong></p>
+<ul>
+<li>Run the current policy $\pi_{\theta_{old}}$ in the environment for $T$ timesteps or $N$ trajectories.</li>
+<li>Collect a set of trajectories $\mathcal{D} = \{ \tau_1, \tau_2, \dots \}$.</li>
+<li>Store states $S$, actions $A$, rewards $R$, and next states $S'$.</li>
+</ul>
+</li>
+<li><p><strong>2. Advantage Estimation:</strong></p>
+<ul>
+<li>For each timestep in the collected trajectories, estimate the Advantage $A_t$.</li>
+<li>Typically done using Generalized Advantage Estimation (GAE):
+$$\delta_t = R_t + \gamma V(S_{t+1}; \phi) - V(S_t; \phi)$$
+$$A_t = \sum_{k=0}^{\infty} (\gamma \lambda)^k \delta_{t+k}$$</li>
+<li>Compute the rewards-to-go (returns) $\hat{R}_t$ for the value function target.</li>
+</ul>
+</li>
+<li><p><strong>3. Policy Update Step (The Trust Region Update):</strong></p>
+<ul>
+<li><p><strong>Compute Policy Gradient:</strong> Calculate the gradient of the surrogate objective w.r.t. $\theta$:
+$$g = \nabla_\theta L(\theta)|_{\theta_{old}} = \nabla_\theta \left( \frac{1}{|\mathcal{D}|} \sum_{(s,a) \in \mathcal{D}} \frac{\pi_\theta(a|s)}{\pi_{\theta_{old}}(a|s)} A_t \right)$$</p>
+</li>
+<li><p><strong>Compute Search Direction (Conjugate Gradient):</strong></p>
+<ul>
+<li>Estimate the Fisher Information Matrix-vector product ($Hv$) efficiently (without forming full matrix $H$) using the Hessian-vector product trick.</li>
+<li>Solve the linear system $H x = g$ for $x$ using the <strong>Conjugate Gradient (CG)</strong> algorithm to get the search direction $x \approx H^{-1}g$.</li>
+</ul>
+</li>
+<li><p><strong>Compute Max Step Size:</strong></p>
+<ul>
+<li>Calculate the maximal step size $\beta$ that ensures the quadratic approximation of KL divergence stays within $\delta$:
+$$\beta = \sqrt{\frac{2\delta}{x^T H x}}$$</li>
+<li>The proposed full step is $\Delta \theta = \beta x$.</li>
+</ul>
+</li>
+<li><p><strong>Backtracking Line Search:</strong></p>
+<ul>
+<li>Perform a line search to find the largest step $\Delta \theta_{final} = \alpha^j \Delta \theta$ (for $j=0, 1, \dots, K$) that satisfies:<ol>
+<li><strong>Surrogate Improvement:</strong> $L(\theta_{old} + \Delta \theta_{final}) \ge 0$ (Objective improves)</li>
+<li><strong>KL Constraint:</strong> $D_{KL}(\pi_{\theta_{old}} || \pi_{\theta_{old} + \Delta \theta_{final}}) \le \delta$ (Actually inside Trust Region)</li>
+</ol>
+</li>
+<li>Update $\theta \leftarrow \theta_{old} + \Delta \theta_{final}$ (Replace the old policy by the new one after each iteration).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>4. Value Function Update:</strong></p>
+<ul>
+<li>Update $\phi$ to minimize the Mean Squared Error between the estimated value and the actual returns $\hat{R}_t$:
+$$\phi \leftarrow \arg\min_\phi \sum_{t} \left( V(S_t; \phi) - \hat{R}_t \right)^2$$</li>
+<li>(Usually solved via standard Adam/SGD optimizer for multiple epochs).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Repeat until convergence.</strong></p>
+</li>
+</ol>
 </div>
 </div>
 </div>
