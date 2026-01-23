@@ -9724,6 +9724,9 @@ $$</p>
 $$
 L^{CPI}(\theta) = \mathbb{E}_{\tau \sim \pi_{\theta_{old}}} \left[ r_t(\theta) A_t \right] = \mathbb{E}_{\tau \sim \pi_{\theta_{old}}} \left[ \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)} A_t \right]
 $$</p>
+<blockquote>
+<p>Note: $\frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}$ is computed with respect to each individual transition within the given trajectory. Therefore, this is simply comparing the probability density of the specific action taken ($a$) under the new policy versus the old policy, at the current state $s_t$. The assumption here is that the difference between the two action distributions at the current state represents the overall differences between the two policies.</p>
+</blockquote>
 <p>We can prove that maximizing this surrogate is locally equivalent to maximizing the original objective by taking the gradient with respect to $\theta$ and evaluating it at $\theta_{old}$:</p>
 <ol>
 <li><p>Take the gradient of $L^{CPI}$:
@@ -9940,6 +9943,56 @@ $$\phi \leftarrow \arg\min_\phi \sum_{t} \left( V(S_t; \phi) - \hat{R}_t \right)
 <li><p><strong>Repeat until convergence.</strong></p>
 </li>
 </ol>
+<h3 id="Proximal-Policy-Optimization-(PPO)">Proximal Policy Optimization (PPO)<a class="anchor-link" href="#Proximal-Policy-Optimization-(PPO)">¶</a></h3><p>While <strong>Trust Region Policy Optimization (TRPO)</strong> provides a theoretically rigorous way to ensure safe updates by constraining the <strong>KL Divergence</strong> between policies, it faces a significant challenges due to high computational complexity. TRPO requires calculating (or estimating via Conjugate Gradient) the Hessian or Fisher Information Matrix to define the trust region, which is computationally expensive and difficult to implement.</p>
+<p><strong>Proximal Policy Optimization (PPO)</strong> simplifies this by approximating the trust region constraint. The core distinction lies in how they measure the "difference" between the old policy ($\pi_{old}$) and the new policy ($\pi_\theta$):</p>
+<ul>
+<li><strong>TRPO (Distributional Comparison):</strong> Compares the <strong>full</strong> action distribution of at the given state $s_t$</li>
+<li><strong>PPO (Pointwise Comparison):</strong> Compares only the <strong>probability ratio</strong> of the specific action ($a_t$) that was actually selected.</li>
+</ul>
+<h4 id="The-Hierarchy-of-Approximations">The Hierarchy of Approximations<a class="anchor-link" href="#The-Hierarchy-of-Approximations">¶</a></h4><p>Ideally, we would measure the policy difference across <strong>all possible states</strong> and <strong>all possible actions</strong>. Since this is impossible, both algorithms rely on approximations:</p>
+<ol>
+<li><strong>TRPO Assumption:</strong> It assumes that constraining the KL divergence of the action distributions at the current sampled state ($s_t$) is sufficient to control the policy's behavior globally.</li>
+<li><strong>PPO Assumption:</strong> It takes a step further. It assumes that constraining the probability ratio of the <strong>sampled actions</strong> ($a_t$) is a sufficient proxy for the entire distribution's stability. It effectively ignores changes in the probability of actions that were not sampled.</li>
+</ol>
+<h4 id="The-Clipped-Surrogate-Objective">The Clipped Surrogate Objective<a class="anchor-link" href="#The-Clipped-Surrogate-Objective">¶</a></h4><p>In TRPO, enforcing the Trust Region involves a complex <strong>Backtracking Line Search</strong> to iteratively decay the update step until the KL constraint is satisfied. PPO replaces this complex process with a simple <strong>Clipping Mechanism</strong>. Instead of calculating a step size, PPO modifies the objective function itself to penalize the agent if the ratio moves too far from 1. The PPO objective puts a <strong>Hard Bound</strong> on the importance sampling ratio, limiting it to the range $[1-\epsilon, 1+\epsilon]$ (where $\epsilon$ is typically 0.2).</p>
+<p>The PPO "Clipped" objective is defined as:</p>
+<p>$$
+L^{CLIP}(\theta) = \mathbb{E}_t \left[ \min \left( r_t(\theta) A_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) A_t \right) \right]
+$$</p>
+<ul>
+<li><strong>$r_t(\theta)$</strong> is the probability ratio: $\frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}$</li>
+<li><strong>$A_t$</strong> is the Advantage estimate at time $t$.</li>
+<li><strong>$\epsilon$</strong> is the hyperparameter determining the clip range.</li>
+<li>$
+\text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) = 
+\begin{cases} 
+1 - \epsilon &amp; \text{if } r_t(\theta) &lt; 1 - \epsilon \\
+r_t(\theta) &amp; \text{if } 1 - \epsilon \le r_t(\theta) \le 1 + \epsilon \\
+1 + \epsilon &amp; \text{if } r_t(\theta) &gt; 1 + \epsilon
+\end{cases}
+$</li>
+</ul>
+<p>The <code>min</code> operator selects the more pessimistic (lower) value between the unclipped and clipped objectives. This creates two distinct behaviors depending on the Advantage:</p>
+<ol>
+<li><strong>Positive Advantage ($A &gt; 0$):</strong> The action was good. We want to increase its probability (ratio $&gt; 1$).<ul>
+<li>If the ratio grows beyond $1+\epsilon$, the objective hits a ceiling (constant value). The gradient becomes <strong>0</strong>, preventing the update from being too greedy.</li>
+</ul>
+</li>
+<li><strong>Negative Advantage ($A &lt; 0$):</strong> The action was bad. We want to decrease its probability (ratio $&lt; 1$).<ul>
+<li>If the ratio drops below $1-\epsilon$, the objective hits a floor. The gradient becomes <strong>0</strong>, preventing the update from destroying the policy (irreversibly driving probability to 0).</li>
+</ul>
+</li>
+</ol>
+<p>Notice that since the we selected the clipped objective, the gradient becomes 0, which means the optimzer will ignore that example when updating the policy because it is an "unsafe" update. The clipping objective will be hit more often as the two policies become more and more different from each other, so we need to update the $\pi_{old}$ to $\pi_{\theta}$ from time to time.</p>
+<p>This clipping mechanism transforms the constrained optimization problem into an unconstrained one that can be solved using standard <strong>First-Order Optimizers</strong> (like Adam or SGD).</p>
+<ul>
+<li><strong>No Hessian:</strong> We do not need to calculate second-order derivatives or inverse matrices.</li>
+<li><strong>Multi-Epoch Updates:</strong> Because the clipping prevents the policy from diverging too quickly, we can safely reuse the collected trajectory data for multiple gradient updates (epochs), making PPO significantly more sample-efficient than vanilla Policy Gradient.</li>
+</ul>
+<h4 id="Sampling-Efficiency">Sampling Efficiency<a class="anchor-link" href="#Sampling-Efficiency">¶</a></h4><p>Both TRPO and PPO also acheives higher sample efficiency because, we can reuse our previous samples for some time, as long as the new policy is still within the trusted region, we can use samples from the old policy since the two policies are not too different.</p>
+<p>Therefore, similar to DQN, we can also use an experience buffer and collect multiple sample trajectory and save them into into a buffer, and we can break the buffer into mini-batches and go multiple epochs over it.</p>
+<p>However, since the we need to update $\pi_{old}$ from time to time, this means we need to reset entire buffer once $\pi_{old}$ is updated because we cannot reuse the trajectories sampled from an older version of the policy.</p>
+<h3 id="PPO-Algorithm">PPO Algorithm<a class="anchor-link" href="#PPO-Algorithm">¶</a></h3>
 </div>
 </div>
 </div>
