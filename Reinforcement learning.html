@@ -9898,7 +9898,8 @@ This ensures numerical stability. If the curvature $H$ is very noisy or flat in 
 <li>Typically done using Generalized Advantage Estimation (GAE):
 $$\delta_t = R_t + \gamma V(S_{t+1}; \phi) - V(S_t; \phi)$$
 $$A_t = \sum_{k=0}^{\infty} (\gamma \lambda)^k \delta_{t+k}$$</li>
-<li>Compute the rewards-to-go (returns) $\hat{R}_t$ for the value function target.</li>
+<li>Compute the rewards-to-go (estimated action value) for the value function target:
+$$y_t = A_t + V(S_t; \phi)$$</li>
 </ul>
 </li>
 <li><p><strong>3. Policy Update Step (The Trust Region Update):</strong></p>
@@ -9934,7 +9935,7 @@ $$\beta = \sqrt{\frac{2\delta}{x^T H x}}$$</li>
 <li><p><strong>4. Value Function Update:</strong></p>
 <ul>
 <li>Update $\phi$ to minimize the Mean Squared Error between the estimated value and the actual returns $\hat{R}_t$:
-$$\phi \leftarrow \arg\min_\phi \sum_{t} \left( V(S_t; \phi) - \hat{R}_t \right)^2$$</li>
+$$\phi \leftarrow \arg\min_\phi \sum_{t} \left( V(S_t; \phi) - y_t \right)^2$$</li>
 <li>(Usually solved via standard Adam/SGD optimizer for multiple epochs).</li>
 </ul>
 </li>
@@ -10042,7 +10043,7 @@ $$\mathcal{D} = \{ (s_t, a_t, r_t, s_{t+1}, \log \pi_{\theta_{old}}(a_t|s_t)) \}
 <li>Compute Advantages: $A_t = \sum_{k=0}^{T-t-1} (\gamma \lambda)^k \delta_{t+k}$</li>
 </ul>
 </li>
-<li>Compute the target Returns for the value function: $\hat{R}_t = A_t + V_\phi(s_t)$.</li>
+<li>Compute the target Returns for the value function (estiamted action value): $y_t = A_t + V_\phi(s_t)$.</li>
 <li>(Optional) Normalize advantages $A_t$ (mean 0, std 1) for training stability.</li>
 </ul>
 </li>
@@ -10076,7 +10077,7 @@ $$r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)} = \exp(\
 - Optimizer Step: Update $\theta$ using the Actor's optimizer.</p>
 </li>
 <li><p><strong>Update Critic (Value Network):</strong>
-- Compute Critic Loss: $L^{Critic}(\phi) = \frac{1}{|B|} \sum_{i \in B} (V_\phi(s_i) - \hat{R}_i)^2$
+- Compute Critic Loss: $L^{Critic}(\phi) = \frac{1}{|B|} \sum_{i \in B} (V_\phi(s_i) - y_i)^2$
 - Backpropagate: Compute gradients $\nabla_\phi L^{Critic}$.
 - Optimizer Step: Update $\phi$ using the Critic's optimizer.</p>
 </li>
@@ -10162,6 +10163,7 @@ $$\delta_t = r_t + \gamma V_\phi(s_{t+1}) - V_\phi(s_t)$$</p>
 $$A_t^{GAE} = \sum_{k=0}^{\infty} (\gamma \lambda)^k \delta_{t+k}$$</p>
 <p>The target for the Value Network then becomes:
 $$y_t = A_t^{GAE} + V_\phi(s_t)$$</p>
+<p>The target $y_t$ is an estimation for the action-value $q_t(s, a)$.</p>
 </li>
 <li><p><strong>Critic Update</strong></p>
 <p>The Critic minimizes the Mean Squared Error (MSE) between its prediction and the computed target:</p>
@@ -10186,6 +10188,33 @@ $$y_t = A_t^{GAE} + V_\phi(s_t)$$</p>
 <p>We compute the gradient of this total loss with respect to the shared parameters $\theta$ and perform a single update step:</p>
 <p>$$\nabla_\theta L_{total} = \hat{\mathbb{E}}_t \left[ -\nabla_\theta L^{CLIP}_t + 2 c_1 \left( V_\theta(s_t) - y_t \right) \nabla_\theta V_\theta(s_t) \right]$$</p>
 <p>$$\theta \leftarrow \theta - \alpha \nabla_\theta L_{total}$$</p>
+<h3 id="Importance-Sampling-in-Value-Network-Training">Importance Sampling in Value Network Training<a class="anchor-link" href="#Importance-Sampling-in-Value-Network-Training">¶</a></h3><p>In theory, when training the value network, we should reweight the value estimate given by $pi_old$ to pi when calculating the advantage. So, the value network estiamte the value of the newest policy, where</p>
+<p>formula here</p>
+<p>While this is theortically more correct, in practice, we do not implement this because</p>
+<ol>
+<li>Requries extra computation</li>
+<li>The "Long Tail" of Ratios may cause high varaince in the update.</li>
+<li>Good enough estiamte, since TRPO/PPO keeps the two policy close, we can safely assume the value estiamtes under $pi_old$ is good enough for pi</li>
+</ol>
+<h3 id="Importance-Sampling-in-Value-Network-Training">Importance Sampling in Value Network Training<a class="anchor-link" href="#Importance-Sampling-in-Value-Network-Training">¶</a></h3><p>In Actor-Critic algorithms like PPO, the Value Network (Critic) is tasked with estimating $V^{\pi_\theta}(s)$, the value function of the <em>current</em> policy. However, the training data (states, actions, and rewards) is collected by an <em>old</em> behavior policy $\pi_{\text{old}}$. Ideally, to account for the distribution shift between the data-collecting policy ($\pi_{\text{old}}$) and the target policy ($\pi_\theta$), we should apply <strong>Importance Sampling (IS)</strong> to the value estimation, so the theoretically corrected update target ($y_t^{IS}$) would resemble:</p>
+<p>$$
+y_t^{IS} = V(s_t) +  \left( \rho_t (r_t + \gamma V(s_{t+1})) - V(s_t) \right) = \rho_t (r_t + \gamma V(s_{t+1}))
+$$</p>
+<ul>
+<li>$\rho_t = \frac{\pi_\theta(a_t|s_t)}{\pi_{\text{old}}(a_t|s_t)}$ is the importance sampling ratio.</li>
+</ul>
+<p>Despite the theoretical justification, standard implementations of PPO and TRPO <strong>do not</strong> use Importance Sampling for the Value Network. The Critic is simply trained to minimize the Mean Squared Error (MSE) against the unweighted returns from the buffer: $L = (V_\phi(s) - y_t^{IS})^2$.</p>
+<p>There are three primary reasons for this simplification:</p>
+<ol>
+<li><p><strong>Computational Complexity vs. Gain</strong>: Implementing correct off-policy targets requires recursive calculation over the trajectory and careful handling of the products of ratios. The marginal performance gain in On-Policy methods rarely justifies the added code complexity and computational overhead.</p>
+</li>
+<li><p><strong>The "Long Tail" of Ratios (Variance Explosion)</strong>: Importance Sampling ratios $\rho_t$ are unbounded. If the old policy took an action that was rare ($\pi_{\text{old}} \approx 10^{-4}$) but the new policy likes it ($\pi_{\theta} \approx 10^{-2}$), the ratio becomes huge ($\rho = 100$). Since the Critic optimizes a <strong>Squared Error</strong> loss, multiplying the error by a large factor $\rho_t$ (or scaling the target by it) causes the gradient to explode. This leads to severe instability where the Value Network overfits to outliers rather than learning the general value landscape.</p>
+</li>
+<li><p><strong>The "Good Enough" Assumption (Trust Region)</strong>: The core mechanic of PPO/TRPO is the Trust Region constraint (via Clipping or KL Divergence), which forces the new policy to remain statistically close to the old policy:
+$$\pi_\theta \approx \pi_{\text{old}} \implies \rho_t \approx 1$$</p>
+<p>Because the policies are constrained to be similar, the Value Function of the old policy is a highly accurate proxy for the Value Function of the new policy ($V^{\pi_{\text{old}}} \approx V^{\pi_\theta}$). Therefore, training the Critic on the "stale" returns from $\pi_{\text{old}}$ introduces a bias that is negligible in practice compared to the variance introduced by Importance Sampling.</p>
+</li>
+</ol>
 </div>
 </div>
 </div>
