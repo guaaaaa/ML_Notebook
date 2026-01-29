@@ -7497,7 +7497,12 @@ a.anchor-link {
     if (!diagrams.length) {
       return;
     }
-    const mermaid = (await import("https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.esm.min.mjs")).default;
+    const mermaid = (await import("https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.10.0/mermaid.esm.min.mjs")).default;
+    const elkUrl = "https://cdnjs.cloudflare.com/ajax/libs/mermaid-layout-elk/0.1.9/mermaid-layout-elk.esm.min.mjs";
+    if(elkUrl) {
+      const elkLayouts = (await import(elkUrl)).default;
+      mermaid.registerLayoutLoaders(elkLayouts);
+    }
     const parser = new DOMParser();
 
     mermaid.initialize({
@@ -7594,7 +7599,8 @@ a.anchor-link {
      * Post-process to ensure mermaid diagrams contain only valid SVG and XHTML.
      */
     function cleanMermaidSvg(svg) {
-      return svg.replace(RE_VOID_ELEMENT, replaceVoidElement);
+      svg = svg.replace(RE_VOID_ELEMENT, replaceVoidElement);
+      return `${SVG_XML_HEADER}${svg}`;
     }
 
 
@@ -7620,6 +7626,285 @@ a.anchor-link {
       }
       return `<${tag} ${rest}>`;
     }
+
+
+  /**
+   * Named HTML entities with their decimal equivalent codes.
+   *
+   * @see https://www.w3.org/TR/WD-html40-970708/sgml/entities.html
+   * */
+  const HTML_ENTITIES = `<!ENTITY Aacute "&#193;">
+<!ENTITY aacute "&#225;">
+<!ENTITY Acirc "&#194;">
+<!ENTITY acirc "&#226;">
+<!ENTITY acute "&#180;">
+<!ENTITY AElig "&#198;">
+<!ENTITY aelig "&#230;">
+<!ENTITY Agrave "&#192;">
+<!ENTITY agrave "&#224;">
+<!ENTITY alefsym "&#8501;">
+<!ENTITY Alpha "&#913;">
+<!ENTITY alpha "&#945;">
+<!ENTITY amp "&#38;">
+<!ENTITY and "&#8869;">
+<!ENTITY ang "&#8736;">
+<!ENTITY Aring "&#197;">
+<!ENTITY aring "&#229;">
+<!ENTITY asymp "&#8776;">
+<!ENTITY Atilde "&#195;">
+<!ENTITY atilde "&#227;">
+<!ENTITY Auml "&#196;">
+<!ENTITY auml "&#228;">
+<!ENTITY bdquo "&#8222;">
+<!ENTITY Beta "&#914;">
+<!ENTITY beta "&#946;">
+<!ENTITY brvbar "&#166;">
+<!ENTITY bull "&#8226;">
+<!ENTITY cap "&#8745;">
+<!ENTITY Ccedil "&#199;">
+<!ENTITY ccedil "&#231;">
+<!ENTITY cedil "&#184;">
+<!ENTITY cent "&#162;">
+<!ENTITY Chi "&#935;">
+<!ENTITY chi "&#967;">
+<!ENTITY circ "&#710;">
+<!ENTITY clubs "&#9827;">
+<!ENTITY cong "&#8773;">
+<!ENTITY copy "&#169;">
+<!ENTITY crarr "&#8629;">
+<!ENTITY cup "&#8746;">
+<!ENTITY curren "&#164;">
+<!ENTITY dagger "&#8224;">
+<!ENTITY Dagger "&#8225;">
+<!ENTITY darr "&#8595;">
+<!ENTITY dArr "&#8659;">
+<!ENTITY deg "&#176;">
+<!ENTITY Delta "&#916;">
+<!ENTITY delta "&#948;">
+<!ENTITY diams "&#9830;">
+<!ENTITY divide "&#247;">
+<!ENTITY Eacute "&#201;">
+<!ENTITY eacute "&#233;">
+<!ENTITY Ecirc "&#202;">
+<!ENTITY ecirc "&#234;">
+<!ENTITY Egrave "&#200;">
+<!ENTITY egrave "&#232;">
+<!ENTITY empty "&#8709;">
+<!ENTITY emsp "&#8195;">
+<!ENTITY ensp "&#8194;">
+<!ENTITY epsilon "&#949;">
+<!ENTITY Epsilon "&#917;">
+<!ENTITY equiv "&#8801;">
+<!ENTITY Eta "&#919;">
+<!ENTITY eta "&#951;">
+<!ENTITY ETH "&#208;">
+<!ENTITY eth "&#240;">
+<!ENTITY Euml "&#203;">
+<!ENTITY euml "&#235;">
+<!ENTITY exist "&#8707;">
+<!ENTITY fnof "&#402;">
+<!ENTITY forall "&#8704;">
+<!ENTITY frac12 "&#189;">
+<!ENTITY frac14 "&#188;">
+<!ENTITY frac34 "&#190;">
+<!ENTITY frasl "&#8260;">
+<!ENTITY Gamma "&#915;">
+<!ENTITY gamma "&#947;">
+<!ENTITY ge "&#8805;">
+<!ENTITY gt "&#62;">
+<!ENTITY harr "&#8596;">
+<!ENTITY hArr "&#8660;">
+<!ENTITY hearts "&#9829;">
+<!ENTITY hellip "&#8230;">
+<!ENTITY Iacute "&#205;">
+<!ENTITY iacute "&#237;">
+<!ENTITY Icirc "&#206;">
+<!ENTITY icirc "&#238;">
+<!ENTITY iexcl "&#161;">
+<!ENTITY Igrave "&#204;">
+<!ENTITY igrave "&#236;">
+<!ENTITY image "&#8465;">
+<!ENTITY infin "&#8734;">
+<!ENTITY int "&#8747;">
+<!ENTITY Iota "&#921;">
+<!ENTITY iota "&#953;">
+<!ENTITY iquest "&#191;">
+<!ENTITY isin "&#8712;">
+<!ENTITY Iuml "&#207;">
+<!ENTITY iuml "&#239;">
+<!ENTITY Kappa "&#922;">
+<!ENTITY kappa "&#954;">
+<!ENTITY Lambda "&#923;">
+<!ENTITY lambda "&#955;">
+<!ENTITY lang "&#9001;">
+<!ENTITY laquo "&#171;">
+<!ENTITY larr "&#8592;">
+<!ENTITY lArr "&#8656;">
+<!ENTITY lceil "&#8968;">
+<!ENTITY ldquo "&#8220;">
+<!ENTITY le "&#8804;">
+<!ENTITY lfloor "&#8970;">
+<!ENTITY lowast "&#8727;">
+<!ENTITY loz "&#9674;">
+<!ENTITY lrm "&#8206;">
+<!ENTITY lsaquo "&#8249;">
+<!ENTITY lsquo "&#8216;">
+<!ENTITY lt "&#60;">
+<!ENTITY macr "&#175;">
+<!ENTITY mdash "&#8212;">
+<!ENTITY micro "&#181;">
+<!ENTITY middot "&#183;">
+<!ENTITY minus "&#8722;">
+<!ENTITY Mu "&#924;">
+<!ENTITY mu "&#956;">
+<!ENTITY nabla "&#8711;">
+<!ENTITY nbsp "&#160;">
+<!ENTITY ndash "&#8211;">
+<!ENTITY ne "&#8800;">
+<!ENTITY ni "&#8715;">
+<!ENTITY not "&#172;">
+<!ENTITY notin "&#8713;">
+<!ENTITY nsub "&#8836;">
+<!ENTITY Ntilde "&#209;">
+<!ENTITY ntilde "&#241;">
+<!ENTITY Nu "&#925;">
+<!ENTITY nu "&#957;">
+<!ENTITY Oacute "&#211;">
+<!ENTITY oacute "&#243;">
+<!ENTITY Ocirc "&#212;">
+<!ENTITY ocirc "&#244;">
+<!ENTITY OElig "&#338;">
+<!ENTITY oelig "&#339;">
+<!ENTITY Ograve "&#210;">
+<!ENTITY ograve "&#242;">
+<!ENTITY oline "&#8254;">
+<!ENTITY Omega "&#937;">
+<!ENTITY omega "&#969;">
+<!ENTITY Omicron "&#927;">
+<!ENTITY omicron "&#959;">
+<!ENTITY oplus "&#8853;">
+<!ENTITY or "&#8870;">
+<!ENTITY ordf "&#170;">
+<!ENTITY ordm "&#186;">
+<!ENTITY Oslash "&#216;">
+<!ENTITY oslash "&#248;">
+<!ENTITY Otilde "&#213;">
+<!ENTITY otilde "&#245;">
+<!ENTITY otimes "&#8855;">
+<!ENTITY Ouml "&#214;">
+<!ENTITY ouml "&#246;">
+<!ENTITY para "&#182;">
+<!ENTITY part "&#8706;">
+<!ENTITY permil "&#8240;">
+<!ENTITY perp "&#8869;">
+<!ENTITY Phi "&#934;">
+<!ENTITY phi "&#966;">
+<!ENTITY Pi "&#928;">
+<!ENTITY pi "&#960;">
+<!ENTITY piv "&#982;">
+<!ENTITY plusmn "&#177;">
+<!ENTITY pound "&#163;">
+<!ENTITY prime "&#8242;">
+<!ENTITY Prime "&#8243;">
+<!ENTITY prod "&#8719;">
+<!ENTITY prop "&#8733;">
+<!ENTITY Psi "&#936;">
+<!ENTITY psi "&#968;">
+<!ENTITY quot "&#34;">
+<!ENTITY radic "&#8730;">
+<!ENTITY rang "&#9002;">
+<!ENTITY raquo "&#187;">
+<!ENTITY rarr "&#8594;">
+<!ENTITY rArr "&#8658;">
+<!ENTITY rceil "&#8969;">
+<!ENTITY rdquo "&#8221;">
+<!ENTITY real "&#8476;">
+<!ENTITY reg "&#174;">
+<!ENTITY rfloor "&#8971;">
+<!ENTITY Rho "&#929;">
+<!ENTITY rho "&#961;">
+<!ENTITY rlm "&#8207;">
+<!ENTITY rsaquo "&#8250;">
+<!ENTITY rsquo "&#8217;">
+<!ENTITY sbquo "&#8218;">
+<!ENTITY Scaron "&#352;">
+<!ENTITY scaron "&#353;">
+<!ENTITY sdot "&#8901;">
+<!ENTITY sect "&#167;">
+<!ENTITY shy "&#173;">
+<!ENTITY Sigma "&#931;">
+<!ENTITY sigma "&#963;">
+<!ENTITY sigmaf "&#962;">
+<!ENTITY sim "&#8764;">
+<!ENTITY spades "&#9824;">
+<!ENTITY sub "&#8834;">
+<!ENTITY sube "&#8838;">
+<!ENTITY sum "&#8721;">
+<!ENTITY sup "&#8835;">
+<!ENTITY sup1 "&#185;">
+<!ENTITY sup2 "&#178;">
+<!ENTITY sup3 "&#179;">
+<!ENTITY supe "&#8839;">
+<!ENTITY szlig "&#223;">
+<!ENTITY Tau "&#932;">
+<!ENTITY tau "&#964;">
+<!ENTITY there4 "&#8756;">
+<!ENTITY Theta "&#920;">
+<!ENTITY theta "&#952;">
+<!ENTITY thetasym "&#977;">
+<!ENTITY thinsp "&#8201;">
+<!ENTITY THORN "&#222;">
+<!ENTITY thorn "&#254;">
+<!ENTITY tilde "&#732;">
+<!ENTITY times "&#215;">
+<!ENTITY trade "&#8482;">
+<!ENTITY Uacute "&#218;">
+<!ENTITY uacute "&#250;">
+<!ENTITY uarr "&#8593;">
+<!ENTITY uArr "&#8657;">
+<!ENTITY Ucirc "&#219;">
+<!ENTITY ucirc "&#251;">
+<!ENTITY Ugrave "&#217;">
+<!ENTITY ugrave "&#249;">
+<!ENTITY uml "&#168;">
+<!ENTITY upsih "&#978;">
+<!ENTITY Upsilon "&#933;">
+<!ENTITY upsilon "&#965;">
+<!ENTITY Uuml "&#220;">
+<!ENTITY uuml "&#252;">
+<!ENTITY weierp "&#8472;">
+<!ENTITY Xi "&#926;">
+<!ENTITY xi "&#958;">
+<!ENTITY Yacute "&#221;">
+<!ENTITY yacute "&#253;">
+<!ENTITY yen "&#165;">
+<!ENTITY Yuml "&#376;">
+<!ENTITY yuml "&#255;">
+<!ENTITY Zeta "&#918;">
+<!ENTITY zeta "&#950;">
+<!ENTITY zwj "&#8205;">
+<!ENTITY zwnj "&#8204;">`.replace(/\n/g, ' ');
+
+  /**
+   * A reasonably strict xml declaration.
+   */
+  const XML_DECL = '<?xml version="1.0" standalone="no"?>';
+
+  /**
+   * The beginning of the XML doctype declaration.
+   */
+  const DOCTYPE_START = `<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [`;
+
+  /**
+   * The end of the XML docype declaration.
+   */
+  const DOCTYPE_END = ']>';
+
+  /**
+   * A full header for an SVG XML document.
+   */
+  const SVG_XML_HEADER = `${XML_DECL}
+    ${DOCTYPE_START}${HTML_ENTITIES}${DOCTYPE_END}`;
 
     void Promise.all([...diagrams].map(renderOneMarmaid));
   });
@@ -10215,6 +10500,164 @@ $$\pi_\theta \approx \pi_{\text{old}} \implies \rho_t \approx 1$$</p>
 <p>Because the policies are constrained to be similar, the Value Function of the old policy is a highly accurate proxy for the Value Function of the new policy ($V^{\pi_{\text{old}}} \approx V^{\pi_\theta}$). Therefore, training the Critic on the "stale" returns from $\pi_{\text{old}}$ introduces a bias that is negligible in practice compared to the variance introduced by Importance Sampling.</p>
 </li>
 </ol>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7a70877b">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Deterministic-Policy-Gradient-(DPG)-Methods">Deterministic Policy Gradient (DPG) Methods<a class="anchor-link" href="#Deterministic-Policy-Gradient-(DPG)-Methods">¶</a></h1><p>In many RL scenarios, specifically Continuous Control, we may prefer learning a deterministic policy $\mu(s)$ rather than a stochastic policy $\pi(a|s)$. A deterministic policy maps a state directly to a specific action, ensuring the best action is taken without randomness during inference.</p>
+<p>Standard stochastic policies (e.g., Gaussian policies) face two primary limitations:</p>
+<ol>
+<li><strong>Boundary Constraints:</strong> Stochastic distributions (like the Gaussian) typically have infinite support $(-\infty, \infty)$. Sampling from the tails may result in actions that exceed physical limitations (e.g., voltage or torque limits). Clipping these actions introduces bias into the gradient estimation.</li>
+<li><strong>Risk of Bad Exploration:</strong> Even with low probability, a stochastic policy might sample a catastrophic action (e.g., a robot driving off a cliff). In safety-critical environments, this inherent randomness is undesirable.</li>
+</ol>
+<p>While standard Policy Gradient methods (like REINFORCE or PPO) learn a stochastic policy, deterministic policies can be viewed as a special limiting case (where the variance $\sigma \to 0$).</p>
+<h3 id="Extracting-a-Policy-from-a-Learned-Stochastic-Model">Extracting a Policy from a Learned Stochastic Model<a class="anchor-link" href="#Extracting-a-Policy-from-a-Learned-Stochastic-Model">¶</a></h3><p>If we have already learned a stochastic policy $\pi(a|s)$, we can mathematically extract a deterministic approximation:</p>
+<ol>
+<li><strong>Discrete Action Space:</strong> Select the action with the highest probability mass.
+$$\mu(s) = \underset{a}{\mathrm{argmax}} \; \pi(a|s)$$</li>
+<li><strong>Continuous Action Space:</strong> Use the expected value (mean) of the distribution. For a Gaussian policy $\pi \sim \mathcal{N}(\mu_\theta(s), \sigma)$, the deterministic action is simply the mean:
+$$\mu(s) = \mathbb{E}[a \sim \pi(\cdot|s)]$$</li>
+</ol>
+<h3 id="Learning-a-Deterministic-Policy-Directly">Learning a Deterministic Policy Directly<a class="anchor-link" href="#Learning-a-Deterministic-Policy-Directly">¶</a></h3><p>Instead of learning a distribution and then collapsing it, we can train a function approximator $\mu_\theta(s)$ to output the optimal action directly.</p>
+<p><strong>Advantages compares to learning a stochastic policy:</strong></p>
+<ol>
+<li><strong>High Sample Efficiency (Off-Policy):</strong> Deterministic policies are compatible with Replay Buffers. Because the policy is not probabilistic, we do not need complex Importance Sampling weights to reuse past experiences (as seen in algorithms like DDPG).</li>
+<li><strong>Simpler Gradient Computation:</strong> Avoids the expensive integral over the action space required by the Stochastic Policy Gradient theorem.</li>
+<li><strong>Faster Convergence:</strong> Gradients are driven directly by the gradient of the Q-function ($\nabla_a Q$), providing a stronger learning signal than the scalar reward signal used in stochastic methods.</li>
+</ol>
+<p><strong>Challenges:</strong></p>
+<ol>
+<li><strong>Limited Exploration:</strong> A deterministic policy will always take the same action in the same state. It cannot explore naturally. We must manually inject noise during training to ensure sufficient exploration.</li>
+<li><strong>High Sensitivity/Variance in Gradients:</strong> Since the policy update relies entirely on the Q-function gradient ($\nabla_a Q$), it is highly susceptible to errors or variance in the Critic's estimation.</li>
+<li><strong>Instability (Moving Targets &amp; Correlation):</strong> Similar to Deep Q-Networks (DQN), training a deterministic actor-critic on correlated sequential data with shifting target values causes instability. Solutions adapted from DQN, like Replay Buffers and Target Networks, are required to stabilize training.</li>
+</ol>
+<h2 id="The-Actor-Critic-Architecture-for-DPG">The Actor-Critic Architecture for DPG<a class="anchor-link" href="#The-Actor-Critic-Architecture-for-DPG">¶</a></h2><p>The Actor is a neural network $\mu_\theta(s)$ parameterized by $\theta$.</p>
+<ul>
+<li><strong>Input:</strong> State $s$.</li>
+<li><strong>Output:</strong> A single continuous action vector $a$.</li>
+<li><strong>Assumption:</strong> We assume the network outputs the optimal action that maximizes the value function at the given state:
+$$\mu(s) \approx \underset{a}{\mathrm{argmax}} \; Q(s, a)$$</li>
+</ul>
+<h3 id="The-Critic-(Q-Network)">The Critic (Q-Network)<a class="anchor-link" href="#The-Critic-(Q-Network)">¶</a></h3><p>The Critic is a neural network $Q_\phi(s, a)$ parameterized by $\phi$.</p>
+<ul>
+<li><strong>Input:</strong> State-Action pair $(s, a)$.</li>
+<li><strong>Output:</strong> Scalar Q-value (expected return).</li>
+<li><strong>Role:</strong> It evaluates the action produced by the Actor. If the Actor is optimal, the Critic should predict the maximum possible Q-value for that state, meaning the selected action by the policy is the best action (highest action value):
+$$Q(s, \mu(s)) \approx \underset{a}{\max} \; Q(s, a)$$</li>
+</ul>
+<h3 id="Policy-Network-(Actor)-Update">Policy Network (Actor) Update<a class="anchor-link" href="#Policy-Network-(Actor)-Update">¶</a></h3><p>The objective is to maximize the expected return of the deterministic policy. The performance objective $J(\theta)$ is:
+$$J(\theta) = \mathbb{E}_{s} [ Q_\phi(s, \mu_\theta(s)) ]$$</p>
+<p>To update the Actor, we perform gradient ascent. We want to adjust $\theta$ such that the output action $\mu_\theta(s)$ moves in the direction that increases $Q$.
+$$\theta^* = \underset{\theta}{\mathrm{argmax}} \; \mathbb{E}[Q_\phi(s, \mu_\theta(s))]$$</p>
+<p><strong>The Deterministic Policy Gradient (DPG):</strong>
+By applying the chain rule, the gradient depends on the gradient of the Q-value with respect to the action, and the gradient of the action with respect to the policy parameters:
+$$\nabla_\theta J(\theta) \approx \mathbb{E}_{s} \left[ \nabla_a Q_\phi(s, a)|_{a=\mu_\theta(s)} \cdot \nabla_\theta \mu_\theta(s) \right]$$</p>
+<ul>
+<li><strong>Encoder-Decoder Analogy:</strong> This architecture resembles an encoder-decoder.<ul>
+<li><strong>Encoder:</strong> The Actor maps state $s \to$ action $a$.</li>
+<li><strong>Decoder:</strong> The Critic maps $(s, a) \to$ value $Q$.</li>
+<li><strong>Backpropagation:</strong> We need to backpropagate throught the critic in order to update the Actor network $\mu$, but we do not update the critic's parameters here.</li>
+</ul>
+</li>
+</ul>
+<h3 id="Q-Network-(Critic)-Update">Q-Network (Critic) Update<a class="anchor-link" href="#Q-Network-(Critic)-Update">¶</a></h3><p>The Critic is trained to minimize the prediction error (Bellman error). We use <strong>TD Bootstrapping</strong> to calculate the target value.</p>
+<p><strong>Target Q-Value ($y_t$):</strong>
+$$y_t = R_{t+1} + \gamma Q_\phi(s_{t+1}, \mu(s_{t+1}))$$</p>
+<p><strong>Critic Loss Function:</strong>
+We minimize the Mean Squared Error (MSE) between the predicted Q-value and the target:
+$$L(\phi) = \frac{1}{T} \sum_{t=0}^{T-1} \left( y_t - Q_\phi(s_t, a_t) \right)^2$$</p>
+<p><strong>Critic Gradient:</strong>
+$$\nabla_\phi L(\phi) = \frac{1}{T} \sum_{t=0}^{T-1} \left( y_t - Q_\phi(s_t, a_t) \right) \nabla_\phi Q_\phi(s_t, a_t)$$</p>
+<p>This method is computationally simpler than Trust Region methods (TRPO/PPO) because it relies on standard backpropagation through the Q-function rather than complex probability ratio constraints or second-order optimizations.</p>
+<h2 id="DPG-Algorithm">DPG Algorithm<a class="anchor-link" href="#DPG-Algorithm">¶</a></h2><h3 id="Vanilla-Deterministic-Policy-Gradient-(DPG)-Algorithm">Vanilla Deterministic Policy Gradient (DPG) Algorithm<a class="anchor-link" href="#Vanilla-Deterministic-Policy-Gradient-(DPG)-Algorithm">¶</a></h3><ol>
+<li><p><strong>Given:</strong></p>
+<ul>
+<li><strong>Hyperparameters:</strong><ul>
+<li>Discount factor $\gamma \in [0, 1]$</li>
+<li>Learning rates $\alpha_\mu$ (Actor) and $\alpha_Q$ (Critic)</li>
+</ul>
+</li>
+<li><strong>Models:</strong><ul>
+<li>A parameterized deterministic policy $\mu_\theta(s)$ (Actor)</li>
+<li>A parameterized action-value function $Q_\phi(s, a)$ (Critic)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Initialize:</strong></p>
+<ul>
+<li>Initialize policy weights $\theta$ and Q-function weights $\phi$ arbitrarily.</li>
+<li>Initialize the optimizer(s) for parameters $\{\theta, \phi\}$.</li>
+</ul>
+</li>
+<li><p><strong>Repeat (for each episode):</strong></p>
+<ul>
+<li><p><strong>1. Initialize State:</strong></p>
+<ul>
+<li>Receive initial observation state $s_1$.</li>
+</ul>
+</li>
+<li><p><strong>2. Episode Loop (for $t = 1, \dots, T$):</strong></p>
+<ul>
+<li><p><strong>a. Action Selection:</strong></p>
+<ul>
+<li>Select action according to the current policy (behavior policy $\beta$):
+$$a_t = \mu_\theta(s_t)$$</li>
+<li>Execute action $a_t$ in the environment.</li>
+<li>Observe reward $r_t$ and new state $s_{t+1}$.</li>
+</ul>
+</li>
+<li><p><strong>b. Critic Update (TD Learning):</strong></p>
+<ul>
+<li>Compute the TD Target (using the current policy and critic directly, no target nets):
+$$y_t = r_t + \gamma Q_\phi(s_{t+1}, \mu_\theta(s_{t+1}))$$</li>
+<li>Compute Critic Loss (Mean Squared Bellman Error):
+$$L^{Critic}(\phi) = (y_t - Q_\phi(s_t, a_t))^2$$</li>
+<li>Backpropagate: Compute gradients $\nabla_\phi L^{Critic}$.</li>
+<li>Optimizer Step: Update $\phi$ using the Critic's optimizer to minimize the loss.</li>
+</ul>
+</li>
+<li><p><strong>c. Actor Update (Deterministic Policy Gradient):</strong></p>
+<ul>
+<li>Compute the gradient of the Q-value with respect to the action:
+$$\nabla_a Q_\phi(s_t, a)|_{a=\mu_\theta(s_t)}$$</li>
+<li>Compute the gradient of the policy with respect to the parameters:
+$$\nabla_\theta \mu_\theta(s_t)$$</li>
+<li>Combine via Chain Rule to get the Actor Gradient:
+$$\nabla_\theta J(\theta) \approx \nabla_a Q_\phi(s_t, a)|_{a=\mu_\theta(s_t)} \cdot \nabla_\theta \mu_\theta(s_t)$$</li>
+<li>Optimizer Step: Update $\theta$ using the Actor's optimizer (gradient ascent).</li>
+</ul>
+</li>
+<li><p><strong>d. Transition:</strong></p>
+<ul>
+<li>Update state $s_t \leftarrow s_{t+1}$.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Repeat until convergence.</strong></p>
+</li>
+</ol>
+<h2 id="Issues-with-Vanilla-DPG">Issues with Vanilla DPG<a class="anchor-link" href="#Issues-with-Vanilla-DPG">¶</a></h2><ol>
+<li>Lack of exploration</li>
+<li>High-variance gradient estimators</li>
+<li>Variation of training labels (moving targets)</li>
+</ol>
+<h3 id="Lack-of-exploration">Lack of exploration<a class="anchor-link" href="#Lack-of-exploration">¶</a></h3><p>Since the current policy select the greedy actions it will likely to quickly stick us to a bad locally-optimal deterministic policy. We can solve this by adding an exploration term through episode-greedy methods</p>
+<p>For continuous action space, we add a noise term to the action sampled from a gaussian distribution
+formula
+This ensures the agent has sufficent exploration in the environment</p>
+<p>If the sampled noise makes the action exceed the desirable range, we can simply apply a clipping function
+formula</p>
+<h3 id="High-variance-gradient">High variance gradient<a class="anchor-link" href="#High-variance-gradient">¶</a></h3><p>Since the vanilla version makes one update per step, the variance of the action value estiamte will be very large. We can address this by using an reply buffer to store the past trajectories and training examples. Unlike normal policy gradient approaches, this is allowed since DPG is an Off-Policy algorithm.</p>
 </div>
 </div>
 </div>
