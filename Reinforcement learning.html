@@ -10525,9 +10525,9 @@ $$\mu(s) = \underset{a}{\mathrm{argmax}} \; \pi(a|s)$$</li>
 $$\mu(s) = \mathbb{E}[a \sim \pi(\cdot|s)]$$</li>
 </ol>
 <h3 id="Learning-a-Deterministic-Policy-Directly">Learning a Deterministic Policy Directly<a class="anchor-link" href="#Learning-a-Deterministic-Policy-Directly">¶</a></h3><p>Instead of learning a distribution and then collapsing it, we can train a function approximator $\mu_\theta(s)$ to output the optimal action directly.</p>
-<p><strong>Advantages compares to learning a stochastic policy:</strong></p>
+<p><strong>Advantages compares to learning a stochastic policy then extract:</strong></p>
 <ol>
-<li><strong>High Sample Efficiency (Off-Policy):</strong> Deterministic policies are compatible with Replay Buffers. Because the policy is not probabilistic, we do not need complex Importance Sampling weights to reuse past experiences (as seen in algorithms like DDPG).</li>
+<li><strong>High Sample Efficiency (Off-Policy):</strong> Deterministic policies are compatible with Replay Buffers. Because the policy is not probabilistic, we do not need complex Importance Sampling weights to reuse past experiences.</li>
 <li><strong>Simpler Gradient Computation:</strong> Avoids the expensive integral over the action space required by the Stochastic Policy Gradient theorem.</li>
 <li><strong>Faster Convergence:</strong> Gradients are driven directly by the gradient of the Q-function ($\nabla_a Q$), providing a stronger learning signal than the scalar reward signal used in stochastic methods.</li>
 </ol>
@@ -10535,7 +10535,7 @@ $$\mu(s) = \mathbb{E}[a \sim \pi(\cdot|s)]$$</li>
 <ol>
 <li><strong>Limited Exploration:</strong> A deterministic policy will always take the same action in the same state. It cannot explore naturally. We must manually inject noise during training to ensure sufficient exploration.</li>
 <li><strong>High Sensitivity/Variance in Gradients:</strong> Since the policy update relies entirely on the Q-function gradient ($\nabla_a Q$), it is highly susceptible to errors or variance in the Critic's estimation.</li>
-<li><strong>Instability (Moving Targets &amp; Correlation):</strong> Similar to Deep Q-Networks (DQN), training a deterministic actor-critic on correlated sequential data with shifting target values causes instability. Solutions adapted from DQN, like Replay Buffers and Target Networks, are required to stabilize training.</li>
+<li><strong>Instability (Moving Targets &amp; Correlation):</strong> Similar to DQN, training a deterministic actor-critic on correlated sequential data with shifting target values causes instability. Solutions adapted from DQN, like Replay Buffers and Target Networks, are required to stabilize training.</li>
 </ol>
 <h2 id="The-Actor-Critic-Architecture-for-DPG">The Actor-Critic Architecture for DPG<a class="anchor-link" href="#The-Actor-Critic-Architecture-for-DPG">¶</a></h2><p>The Actor is a neural network $\mu_\theta(s)$ parameterized by $\theta$.</p>
 <ul>
@@ -10575,7 +10575,7 @@ $$L(\phi) = \frac{1}{T} \sum_{t=0}^{T-1} \left( y_t - Q_\phi(s_t, a_t) \right)^2
 <p><strong>Critic Gradient:</strong>
 $$\nabla_\phi L(\phi) = \frac{1}{T} \sum_{t=0}^{T-1} \left( y_t - Q_\phi(s_t, a_t) \right) \nabla_\phi Q_\phi(s_t, a_t)$$</p>
 <p>This method is computationally simpler than Trust Region methods (TRPO/PPO) because it relies on standard backpropagation through the Q-function rather than complex probability ratio constraints or second-order optimizations.</p>
-<h2 id="DPG-Algorithm">DPG Algorithm<a class="anchor-link" href="#DPG-Algorithm">¶</a></h2><h3 id="Vanilla-Deterministic-Policy-Gradient-(DPG)-Algorithm">Vanilla Deterministic Policy Gradient (DPG) Algorithm<a class="anchor-link" href="#Vanilla-Deterministic-Policy-Gradient-(DPG)-Algorithm">¶</a></h3><ol>
+<h2 id="Vanilla-Deterministic-Policy-Gradient-(DPG)-Algorithm">Vanilla Deterministic Policy Gradient (DPG) Algorithm<a class="anchor-link" href="#Vanilla-Deterministic-Policy-Gradient-(DPG)-Algorithm">¶</a></h2><ol>
 <li><p><strong>Given:</strong></p>
 <ul>
 <li><strong>Hyperparameters:</strong><ul>
@@ -10646,18 +10646,189 @@ $$\nabla_\theta J(\theta) \approx \nabla_a Q_\phi(s_t, a)|_{a=\mu_\theta(s_t)} \
 <li><p><strong>Repeat until convergence.</strong></p>
 </li>
 </ol>
-<h2 id="Issues-with-Vanilla-DPG">Issues with Vanilla DPG<a class="anchor-link" href="#Issues-with-Vanilla-DPG">¶</a></h2><ol>
-<li>Lack of exploration</li>
-<li>High-variance gradient estimators</li>
-<li>Variation of training labels (moving targets)</li>
+<h2 id="Issues-with-Vanilla-DPG">Issues with Vanilla DPG<a class="anchor-link" href="#Issues-with-Vanilla-DPG">¶</a></h2><p>The Vanilla DPG algorithm, in its raw form, suffers from instability and convergence problems. These issues parallel those found in DQN, and there are three primary challenges:</p>
+<ol>
+<li><strong>Lack of Exploration</strong>: Deterministic policies do not explore.</li>
+<li><strong>High-Variance Gradient Estimators</strong>: Single-sample updates are noisy.</li>
+<li><strong>Variation of Training Labels</strong>: The moving target problem.</li>
 </ol>
-<h3 id="Lack-of-exploration">Lack of exploration<a class="anchor-link" href="#Lack-of-exploration">¶</a></h3><p>Since the current policy select the greedy actions it will likely to quickly stick us to a bad locally-optimal deterministic policy. We can solve this by adding an exploration term through episode-greedy methods</p>
-<p>For continuous action space, we add a noise term to the action sampled from a gaussian distribution
-formula
-This ensures the agent has sufficent exploration in the environment</p>
-<p>If the sampled noise makes the action exceed the desirable range, we can simply apply a clipping function
-formula</p>
-<h3 id="High-variance-gradient">High variance gradient<a class="anchor-link" href="#High-variance-gradient">¶</a></h3><p>Since the vanilla version makes one update per step, the variance of the action value estiamte will be very large. We can address this by using an reply buffer to store the past trajectories and training examples. Unlike normal policy gradient approaches, this is allowed since DPG is an Off-Policy algorithm.</p>
+<h3 id="Lack-of-Exploration">Lack of Exploration<a class="anchor-link" href="#Lack-of-Exploration">¶</a></h3><p>A fundamental limitation of a deterministic policy $\mu_\theta(s)$ is that it maps a specific state to a specific action deterministically. Unlike stochastic policies which naturally sample around the mean, a deterministic policy will repeat the exact same trajectory given the same starting conditions. It will never discover better actions on its own and will likely converge quickly to a suboptimal local minimum.</p>
+<p><strong>Solution: Off-Policy Exploration (Noise Injection)</strong>
+Since DPG is an off-policy algorithm, we can decouple the <em>behavior policy</em> (used to collect data) from the <em>target policy</em> (the deterministic policy being learned). We induce exploration by adding stochastic noise to the deterministic action selection process.</p>
+<p>For continuous action spaces, we typically add noise sampled from a Gaussian distribution to the output of the actor network:</p>
+<p>$$a_t = \mu_\theta(s_t) + \mathcal{N}(0, \sigma^2)$$</p>
+<p>This formulation allows the agent to explore the environment (episode-greedy exploration) while the underlying policy $\mu_\theta$ attempts to learn the optimal path.</p>
+<p><strong>Action Clipping:</strong>
+Adding noise may push the action value beyond the valid physical limits of the environment. To maintain validity, we apply a clipping function:</p>
+<p>$$a_t = \text{clip}(\mu_\theta(s_t) + \mathcal{N}, a_{min}, a_{max})$$</p>
+<h3 id="High-Variance-Gradient-Estimators">High Variance Gradient Estimators<a class="anchor-link" href="#High-Variance-Gradient-Estimators">¶</a></h3><p>In the vanilla implementation, updates are performed online using single transition samples. This results in noisy gradient estimates that can destabilize training.</p>
+<p><strong>Solution</strong>: We can stabilize learning by using a <strong>Replay Buffer</strong> $\mathcal{D}$ to store past transitions $(s_t, a_t, r_t, s_{t+1})$. At every training step, we sample a mini-batch of uncorrelated transitions to compute the gradient.</p>
+<p>Using a replay buffer is only valid because DPG is an <strong>Off-Policy</strong> algorithm, where target policy that it learned is different from the behavior policy.</p>
+<ul>
+<li><strong>Target Policy:</strong> The deterministic policy $\mu_\theta$ (Greedy).</li>
+<li><strong>Behavior Policy:</strong> The noisy policy $\mu_\theta + \text{Noise}$ (Exploratory).</li>
+</ul>
+<p><strong>Replay vs. Importance Sampling (IS)</strong>
+A key advantage of DPG over stochastic Off-Policy methods is the absence of <strong>Importance Sampling</strong>, meaning there will be no high variance updates coming from importance sampling.</p>
+<ul>
+<li><strong>Stochastic Policy Gradient:</strong> Requires IS ratios $\frac{\pi(a|s)}{\beta(a|s)}$ to correct for the mismatch between the behavior and target distributions. These ratios often introduce explosive variance (the "heavy tail" problem).</li>
+<li><strong>DPG/Q-Learning:</strong> We rely on the Bellman Optimality Equation. We assume that the critic directly learns to approximate the true $Q^*(s_t, a) \approx R_{t+1} + \gamma \, \max_{a} Q(S_{t+1}, a)$, which relies on the environment's physics ($r, s'$) and the greedy future action $\mu(s')$. Because we cut the trajectory dependency after one step bootstrapping, we do not need to reweight the entire trajectory history.</li>
+</ul>
+<p><strong>Variance Reduction via Batching</strong>
+Since there is no importance sampling that contributes to high variance, the only source of variance in DPG is the standard noise from the gradient estimator itself (function approximation error). Since this noise is additive (not multiplicative like IS ratios), we can effectively reduce it by averaging over a batch:</p>
+<p><strong>Batch Gradient Update Formula:</strong>
+The Critic is updated by minimizing the loss over the batch:
+$$L(\phi) = \frac{1}{N} \sum_{i=1}^N \left( y_i - Q_\phi(s_i, a_i) \right)^2$$</p>
+<p>The Actor is updated by averaging the policy gradient over the batch:
+$$\nabla_\theta J \approx \frac{1}{N} \sum_{i=1}^N \nabla_a Q_\phi(s_i, a)|_{a=\mu_\theta(s_i)} \nabla_\theta \mu_\theta(s_i)$$</p>
+<h3 id="Variation-of-Training-Labels-(Moving-Targets)">Variation of Training Labels (Moving Targets)<a class="anchor-link" href="#Variation-of-Training-Labels-(Moving-Targets)">¶</a></h3><p>In the Bellman update, the target value $y_i$ depends on the same network parameters ($\theta$ and $\phi$) that we are trying to update.</p>
+<p>$$y_i = r_i + \gamma Q_\phi(s'_{i}, \mu_\theta(s'_{i}))$$</p>
+<p><strong>The Problem:</strong> When we update the parameters $\phi$ and $\theta$ to move $Q(s,a)$ closer to $y_i$, the target $y_i$ also shifts (because $Q_\phi$ and $\mu_\theta$ have changed), and it may lead to divergence of network training.</p>
+<p><strong>Solution</strong>: We address this by the <strong>Target Networks</strong> similar to DQN. The only difference is that instead of only copying the critic, we need to make an copy of both the actor and the critic networks since the target depends on both the policy and the value networks, so we maintain two separate copies:</p>
+<ol>
+<li><strong>Target Actor:</strong> $\mu'_{\theta'}$</li>
+<li><strong>Target Critic:</strong> $Q'_{\phi'}$</li>
+</ol>
+<p>The target value is now computed using these frozen networks:</p>
+<p>$$y_i = r_i + \gamma Q'_{\phi'}(s'_{i}, \mu'_{\theta'}(s'_{i}))$$</p>
+<p>This ensures that the target $y_i$ remains fixed for a duration of time, providing a stable regression target for the main Q-network.</p>
+<p><strong>Updating the Targets</strong>: The weights of the target networks ($\theta', \phi'$) are updated to match the main networks ($\theta, \phi$) periodically, just like in DQN.</p>
+<h2 id="DDPG-Algorithm">DDPG Algorithm<a class="anchor-link" href="#DDPG-Algorithm">¶</a></h2><ol>
+<li><p><strong>Given:</strong></p>
+<ul>
+<li><strong>Hyperparameters:</strong><ul>
+<li>Discount factor $\gamma \in [0, 1]$</li>
+<li>Soft update coefficient $\tau \ll 1$</li>
+<li>Minibatch size $N$</li>
+<li>Learning rates $\alpha_\mu$ (Actor) and $\alpha_Q$ (Critic)</li>
+<li>Noise process $\mathcal{N}$ (e.g., Ornstein-Uhlenbeck)</li>
+<li>The frequency of updating the target networks $H$</li>
+</ul>
+</li>
+<li><strong>Models:</strong><ul>
+<li>A parameterized deterministic policy $\mu_\theta(s)$ (Actor)</li>
+<li>A parameterized action-value function $Q_\phi(s, a)$ (Critic)</li>
+</ul>
+</li>
+<li><strong>Target Models:</strong><ul>
+<li>Target Actor $\mu'_{\theta'}(s)$ and Target Critic $Q'_{\phi'}(s, a)$</li>
+</ul>
+</li>
+<li><strong>Memory:</strong><ul>
+<li>Experience Replay Buffer $R$</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Initialize:</strong></p>
+<ul>
+<li>Initialize policy weights $\theta$ and Q-function weights $\phi$ arbitrarily.</li>
+<li>Initialize target network weights: $\theta' \leftarrow \theta$, $\phi' \leftarrow \phi$.</li>
+<li>Initialize Replay Buffer $R$.</li>
+</ul>
+</li>
+<li><p><strong>Repeat (for each episode):</strong></p>
+<ul>
+<li><p><strong>1. Initialize State:</strong></p>
+<ul>
+<li>Receive initial observation state $s_1$.</li>
+<li>Reset the exploration noise process $\mathcal{N}$.</li>
+</ul>
+</li>
+<li><p><strong>2. Episode Loop (for $t = 1, \dots, T$):</strong></p>
+<ul>
+<li><p><strong>a. Action Selection:</strong></p>
+<ul>
+<li>Select action according to the current policy and exploration noise:
+$$a_t = \mu_\theta(s_t) + \mathcal{N}_t$$</li>
+<li>Execute action $a_t$ in the environment.</li>
+<li>Observe reward $r_t$ and new state $s_{t+1}$.</li>
+<li>Store transition $(s_t, a_t, r_t, s_{t+1})$ in Replay Buffer $R$.</li>
+</ul>
+</li>
+<li><p><strong>b. Sampling:</strong></p>
+<ul>
+<li>Sample a random minibatch of $N$ transitions $(s_i, a_i, r_i, s_{i+1})$ from $R$.</li>
+</ul>
+</li>
+<li><p><strong>c. Critic Update:</strong></p>
+<ul>
+<li>Compute the target action using the Target Actor:
+$$a'_{i+1} = \mu'_{\theta'}(s_{i+1})$$</li>
+<li>Compute the TD Target (using Target Critic and Target Actor):
+$$y_i = r_i + \gamma Q'_{\phi'}(s_{i+1}, a'_{i+1})$$</li>
+<li>Compute Critic Loss (Mean Squared Bellman Error over the batch):
+$$L^{Critic}(\phi) = \frac{1}{N} \sum_i (y_i - Q_\phi(s_i, a_i))^2$$</li>
+<li>Optimizer Step: Update $\phi$ to minimize the loss.</li>
+</ul>
+</li>
+<li><p><strong>d. Actor Update:</strong></p>
+<ul>
+<li>Compute the Actor Gradient (mean over the batch):
+$$\nabla_\theta J(\theta) \approx \frac{1}{N} \sum_i \nabla_a Q_\phi(s, a)|_{s=s_i, a=\mu_\theta(s_i)} \cdot \nabla_\theta \mu_\theta(s)|_{s_i}$$</li>
+<li>Optimizer Step: Update $\theta$ using the Actor's optimizer (gradient ascent).</li>
+</ul>
+</li>
+<li><p><strong>e. Target Network Update:</strong></p>
+<ul>
+<li>If after $H$ epochs, update the target networks tothe learned networks:
+$$\theta' \leftarrow \theta$$
+$$\phi' \leftarrow \phi$$</li>
+</ul>
+</li>
+<li><p><strong>f. Transition:</strong></p>
+<ul>
+<li>Update state $s_t \leftarrow s_{t+1}$.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Repeat until convergence.</strong></p>
+</li>
+</ol>
+<h2 id="Overestimation-Bias-in-DDPG">Overestimation Bias in DDPG<a class="anchor-link" href="#Overestimation-Bias-in-DDPG">¶</a></h2><p>Like the DQN algorithm, DDPG is susceptible to <strong>overestimation bias</strong> in its value function approximation. In standard Q-learning (and DQN), the target value is computed using the <strong>max operator</strong>:
+$$y_t = r_t + \gamma \max_{a'} Q(s_{t+1}, a')$$
+The maximization operator will systematically overestimate the true value. It preferentially selects transitions with positive error (noise spikes) while discarding negative error, shifting the expected value estimate upwards:
+$$E[\max(Q_{est})] \geq \max(E[Q_{true}])$$</p>
+<p>DDPG operates in continuous action spaces where an explicit <code>max</code> operation is intractable. Instead, it utilizes an Actor network $\mu_{\theta}$ that approximates the <code>argmax</code>. The DDPG target update is:
+$$y_i = r_i + \gamma Q'_{\phi'}(s_{i+1}, \mu'_{\theta'}(s_{i+1}))$$</p>
+<p>Although this equation lacks an explicit <code>max</code> term, the <strong>implicit maximization</strong> remains. The Actor $\mu$ is trained specifically to output the action that maximizes the Critic's Q-value ($J(\theta) = E[Q(s, \mu(s))]$). Therefore:
+$$Q(s, \mu(s)) \approx \max_a Q(s, a)$$
+Consequently, DDPG inherits the exact same overestimation bias as DQN: the policy will gravitationally drift toward action-values that are inflated by approximation error.</p>
+<p>While DQN and DDPG both suffer from bias, the consequences are significantly more severe in the continuous control setting of DDPG due to the interaction between the Actor and the Critic's gradients.</p>
+<ol>
+<li><strong>Adversarial Exploitation of Local Artifacts</strong></li>
+</ol>
+<p>In DDPG, the Actor mechanism acts as an optimizer. Because the Actor updates its parameters to maximize $Q$, it will exploit "sharp peaks" or artifacts in the value function landscape.</p>
+<ul>
+<li>If the Critic $Q(s, a)$ has a region of high variance (overestimation) due to function approximation error, the Actor will shift the policy $\mu(s)$ to map directly into this region.</li>
+<li>This creates a feedback loop: The Actor chases the noise in the Critic, and the Critic trains on the suboptimal actions selected by the Actor, reinforcing the false peaks.</li>
+</ul>
+<p>This rarely happens on DQN because although the underlying Q network is continuous, it's very rare that the peak lands exactly on the discrete action points. However, the epsilon-greedy policy will still expliot the high biased action points, causing the error to accumulates.</p>
+<ol start="2">
+<li><strong>The "Wrong Gradient" Problem (Shape vs. Rank)</strong></li>
+</ol>
+<p>The fundamental difference between discrete (DQN) and continuous (DDPG) action spaces lies in how the optimal action is derived:</p>
+<ul>
+<li><p><strong>DQN (Rank-based):</strong> In discrete spaces, actions are selected by comparing values. If the Q-function is uniformly biased or distorted, the policy remains optimal as long as the relative ranking (order) of actions is preserved.</p>
+</li>
+<li><p><strong>DDPG (Gradient-based):</strong> In continuous spaces, there are effectively infinite actions. The algorithm cannot check the rank of every action. Instead, it relies on the <strong>gradient</strong> $\nabla_a Q(s, a)$ to navigate the action space.</p>
+<ul>
+<li><strong>Shape Distortion:</strong> Overestimation bias is rarely uniform; it appears as local noise spikes. These spikes alter the <strong>shape</strong> (curvature) of the value function surface.</li>
+<li><strong>Local Optima:</strong> A noise spike creates a steep, false gradient. The Actor, following gradient ascent, will be pulled towards this false peak rather than the true global maximum.</li>
+<li>Even if the global maximum is theoretically preserved, the <strong>direction</strong> of the update step is corrupted by the local geometry of the noise.</li>
+</ul>
+</li>
+</ul>
+<h3 id="Solution:-Double-Q-Learning-(Clipped-Double-Q-Learning)">Solution: Double Q-Learning (Clipped Double Q-Learning)<a class="anchor-link" href="#Solution:-Double-Q-Learning-(Clipped-Double-Q-Learning)">¶</a></h3><p>To mitigate this, we can adapt the <strong>Double Q-Learning</strong> principle from DQN to the actor-critic setting. The core idea of Double DQN is to decouple <strong>action selection</strong> from <strong>action evaluation</strong> to prevent the propagation of positive bias. In the context of DDPG (specifically in the <strong>TD3</strong> algorithm), this is implemented using <strong>Clipped Double Q-Learning</strong>:</p>
+<ol>
+<li><strong>Twin Critics:</strong> Initialize two independent critic networks, $Q_{\phi_1}$ and $Q_{\phi_2}$. Both are trained on every step using the shared, pessimistic target. Since they are initialized with different random weights, so they will naturally learn slightly different estimates of the environment.</li>
+<li><strong>Conservative Estimation:</strong> When computing the target, use the standard target actor to select the action $a'$, but use the <strong>minimum</strong> of the two critics to evaluate it:
+$$y_i = r_i + \gamma \min_{j=1,2} Q'_{\phi'_j}(s_{i+1}, a')$$</li>
+</ol>
+<p>By taking the minimum, the algorithm assumes the worst-case scenario between the two estimates. If one critic overestimates a specific action due to noise, the other critic (which likely has different noise) will act as a bound, effectively canceling out the overestimation bias. Since the two Q networks already regulates the bias in the training, the actor is simply trained using $Q_{\phi_1}$.</p>
 </div>
 </div>
 </div>
