@@ -10833,6 +10833,103 @@ $$y_i = r_i + \gamma \min_{j=1,2} Q'_{\phi'_j}(s_{i+1}, a')$$</li>
 </div>
 </div>
 </div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=986e4c51">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Soft-Actor-Critic-(SAC)">Soft Actor-Critic (SAC)<a class="anchor-link" href="#Soft-Actor-Critic-(SAC)">¶</a></h1><p>Traditional policy gradient methods either learn a deterministic or stochastic policies, each with distinct advantages and limitations. SAC is designed to combine the strengths of both while mitigating their weaknesses.</p>
+<p><strong>Deterministic Policies (e.g., DDPG, TD3)</strong>: output a specific, deterministic action $a = \mu(s)$.</p>
+<ul>
+<li><strong>Pros:</strong><ul>
+<li><strong>High Sample Efficiency:</strong> They are compatible with Replay Buffers due to their off-policy nature. Since they rely on the Bellman equation $Q(s, a)$ rather than probability ratios, they avoid the variance issues associated with Importance Sampling.</li>
+<li><strong>Fast Convergence:</strong> The optimization target is sharp and direct.</li>
+</ul>
+</li>
+<li><strong>Cons:</strong><ul>
+<li><strong>Brittle Exploration:</strong> Exploration is artificial (e.g., adding Gaussian noise manually). The agent does not "know" it is exploring.</li>
+<li><strong>Suboptimality:</strong> They tend to get stuck in local optima because they commit to a path too early.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Stochastic Policies (e.g., REINFORCE, A3C)</strong>: output an action probability distribution $\pi(a|s)$ to sample from.</p>
+<ul>
+<li><strong>Pros:</strong><ul>
+<li><strong>Better Exploration:</strong> By defining a distribution, the agent naturally explores the state space through sampling.</li>
+<li><strong>Optimal Convergence:</strong> They can theoretically capture multimodal solutions and are less likely to get trapped in shallow local optima.</li>
+</ul>
+</li>
+<li><strong>Cons:</strong><ul>
+<li><strong>Low Sample Efficiency:</strong> Traditionally, they are On-Policy. Using them Off-Policy requires <strong>Importance Sampling</strong> ($\frac{\pi}{\beta}$). In high-dimensional continuous action spaces, the variance of this ratio explodes (Curse of Dimensionality), making off-policy learning practically impossible, and we can only use trusted region to mitigate this.</li>
+</ul>
+</li>
+</ul>
+<h2 id="Global-Determinism-vs.-Local-Stochasticity">Global Determinism vs. Local Stochasticity<a class="anchor-link" href="#Global-Determinism-vs.-Local-Stochasticity">¶</a></h2><p>The conceptual goal of Soft Actor-Critic is to achieve a specific behavioral balance:</p>
+<ol>
+<li><strong>Global Determinism (Strategic Certainty):</strong> The agent must have a strong commitment to the overall goal. If the objective is to reach a target, the policy should not be globally random, but it should aims for the best overall strategy to achieve the goal.</li>
+<li><strong>Local Stochasticity (Tactical Flexibility):</strong> In the immediate execution of steps, the agent should maintain variance. This ensures that the agent learns multiple of valid actions rather than a single razor-thin path. If small perturbations occur at test time, the agent knows how to recover locally because it explored the area surrounding the optimal action.</li>
+</ol>
+<p>To achieve this balance, SAC shifts the objective from standard Reward Maximization to <strong>Maximum Entropy Reinforcement Learning</strong>.</p>
+<p><strong>Standard Objective:</strong>
+$$J(\pi) = \sum_t \mathbb{E}_{(s_t, a_t) \sim \rho_\pi} [r(s_t, a_t)]$$</p>
+<p><strong>SAC Objective:</strong>
+$$J(\pi) = \sum_t \mathbb{E}_{(s_t, a_t) \sim \rho_\pi} [r(s_t, a_t) + \alpha \mathcal{H}(\pi(\cdot|s_t))]$$</p>
+<p>$\alpha$: the temperature, which determines the relative importance of the entropy term against the reward.</p>
+<p>Computing the exact entropy $\mathcal{H}$ of a continuous action distribution requires to integrate over the entire action space.
+$$H(\pi(\cdot|s_t)) = - \int_{\mathcal{A}} \pi(a_t|s_t) \log \pi(a_t|s_t) \, da_t$$
+This computation is often untractable, so in practice, we approximate the entropy using the <strong>Log-Likelihood of the sampled action</strong> at a particular timestep $t$ in the trajectory:
+$$\text{Entropy Term} \approx -\log \pi(a_t | s_t)$$
+This is a Monte Carlo estimate derived from the single action sampled in the current batch.</p>
+<h2 id="Mechanism">Mechanism<a class="anchor-link" href="#Mechanism">¶</a></h2><p>The policy network in SAC outputs the parameters of a Gaussian distribution: a mean ($\mu$) and a standard deviation ($\sigma$).</p>
+<p><strong>The Variance ($\sigma$) Enforces Exploration:</strong> The entropy term acts as a regularizer that prevents the variance from collapsing to zero.</p>
+<ul>
+<li><strong>The Tug-of-War:</strong> The reward signal encourages $\sigma \to 0$ (to greedily exploit the peak). The entropy signal encourages $\sigma \to \infty$ (to flatten the distribution).</li>
+<li><strong>The Flattening Effect:</strong> If the policy collapses to a single "best" action, the probability of other actions drops to near zero. Consequently, the "surprise" ($-\log \pi$) of those rare actions becomes massive. If the agent samples a rare action by chance, the high entropy bonus creates a large gradient update that increases the probability of that action, effectively widening the distribution again.
+This ensures the agent is aware of and occationally performs other actions instead of committing to the single "best" action in case it fails in practice.</li>
+</ul>
+<p>By adding the entropy term, SAC achieves the goal of making the policy globally deterministic and locally stochastic:</p>
+<ol>
+<li><strong>The Mean ($\mu$) $\rightarrow$ Global Determinism</strong><ul>
+<li>Represents the <strong>Intent</strong>.</li>
+<li>As training progresses, the Mean converges firmly on the optimal trajectory toward the goal, indicating the best action still has the highest likelihood of being taken, but not the only action that might be selected.</li>
+</ul>
+</li>
+<li><strong>The Variance ($\sigma$) $\rightarrow$ Local Stochasticity</strong><ul>
+<li>Represents the <strong>Tolerance</strong>.</li>
+<li>It defines the width of the safe corridor around the optimal path.</li>
+</ul>
+</li>
+</ol>
+<p>A critical feature of SAC is how the policy is utilized differently during training versus inference.</p>
+<ul>
+<li><p><strong>During Training: Sample $a \sim \mathcal{N}(\mu, \sigma)$</strong></p>
+<ul>
+<li>We use the stochasticity to build <strong>robustness</strong>. By forcing the agent to perform noisy actions, it learns to avoid sharp peaks (actions that are optimal but fragile because all actions around the best action point are destructive) and settle for flat plateaus (actions around the optimal action point are also close to optimal and safe).</li>
+</ul>
+</li>
+<li><p><strong>During Testing: Set $a = \mu$</strong></p>
+<ul>
+<li>We discard the stochasticity and act deterministically.</li>
+<li><strong>Crucial Distinction:</strong> The deterministic $\mu$ learned by SAC is different from the $\mu$ learned by DDPG.<ul>
+<li><em>DDPG Mean:</em> Likely sits on a "sharp peak." High reward, but high risk of failure if conditions change slightly.</li>
+<li><em>SAC Mean:</em> Sits in the center of a "flat plateau." It is inherently <strong>safe</strong> because it was trained under the constraint that deviations must not lead to failure.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="Key-Benefits">Key Benefits<a class="anchor-link" href="#Key-Benefits">¶</a></h2><ol>
+<li><strong>Robustness:</strong> The entropy constraint forces the agent to learn policies that succeed even when execution is imperfect. The agent learns a safety margin around its actions.</li>
+<li><strong>Multimodality:</strong> By maintaining a non-zero probability for suboptimal actions, the agent can capture multiple distinct solutions to a problem rather than collapsing on the first one it finds.</li>
+<li><strong>Smooth Optimization:</strong> The stochasticity smoothes the optimization landscape. It turns jagged "cliffs" in the reward function into smooth slopes, allowing gradient descent to converge more reliably to global optima.</li>
+<li><strong>High Sample Efficiency:</strong> The SAC algorithm is off-policy since it updates the value function using single-step transitions $(s, a, r, s')$ collected by previous versions of the policy, rather than requiring the current policy to generate the data for every update. The off-policy nature allows the use of past experience through a replay buffer.</li>
+</ol>
+<p>Soft Actor-Critic successfully bridges the gap between sample efficiency and stability. It ensures the agent is <strong>deterministic enough</strong> (via the Mean) to achieve the goal quickly and effectively, but <strong>stochastic enough</strong> (via the Variance/Entropy) to provide the necessary workarounds and flexibility to handle local perturbations.</p>
+</div>
+</div>
+</div>
+</div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=73d28fae">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
